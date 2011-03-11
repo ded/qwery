@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>qwery tests</title>
+    <link rel="stylesheet" href="../build/sink/src/sink.css" type="text/css">
+    <script src="../build/sink/src/sink.js"></script>
+    <script src="../src/qwery.js"></script>
+  </head>
+  <body>
+    <h1>Qwery Tests</h1>
+     <ol id="tests"></ol>
+     <!-- // <script src="tests.js"></script> -->
+     <script type="text/javascript">
+      sink('CSS 1', function (test, ok) {
+        test('get element by id', 1, function () {
+          var el = document.createElement('div');
+          el.id = 'boosh';
+          document.body.appendChild(el);
+          var result = getElementsBySelector('#boosh');
+          ok(!!result[0], 'found element with id=boosh');
+        });
+      });
+      start();
+     </script>
+  </body>
+</html>
