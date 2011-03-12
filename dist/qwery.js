@@ -95,11 +95,8 @@
         }
         currentContext = [];
         currentContextIndex = 0;
-
         // This function will be used to filter the elements
         var checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
-        currentContext = [];
-        currentContextIndex = 0;
         for (k = 0; k < found.length; k++) {
           if (checkfunction(found[k], attrName, attrValue)) {
             currentContext[currentContextIndex++] = found[k];
