@@ -28,8 +28,8 @@ sink('CSS 1', function (test, ok) {
 sink('CSS 2', function (test, ok) {
 
   test('get elements by attribute', 2, function () {
-    ok(!!$('#boosh div[test]')[0], 'found a single direct descendent');
-    ok(!!$('#boosh div[test=fg]')[0], 'found a single direct descendent');
+    ok(!!$('#boosh div[test]')[0], 'found attribute');
+    ok(!!$('#boosh div[test=fg]')[0], 'found attribute with value');
   });
 
 });
