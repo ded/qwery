@@ -5,7 +5,16 @@
     <title>qwery tests</title>
     <link rel="stylesheet" href="../vendor/sink.css" type="text/css">
     <script src="../vendor/sink.js"></script>
+    <script type="text/javascript">
+      // test for noConflict()
+      var qwery = function () {
+        return 'success';
+      };
+    </script>
     <script src="../src/qwery.js"></script>
+    <script type="text/javascript">
+      var $ = qwery.noConflict();
+    </script>
   </head>
   <body>
     <h1>Qwery Tests</h1>

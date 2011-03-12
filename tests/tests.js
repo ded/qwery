@@ -1,4 +1,9 @@
-var $ = getElementsBySelector;
+sink('no conflict', function (test, ok) {
+  test('should return old qwery back to context', 1, function () {
+    ok(qwery() == 'success', 'old qwery called');
+  });
+});
+
 sink('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = $('#boosh');

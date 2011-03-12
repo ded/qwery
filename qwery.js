@@ -64,7 +64,7 @@
     }
   };
 
-  function qwery(selector) {
+  function _qwery(selector) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
       found, foundCount, elements, currentContextIndex, currentContext = [doc];
 
@@ -152,7 +152,7 @@
     return currentContext;
   }
 
-  context.getElementsBySelector = function (selector) {
+  function qwery(selector) {
 
     if (!doc.getElementsByTagName) {
       return [];
@@ -168,12 +168,20 @@
     var result = [];
     // here we allow combinator selectors: $('div,span');
     var collections = _(selector.split(',')).map(function (selector) {
-      return qwery(selector);
+      return _qwery(selector);
     });
     _(collections).each(function (collection) {
       result = result.concat(collection);
     });
     return result;
+  }
+
+  var oldQwery = context.qwery;
+
+  qwery.noConflict = function () {
+    context.qwery = oldQwery;
+    return this;
   };
+  context.qwery = qwery;
 
 }(this, document);
