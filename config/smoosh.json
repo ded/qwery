@@ -1,0 +1,13 @@
+{
+  "JSHINT_OPTS": {
+    "boss": true,
+    "evil": true,
+    "undef": false,
+    "sub": false,
+    "asi": false
+  },
+  "JAVASCRIPT": {
+    "DIST_DIR": "dist",
+    "qwery": [ "./src/qwery.js" ]
+  }
+}
