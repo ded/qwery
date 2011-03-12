@@ -3,6 +3,45 @@
   function getAllChildren(e) {
     return e.all ? e.all : e.getElementsByTagName('*');
   }
+  function getAttr(o, n, v) {
+    switch (o) {
+      case '=': // Equality
+      return function(e) {
+        return (e.getAttribute(n) == v);
+      };
+      break;
+      case '~': // Match one of space seperated words
+      return function(e) {
+        return (e.getAttribute(n).match(new RegExp('\\b' + v + '\\b')));
+      };
+      break;
+      case '|': // Match start with value followed by optional hyphen
+      return function(e) {
+        return (e.getAttribute(n).match(new RegExp('^' + v + '-?')));
+      };
+      break;
+      case '^': // Match starts with value
+      return function(e) {
+        return (e.getAttribute(n).indexOf(v) === 0);
+      };
+      break;
+      case '$': // Match ends with value
+      return function(e) {
+        return (e.getAttribute(n).lastIndexOf(v) == e.getAttribute(n).length - v.length);
+      };
+      break;
+      case '*': // Match ends with value
+      return function(e) {
+        return (e.getAttribute(n).indexOf(v) > -1);
+      };
+      break;
+      default :
+      // Just test for existence of attribute
+      return function(e) {
+        return e.getAttribute(n);
+      };
+    }
+  }
 
   context.getElementsBySelector = function(selector) {
     // Attempt to fail gracefully in lesser browsers
@@ -82,40 +121,8 @@
         }
         currentContext = [];
         currentContextIndex = 0;
-        var checkFunction; // This function will be used to filter the elements
-        switch (attrOperator) {
-          case '=': // Equality
-          checkFunction = function(e) {
-            return (e.getAttribute(attrName) == attrValue);
-          };
-          break;
-          case '~': // Match one of space seperated words
-          checkFunction = function(e) {
-            return (e.getAttribute(attrName).match(new RegExp('\\b'+attrValue+'\\b')));
-          };
-          break;
-          case '|': // Match start with value followed by optional hyphen
-          checkFunction = function(e) {
-            return (e.getAttribute(attrName).match(new RegExp('^'+attrValue+'-?')));
-          };
-          break;
-          case '^': // Match starts with value
-          checkFunction = function(e) {
-            return (e.getAttribute(attrName).indexOf(attrValue) === 0);
-          };
-          break;
-          case '$': // Match ends with value - fails with "Warning" in Opera 7
-          checkFunction = function(e) {
-            return (e.getAttribute(attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
-          };
-          break;
-          case '*': // Match ends with value
-          checkFunction = function(e) { return (e.getAttribute(attrName).indexOf(attrValue) > -1); };
-          break;
-          default :
-          // Just test for existence of attribute
-          checkFunction = function(e) { return e.getAttribute(attrName); };
-        }
+        // This function will be used to filter the elements
+        var checkFunction = getCheckFn(attrOperator, attrName, attrValue);
         currentContext = [];
         currentContextIndex = 0;
         for (k = 0; k < found.length; k++) {

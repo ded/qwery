@@ -12,10 +12,25 @@
         font-family: 'helvetica neue', helvetica, arial, sans-serif;
         font-weight: 300;
       }
+      h1 span {
+        font-size: 50%;
+        vertical-align: baseline;
+      }
     </style>
   </head>
   <body>
-    <h1>VVelcome to Qwery</h1>
-    <p>The tiny Selector engine</p>
+    <h1><img width="35" src="src/dedfat.png"> VVelcome to Qwery <span>The tiny Selector engine</span></h1>
+    <h3>Valid qweries</h3>
+    <pre><code>a
+#foo
+.bar
+#foo a
+#foo a.bar
+#foo a[href]
+#foo a[href=bar]
+#foo a[href^=http://]
+#foo a[href$=com]
+#foo a[href*=twitter]
+    </code></pre>
   </body>
 </html>
