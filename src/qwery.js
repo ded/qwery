@@ -36,6 +36,7 @@
 
     if (document.querySelectorAll) {
       // return immediately for browsers that know what they're doing
+      // method suggested by Mozilla https://developer.mozilla.org/En/Code_snippets/QuerySelector
       return Array.prototype.slice.call(document.querySelectorAll(selector), 0);
     }
 
