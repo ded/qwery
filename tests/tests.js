@@ -1,8 +1,9 @@
 var $ = getElementsBySelector;
 sink('CSS 1', function (test, ok) {
-  test('get element by id', 1, function () {
+  test('get element by id', 2, function () {
     var result = $('#boosh');
     ok(!!result[0], 'found element with id=boosh');
+    ok(!!$('h1')[0], 'found 1 h1');
   });
 
   test('get element by class', 5, function () {
@@ -11,6 +12,10 @@ sink('CSS 1', function (test, ok) {
     ok($('#boosh div').length == 2, 'found two {div} elements');
     ok(!!$('#boosh span')[0], 'found one {span} element');
     ok(!!$('#boosh div div')[0], 'found a single div');
+  });
+
+  test('combos', 1, function () {
+    ok($('#boosh div,#boosh span').length == 3, 'found 2 divs and 1 span');
   });
 
 });

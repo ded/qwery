@@ -1,7 +1,36 @@
-!function (context) {
+!function (context, doc) {
+
+  function array(ar) {
+    return Array.prototype.slice.call(ar, 0);
+  }
 
   function getAllChildren(e) {
     return e.all ? e.all : e.getElementsByTagName('*');
+  }
+
+  function iter(obj) {
+    this.obj = array(obj);
+  }
+
+  iter.prototype = {
+    each: function (fn) {
+      for (var i = 0; i  < this.obj.length; i ++) {
+        fn.call(this.obj[i], this.obj[i], i, this.obj);
+      }
+      return this;
+    },
+
+    map: function (fn) {
+      var collection = [];
+      for (var i = 0; i  < this.obj.length; i ++) {
+        collection[i] = fn.call(this.obj[i], this.obj[i], i, this.obj);
+      }
+      return collection;
+    }
+  };
+
+  function _(obj) {
+    return new iter(obj);
   }
 
   var checkFunctions = {
@@ -28,19 +57,9 @@
     }
   };
 
-  context.getElementsBySelector = function (selector) {
-
-    if (!document.getElementsByTagName) {
-      return [];
-    }
-
-    if (document.querySelectorAll) {
-      // return immediately for browsers that know what they're doing
-      // method suggested by Mozilla https://developer.mozilla.org/En/Code_snippets/QuerySelector
-      return Array.prototype.slice.call(document.querySelectorAll(selector), 0);
-    }
-
-    var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len, found, foundCount, elements, currentContextIndex, currentContext = [document];
+  function qwery(selector) {
+    var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
+      found, foundCount, elements, currentContextIndex, currentContext = [doc];
 
     for (i = 0, l = tokens.length; i < l; i++) {
       token = tokens[i].replace(/^\s+|\s+$/g, '');
@@ -48,7 +67,7 @@
       if (token.indexOf('#') > -1) {
         bits = token.split('#');
         tagName = bits[0];
-        var element = document.getElementById(bits[1]);
+        var element = doc.getElementById(bits[1]);
         if (tagName && element.nodeName.toLowerCase() != tagName) {
           return [];
         }
@@ -104,7 +123,7 @@
         // This function will be used to filter the elements
         var checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
         for (k = 0; k < found.length; k++) {
-          if (checkfunction(found[k], attrName, attrValue)) {
+          if (checkFunction(found[k], attrName, attrValue)) {
             currentContext[currentContextIndex++] = found[k];
           }
         }
@@ -114,6 +133,7 @@
       tagName = token;
       found = [];
       foundCount = 0;
+
       for (h = 0; h < currentContext.length; h++) {
         elements = currentContext[h].getElementsByTagName(tagName);
         for (j = 0; j < elements.length; j++) {
@@ -123,6 +143,30 @@
       currentContext = found;
     }
     return currentContext;
+  }
+
+  context.getElementsBySelector = function (selector) {
+
+    if (!doc.getElementsByTagName) {
+      return [];
+    }
+
+    if (doc.querySelectorAll) {
+      // return immediately for browsers that know what they're doing
+      // method suggested by Mozilla https://developer.mozilla.org/En/Code_snippets/QuerySelector
+      return array(doc.querySelectorAll(selector), 0);
+    }
+
+    // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
+    var result = [];
+    // here we allow combinator selectors: $('div,span');
+    var collections = _(selector.split(',')).map(function (selector) {
+      return qwery(selector);
+    });
+    _(collections).each(function (collection) {
+      result = result.concat(collection);
+    });
+    return result;
   };
 
-}(this);
+}(this, document);

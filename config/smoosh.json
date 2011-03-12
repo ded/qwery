@@ -15,7 +15,7 @@
     "asi": false
   },
   "JAVASCRIPT": {
-    "DIST_DIR": "dist",
+    "DIST_DIR": "tmp",
     "qwery": [ "./src/qwery.js" ]
   }
 }
