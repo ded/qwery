@@ -5,22 +5,22 @@
   }
 
   var checkFunctions = {
-    '=': function(e, attrName, attrValue) {
+    '=': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName) == attrValue);
     },
-    '~': function(e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('\\b'+attrValue+'\\b')));
+    '~': function (e, attrName, attrValue) {
+      return (e.getAttribute(attrName).match(new RegExp('\\b' + attrValue + '\\b')));
     },
-    '|': function(e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('^'+attrValue+'-?')));
+    '|': function (e, attrName, attrValue) {
+      return (e.getAttribute(attrName).match(new RegExp('^' + attrValue + '-?')));
     },
-    '^': function(e, attrName, attrValue) {
+    '^': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName).indexOf(attrValue) === 0);
     },
-    '$': function(e, attrName, attrValue) {
+    '$': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
     },
-    '*': function(e, attrName, attrValue) {
+    '*': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName).indexOf(attrValue) > -1);
     },
     '': function (e, attrName) {
@@ -28,7 +28,7 @@
     }
   };
 
-  context.getElementsBySelector = function(selector) {
+  context.getElementsBySelector = function (selector) {
     // Attempt to fail gracefully in lesser browsers
     if (!document.getElementsByTagName) {
       return [];
@@ -101,7 +101,7 @@
         currentContext = [];
         currentContextIndex = 0;
         for (k = 0; k < found.length; k++) {
-          if (checkFunction(found[k], attrName, attrValue)) {
+          if (checkfunction(found[k], attrName, attrValue)) {
             currentContext[currentContextIndex++] = found[k];
           }
         }
@@ -124,11 +124,11 @@
 
 
   // Make array courtesy of SIZZLE.js
-  var makeArray = function( array, results ) {
-    array = Array.prototype.slice.call( array, 0 );
+  var makeArray = function (array, results) {
+    array = Array.prototype.slice.call(array, 0);
 
-    if ( results ) {
-      results.push.apply( results, array );
+    if (results) {
+      results.push.apply(results, array);
       return results;
     }
 
@@ -136,25 +136,24 @@
   };
 
   try {
-    Array.prototype.slice.call( document.documentElement.childNodes, 0 )[0].nodeType;
-
-  } catch( e ) {
-    makeArray = function( array, results ) {
+    Array.prototype.slice.call(document.documentElement.childNodes, 0)[0].nodeType;
+  } catch (e) {
+    makeArray = function (array, results) {
       var i = 0,
         ret = results || [];
 
-      if ( toString.call(array) === "[object Array]" ) {
-        Array.prototype.push.apply( ret, array );
+      if (toString.call(array) === "[object Array]") {
+        Array.prototype.push.apply(ret, array);
 
       } else {
-        if ( typeof array.length === "number" ) {
-          for ( var l = array.length; i < l; i++ ) {
-            ret.push( array[i] );
+        if (typeof array.length === "number") {
+          for (var l = array.length; i < l; i++) {
+            ret.push(array[i]);
           }
 
         } else {
-          for ( ; array[i]; i++ ) {
-            ret.push( array[i] );
+          for (; array[i]; i++) {
+            ret.push(array[i]);
           }
         }
       }
@@ -166,13 +165,13 @@
   // QuerySelectorAll logic courtesy of SIZZLE.js
   if (document.querySelectorAll) {
 
-    !function(){
+    !function () {
       var div = document.createElement("div"),
         id = "__qworry__";
 
       div.innerHTML = "<p class='TEST'></p>";
 
-      if ( div.querySelectorAll && div.querySelectorAll(".TEST").length === 0 ) {
+      if (div.querySelectorAll && div.querySelectorAll(".TEST").length === 0) {
         return;
       }
 
@@ -180,59 +179,59 @@
 
         context = context || document;
 
-        var match = /^(\w+$)|^\.([\w\-]+$)|^#([\w\-]+$)/.exec( query );
+        var match = /^(\w+$)|^\.([\w\-]+$)|^#([\w\-]+$)/.exec(query);
 
-        if ( match && (context.nodeType === 1 || context.nodeType === 9) ) {
-          if ( match[1] ) {
-            return makeArray( context.getElementsByTagName( query ), extra );
-          } else if ( match[2] && Expr.find.CLASS && context.getElementsByClassName ) {
-            return makeArray( context.getElementsByClassName( match[2] ), extra );
+        if (match && (context.nodeType === 1 || context.nodeType === 9)) {
+          if (match[1]) {
+            return makeArray(context.getElementsByTagName(query), extra);
+          } else if (match[2] && Expr.find.CLASS && context.getElementsByClassName) {
+            return makeArray(context.getElementsByClassName(match[2]), extra);
           }
         }
 
-        if ( context.nodeType === 9 ) {
-          if ( query === "body" && context.body ) {
-            return makeArray( [ context.body ], extra );
-          } else if ( match && match[3] ) {
-            var elem = context.getElementById( match[3] );
-            if ( elem && elem.parentNode ) {
-              if ( elem.id === match[3] ) {
-                return makeArray( [ elem ], extra );
+        if (context.nodeType === 9) {
+          if (query === "body" && context.body) {
+            return makeArray([context.body], extra);
+          } else if (match && match[3]) {
+            var elem = context.getElementById(match[3]);
+            if (elem && elem.parentNode) {
+              if (elem.id === match[3]) {
+                return makeArray([elem], extra);
               }
             } else {
-              return makeArray( [], extra );
+              return makeArray([], extra);
             }
           }
           try {
-            return makeArray( context.querySelectorAll(query), extra );
-          } catch(qsaError) {}
+            return makeArray(context.querySelectorAll(query), extra);
+          } catch (qsaError) {}
 
         //Thanks to Andrew Dupont for the technique
-        } else if ( context.nodeType === 1 && context.nodeName.toLowerCase() !== "object" ) {
+        } else if (context.nodeType === 1 && context.nodeName.toLowerCase() !== "object") {
           var oldContext = context,
-            old = context.getAttribute( "id" ),
+            old = context.getAttribute("id"),
             nid = old || id,
             hasParent = context.parentNode,
-            relativeHierarchySelector = /^\s*[+~]/.test( query );
+            relativeHierarchySelector = /^\s*[+~]/.test(query);
 
-          if ( !old ) {
-            context.setAttribute( "id", nid );
+          if (!old) {
+            context.setAttribute("id", nid);
           } else {
-            nid = nid.replace( /'/g, "\\$&" );
+            nid = nid.replace(/'/g, "\\$&");
           }
 
-          if ( relativeHierarchySelector && hasParent ) {
+          if (relativeHierarchySelector && hasParent) {
             context = context.parentNode;
           }
 
           try {
-            if ( !relativeHierarchySelector || hasParent ) {
-              return makeArray( context.querySelectorAll( "[id='" + nid + "'] " + query ), extra );
+            if (!relativeHierarchySelector || hasParent) {
+              return makeArray(context.querySelectorAll("[id='" + nid + "'] " + query), extra);
             }
-          } catch(pseudoError) {
+          } catch (pseudoError) {
           } finally {
-            if ( !old ) {
-              oldContext.removeAttribute( "id" );
+            if (!old) {
+              oldContext.removeAttribute("id");
             }
           }
         }
@@ -242,6 +241,6 @@
       div = null;
     }();
 
-   }
+  }
 
 }(this);
