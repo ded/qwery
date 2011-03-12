@@ -152,6 +152,7 @@
     return currentContext;
   }
 
+  // @todo - make qwery work with contexts eg: qwery('.foo', node);
   function qwery(selector) {
 
     if (!doc.getElementsByTagName) {
