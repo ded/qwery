@@ -153,16 +153,16 @@
   }
 
   // @todo - make qwery work with contexts eg: qwery('.foo', node);
-  function qwery(selector) {
+  function qwery(selector, root) {
 
     if (!doc.getElementsByTagName) {
       return [];
     }
-
+    root = root || document;
     if (doc.querySelectorAll) {
       // return immediately for browsers that know what they're doing
       // method suggested by Mozilla https://developer.mozilla.org/En/Code_snippets/QuerySelector
-      return array(doc.querySelectorAll(selector), 0);
+      return array(root.querySelectorAll(selector), 0);
     }
 
     // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
