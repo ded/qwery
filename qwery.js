@@ -64,7 +64,28 @@
     }
   };
 
-  function _qwery(selector) {
+  // needle is possible descendent
+  // haystack is possible ancestor
+  function isAncestor(needle, haystack) {
+
+    if (!haystack || !needle) {
+      return false;
+    }
+
+    if (haystack.contains && needle.nodeType) {
+      return haystack.contains(needle);
+    }
+
+    else if (haystack.compareDocumentPosition && needle.nodeType) {
+      return !!(haystack.compareDocumentPosition(needle) & 16);
+    } else if (needle.nodeType) {
+      return false;
+    }
+    return false;
+  }
+
+
+  function _qwery(selector, root) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
       found, foundCount, elements, currentContextIndex, currentContext = [doc];
 
@@ -152,7 +173,6 @@
     return currentContext;
   }
 
-  // @todo - make qwery work with contexts eg: qwery('.foo', node);
   function qwery(selector, root) {
 
     if (!doc.getElementsByTagName) {
@@ -169,10 +189,21 @@
     var result = [];
     // here we allow combinator selectors: $('div,span');
     var collections = _(selector.split(',')).map(function (selector) {
-      return _qwery(selector);
+      return _qwery(selector, root);
     });
+
     _(collections).each(function (collection) {
-      result = result.concat(collection);
+      var ret = collection;
+      // allow contexts
+      if (root !== document) {
+        ret = [];
+        _(collection).each(function (element) {
+          // make sure element is a descendent of root
+          isAncestor(element, root) && ret.push(element);
+        });
+      }
+
+      result = result.concat(ret);
     });
     return result;
   }

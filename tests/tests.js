@@ -4,6 +4,15 @@ sink('no conflict', function (test, ok) {
   });
 });
 
+sink('Contexts', function (test, ok) {
+
+  test('should be able to pass optional context', 2, function () {
+    ok($('.a').length === 3, 'no context found 3 elements (.a)');
+    ok($('.a', $('#boosh')[0]).length === 2, 'context found 2 elements (#boosh .a)');
+  });
+
+});
+
 sink('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = $('#boosh');
