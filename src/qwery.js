@@ -80,7 +80,8 @@
 
   function _qwery(selector, root) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
-      found, foundCount, elements, currentContextIndex, currentContext = [doc];
+      found, foundCount, elements, currentContextIndex, currentContext = [doc],
+      attrName, attrOperator, attrValue, checkFunction;
 
     for (i = 0, l = tokens.length; i < l; i++) {
       token = tokens[i].replace(/^\s+|\s+$/g, '');
@@ -120,9 +121,9 @@
       // Code to deal with attribute selectors
       if (token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/)) {
         tagName = RegExp.$1;
-        var attrName = RegExp.$2;
-        var attrOperator = RegExp.$3;
-        var attrValue = RegExp.$4;
+        attrName = RegExp.$2;
+        attrOperator = RegExp.$3;
+        attrValue = RegExp.$4;
         if (!tagName) {
           tagName = '*';
         }
@@ -142,7 +143,7 @@
         currentContext = [];
         currentContextIndex = 0;
         // This function will be used to filter the elements
-        var checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
+        checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
         for (k = 0; k < found.length; k++) {
           if (checkFunction(found[k], attrName, attrValue)) {
             currentContext[currentContextIndex++] = found[k];
