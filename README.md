@@ -33,6 +33,10 @@ Build
 -----
 Qwery uses [JSHint](http://www.jshint.com/) to keep some house rules as well as [UglifyJS](https://github.com/mishoo/UglifyJS) for its compression. For those interested in building Qwery yourself. Run *make* in the root of the project.
 
+Tests
+-----
+point your browser at _qwery/tests/index.html_
+
 Contributors
 -------
   * [Dustin Diaz](https://github.com/polvero)
