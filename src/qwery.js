@@ -71,7 +71,7 @@
   }
 
 
-  function _qwery (selector) {
+  function _qwery(selector) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
       found, foundCount, elements, currentContextIndex, currentContext = [doc];
 
