@@ -57,28 +57,21 @@
     }
   };
 
-  // needle is possible descendent
-  // haystack is possible ancestor
-  function isAncestor(needle, haystack) {
-
-    if (!haystack || !needle) {
+  function isAncestor(child, parent) {
+    if (!parent || !child) {
       return false;
     }
-
-    if (haystack.contains && needle.nodeType) {
-      return haystack.contains(needle);
+    if (parent.contains && child.nodeType) {
+      return parent.contains(child);
     }
-
-    else if (haystack.compareDocumentPosition && needle.nodeType) {
-      return !!(haystack.compareDocumentPosition(needle) & 16);
-    } else if (needle.nodeType) {
-      return false;
+    else if (parent.compareDocumentPosition && child.nodeType) {
+      return !!(parent.compareDocumentPosition(child) & 16);
     }
     return false;
   }
 
 
-  function _qwery(selector, root) {
+  function _qwery (selector) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
       found, foundCount, elements, currentContextIndex, currentContext = [doc];
 
@@ -166,43 +159,54 @@
     return currentContext;
   }
 
-  function qwery(selector, root) {
+  var qwery = function () {
 
-    if (!doc.getElementsByTagName) {
-      return [];
-    }
-    root = root || document;
-    if (doc.querySelectorAll) {
-      // return immediately for browsers that know what they're doing
-      // method suggested by Mozilla https://developer.mozilla.org/En/Code_snippets/QuerySelector
-      return array(root.querySelectorAll(selector), 0);
-    }
+    // exception for pure classname selectors (it's faster)
+    var clas = /^\.([\w\-]+)$/, m;
 
-    // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
-    var result = [];
-    // here we allow combinator selectors: $('div,span');
-    var collections = _(selector.split(',')).map(function (selector) {
-      return _qwery(selector, root);
-    });
-
-    _(collections).each(function (collection) {
-      var ret = collection;
-      // allow contexts
-      if (root !== document) {
-        ret = [];
-        _(collection).each(function (element) {
-          // make sure element is a descendent of root
-          isAncestor(element, root) && ret.push(element);
-        });
+    function qsa(selector, root) {
+      // taking for granted that every browser that supports qsa, also supports getElsByClsName
+      if (m = selector.match(clas)) {
+        return array((root || document).getElementsByClassName(m[1]), 0);
       }
+      return array((root || document).querySelectorAll(selector), 0);
+    }
 
-      result = result.concat(ret);
-    });
-    return result;
-  }
+    // return fast
+    if (document.querySelectorAll) {
+      return qsa;
+    }
+
+    return function (selector, root) {
+      root = root || document;
+
+      // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
+      var result = [];
+      // here we allow combinator selectors: $('div,span');
+      var collections = _(selector.split(',')).map(function (selector) {
+        return _qwery(selector);
+      });
+
+      _(collections).each(function (collection) {
+        var ret = collection;
+        // allow contexts
+        if (root !== document) {
+          ret = [];
+          _(collection).each(function (element) {
+            // make sure element is a descendent of root
+            isAncestor(element, root) && ret.push(element);
+          });
+        }
+
+        result = result.concat(ret);
+      });
+      return result;
+    };
+  }();
 
   var oldQwery = context.qwery;
 
+  // being nice
   qwery.noConflict = function () {
     context.qwery = oldQwery;
     return this;
