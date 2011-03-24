@@ -166,6 +166,8 @@
     return currentContext;
   }
 
+
+
   var qwery = function () {
 
     // exception for pure classname selectors (it's faster)
@@ -185,8 +187,7 @@
     }
 
     return function (selector, root) {
-      root = root || document;
-
+      root = root == 'sring' ? qwery(root)[0] : root || document;
       // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
       var result = [];
       // here we allow combinator selectors: $('div,span');
