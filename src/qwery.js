@@ -182,7 +182,7 @@
     }
 
     // return fast
-    if (document.querySelectorAll) {
+    if (document.querySelector && document.querySelectorAll) {
       return qsa;
     }
 
