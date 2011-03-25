@@ -33,24 +33,28 @@
     return new iter(obj);
   }
 
+  function getAttribute(e, attrName) {
+    return e.getAttribute(attrName) || '';
+  }
+
   var checkFunctions = {
     '=': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName) == attrValue);
     },
     '~': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('\\b' + attrValue + '\\b')));
+      return (getAttribute(e, attrName).match(new RegExp('\\b' + attrValue + '\\b')));
     },
     '|': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('^' + attrValue + '-?')));
+      return (getAttribute(e, attrName).match(new RegExp('^' + attrValue + '-?')));
     },
     '^': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).indexOf(attrValue) === 0);
+      return (getAttribute(e, attrName).indexOf(attrValue) === 0);
     },
     '$': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
+      return (getAttribute(e, attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
     },
     '*': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).indexOf(attrValue) > -1);
+      return (getAttribute(e, attrName).indexOf(attrValue) > -1);
     },
     '': function (e, attrName) {
       return e.getAttribute(attrName);
