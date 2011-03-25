@@ -5,12 +5,17 @@ sink('no conflict', function (test, ok) {
 });
 
 sink('Contexts', function (test, ok) {
-
   test('should be able to pass optional context', 2, function () {
     ok($('.a').length === 3, 'no context found 3 elements (.a)');
     ok($('.a', $('#boosh')[0]).length === 2, 'context found 2 elements (#boosh .a)');
   });
-
+  test('should be able to pass string as context', 5, function() {
+    ok($('.a', '#boosh').length == 2, 'context found 2 elements(.a, #boosh)');
+    ok($('.a', '.a').length == 0, 'context found 0 elements(.a, .a)');
+    ok($('.a', '.b').length == 1, 'context found 1 elements(.a, .b)');
+    ok($('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
+    ok($('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
+  });
 });
 
 sink('jdalton trolls', function (test, ok) {

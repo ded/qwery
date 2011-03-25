@@ -65,6 +65,9 @@
     if (!parent || !child) {
       return false;
     }
+    if(parent == child) {
+      return false;
+    }
     if (parent.contains && child.nodeType) {
       return parent.contains(child);
     }
@@ -173,6 +176,7 @@
     var clas = /^\.([\w\-]+)$/, m;
 
     function qsa(selector, root) {
+      root = (typeof root == 'string') ? document.querySelector(root) : root;
       // taking for granted that every browser that supports qsa, also supports getElsByClsName
       if (m = selector.match(clas)) {
         return array((root || document).getElementsByClassName(m[1]), 0);
@@ -186,7 +190,7 @@
     }
 
     return function (selector, root) {
-      root = root == 'sring' ? qwery(root)[0] : root || document;
+      root = (typeof root == 'string') ? qwery(root)[0] : (root || document);
       // these next two operations could really benefit from an accumulator (eg: map/each/accumulate)
       var result = [];
       // here we allow combinator selectors: $('div,span');
