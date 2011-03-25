@@ -62,10 +62,7 @@
   };
 
   function isAncestor(child, parent) {
-    if (!parent || !child) {
-      return false;
-    }
-    if(parent == child) {
+    if (!parent || !child || parent == child) {
       return false;
     }
     if (parent.contains && child.nodeType) {
