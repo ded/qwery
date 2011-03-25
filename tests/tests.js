@@ -13,6 +13,12 @@ sink('Contexts', function (test, ok) {
 
 });
 
+sink('jdalton trolls', function (test, ok) {
+  test('getting selectors by attribute shouldnt throw an error', 1, function () {
+    ok($('[foo^="bar"]').length === 1, 'found 1 element')
+  });
+});
+
 sink('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = $('#boosh');
