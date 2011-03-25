@@ -1,6 +1,6 @@
 [submodule "build/sink"]
 	path = build/sink
-	url = git://github.com/polvero/sink-test.git
+	url = git://github.com/ded/sink-test.git
 [submodule "build/smoosh"]
 	path = build/smoosh
 	url = git://github.com/jacobthornton/smoosh.git
