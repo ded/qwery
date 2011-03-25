@@ -111,11 +111,12 @@
         continue;
       }
       // Code to deal with attribute selectors
-      if (token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/)) {
-        tagName = RegExp.$1;
-        var attrName = RegExp.$2;
-        var attrOperator = RegExp.$3;
-        var attrValue = RegExp.$4;
+      var match = token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/);
+      if (match) {
+        tagName = match[1];
+        var attrName = match[2];
+        var attrOperator = match[3];
+        var attrValue = match[4];
         if (!tagName) {
           tagName = '*';
         }
