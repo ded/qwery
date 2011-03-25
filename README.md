@@ -37,6 +37,10 @@ Tests
 -----
 point your browser at _qwery/tests/index.html_
 
+Note
+----
+Qwery uses querySelectorAll when available. All querySelectorAll default behavior then applies.
+
 Contributors
 -------
   * [Dustin Diaz](https://github.com/polvero)

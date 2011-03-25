@@ -33,24 +33,28 @@
     return new iter(obj);
   }
 
+  function getAttribute(e, attrName) {
+    return e.getAttribute(attrName) || '';
+  }
+
   var checkFunctions = {
     '=': function (e, attrName, attrValue) {
       return (e.getAttribute(attrName) == attrValue);
     },
     '~': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('\\b' + attrValue + '\\b')));
+      return (getAttribute(e, attrName).match(new RegExp('\\b' + attrValue + '\\b')));
     },
     '|': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).match(new RegExp('^' + attrValue + '-?')));
+      return (getAttribute(e, attrName).match(new RegExp('^' + attrValue + '-?')));
     },
     '^': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).indexOf(attrValue) === 0);
+      return (getAttribute(e, attrName).indexOf(attrValue) === 0);
     },
     '$': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
+      return (getAttribute(e, attrName).lastIndexOf(attrValue) == e.getAttribute(attrName).length - attrValue.length);
     },
     '*': function (e, attrName, attrValue) {
-      return (e.getAttribute(attrName).indexOf(attrValue) > -1);
+      return (getAttribute(e, attrName).indexOf(attrValue) > -1);
     },
     '': function (e, attrName) {
       return e.getAttribute(attrName);
@@ -73,7 +77,8 @@
 
   function _qwery(selector) {
     var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
-      found, foundCount, elements, currentContextIndex, currentContext = [doc];
+      found, foundCount, elements, currentContextIndex, currentContext = [doc],
+      attrName, attrOperator, attrValue, checkFunction;
 
     for (i = 0, l = tokens.length; i < l; i++) {
       token = tokens[i].replace(/^\s+|\s+$/g, '');
@@ -111,11 +116,12 @@
         continue;
       }
       // Code to deal with attribute selectors
-      if (token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/)) {
-        tagName = RegExp.$1;
-        var attrName = RegExp.$2;
-        var attrOperator = RegExp.$3;
-        var attrValue = RegExp.$4;
+      var match = token.match(/^(\w*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/);
+      if (match) {
+        tagName = match[1];
+        attrName = match[2];
+        attrOperator = match[3];
+        attrValue = match[4];
         if (!tagName) {
           tagName = '*';
         }
@@ -135,7 +141,7 @@
         currentContext = [];
         currentContextIndex = 0;
         // This function will be used to filter the elements
-        var checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
+        checkFunction = checkFunctions[attrOperator] || checkFunctions[''];
         for (k = 0; k < found.length; k++) {
           if (checkFunction(found[k], attrName, attrValue)) {
             currentContext[currentContextIndex++] = found[k];
