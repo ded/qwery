@@ -29,6 +29,13 @@ Each query can optionally pass in a context
     qwery('div', node); // existing DOM node or...
     qwery('div', '#foo'); // another query
 
+Browser Support
+---------------
+  - IE6, IE7, IE8, IE9
+  - Chrome 1 - 10
+  - Safari 3, 4, 5
+  - Firefox 2, 3, 4
+
 Build
 -----
 Qwery uses [JSHint](http://www.jshint.com/) to keep some house rules as well as [UglifyJS](https://github.com/mishoo/UglifyJS) for its compression. For those interested in building Qwery yourself. Run *make* in the root of the project.
