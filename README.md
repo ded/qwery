@@ -1,6 +1,5 @@
 Qwery - The Tiny Selector Engine
 -----
-<!-- See the [original post](http://dustindiaz.com/qwery) for introduction de -->
 Qwery is a 1k selector query engine allowing you to select elements with CSS1 & CSS2 queries, with the exception of (commonly used) [attribute selectors](http://www.w3.org/TR/css3-selectors/#attribute-selectors) from CSS3.
 
 Acceptable queries
