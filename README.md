@@ -43,5 +43,5 @@ Qwery uses querySelectorAll when available. All querySelectorAll default behavio
 
 Contributors
 -------
-  * [Dustin Diaz](https://github.com/polvero)
-  * [Jacob Thornton](https://github.com/jacobthornton)
+  * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
+  * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
