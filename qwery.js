@@ -9,8 +9,8 @@
 
   function array(ar) {
     var i, len, r = [];
-    for (i=0, len = ar.length; i < len; i++) {
-      r[i] = ar[i]
+    for (i = 0, len = ar.length; i < len; i++) {
+      r[i] = ar[i];
     }
     return r;
   }
