@@ -8,7 +8,11 @@
 !function (context, doc) {
 
   function array(ar) {
-    return Array.prototype.slice.call(ar, 0);
+    var i, len, r = [];
+    for (i=0, len = ar.length; i < len; i++) {
+      r[i] = ar[i]
+    }
+    return r;
   }
 
   function getAllChildren(e) {
