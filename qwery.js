@@ -86,7 +86,7 @@
 
 
   function _qwery(selector) {
-    var tokens = selector.split(' '), bits, tagName, h, i, j, k, l, len,
+    var tokens = selector.split(' '), token, bits, tagName, h, i, j, k, l, len,
       found, foundCount, elements, currentContextIndex, currentContext = [doc],
       attrName, attrOperator, attrValue, checkFunction;
 
