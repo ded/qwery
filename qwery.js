@@ -194,7 +194,7 @@
         return [doc.getElementById(i[1])];
       }
       // taking for granted that every browser that supports qsa, also supports getElsByClsName
-      if (doc[getElementsByClassName] && (m = selector.match(clas))) {
+      if (doc.getElementsByClassName && (m = selector.match(clas))) {
         return array((root || doc).getElementsByClassName(m[1]), 0);
       }
       return array((root || doc).querySelectorAll(selector), 0);
