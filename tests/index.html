@@ -13,7 +13,7 @@
     </script>
     <script src="../src/qwery.js"></script>
     <script type="text/javascript">
-      var $ = qwery.noConflict();
+      var Q = qwery.noConflict();
     </script>
   </head>
   <body>
@@ -22,11 +22,14 @@
       <div class="a"></div>
       <div id="boosh">
         <div class="a b">
-          <div class="d e" test="fg"></div>
+          <div class="d e" test="fg" id="booshTest"></div>
           <em test="f g"></em>
           <span class="h i a"></span>
         </div>
       </div>
+      <div id="attr-test1" -data-attr></div>
+      <div id="attr-test2" -data-attr></div>
+      <div id="attr-test3" class="found you" -data-attr title="whatup duders"></div>
      <ol id="tests"></ol>
      <script src="tests.js"></script>
   </body>
