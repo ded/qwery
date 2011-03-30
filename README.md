@@ -21,6 +21,11 @@ Acceptable queries
     // combos
     div,p
 
+    // variations
+    #foo.bar.baz
+    div#baz.thunk a[-data-info*="hello world"] strong
+    #thunk[title$='huzza']
+
 Contexts
 -------
 Each query can optionally pass in a context
