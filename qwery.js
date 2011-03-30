@@ -42,6 +42,7 @@
   var id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
+      tagOnly = /^([\w\-]+)$/,
       html = document.getElementsByTagName('html')[0],
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/;
@@ -207,6 +208,9 @@
       var root = (typeof root == 'string') ? qwery(root)[0] : (root || document), i;
       if (i = selector.match(idOnly)) {
         return [document.getElementById(i[1])];
+      }
+      if (i = selector.match(tagOnly)) {
+        return [root.getElementsByTagName(i[1])];
       }
       var result = [],
           // here we allow combinator selectors: $('div,span');
