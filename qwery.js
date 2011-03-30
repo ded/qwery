@@ -136,17 +136,12 @@
     case '*=':
       return actual.match(new RegExp(clean(val)));
     }
-
     return false;
   }
 
   function _qwery(selector) {
     var r = [], context, token, i, j, k, p, ret = [],
         el, node, found = true;
-    if (i = selector.match(idOnly)) {
-      // return id fast
-      return [document.getElementById(i[1])];
-    }
     var tokens = getTokens(selector);
     if (!tokens.length) {
       return r;
@@ -192,7 +187,10 @@
     // exception for pure classname selectors (it's faster)
     var clas = /^\.([\w\-]+)$/, m;
     function qsa(selector, root) {
-      root = (typeof root == 'string') ? document.querySelector(root) : root;
+      var root = (typeof root == 'string') ? document.querySelector(root) : root, i;
+      if (i = selector.match(idOnly)) {
+        return [document.getElementById(i[1])];
+      }
       // taking for granted that every browser that supports qsa, also supports getElsByClsName
       if (m = selector.match(clas)) {
         return array((root || document).getElementsByClassName(m[1]), 0);
@@ -206,7 +204,10 @@
     }
 
     return function (selector, root) {
-      root = (typeof root == 'string') ? qwery(root)[0] : (root || document);
+      var root = (typeof root == 'string') ? qwery(root)[0] : (root || document), i;
+      if (i = selector.match(idOnly)) {
+        return [document.getElementById(i[1])];
+      }
       var result = [],
           // here we allow combinator selectors: $('div,span');
           collections = _(selector.split(',')).map(function (selector) {
