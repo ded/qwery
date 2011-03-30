@@ -43,7 +43,7 @@
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
       tagOnly = /^([\w\-]+)$/,
-      html = document.getElementsByTagName('html')[0],
+      html = doc.getElementsByTagName('html')[0],
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/;
   function q(query) {
@@ -89,7 +89,7 @@
 
   function loopAll(token) {
     var i, item, r = [], intr = q(token), tag = intr[1] || '*',
-        els = document.getElementsByTagName(tag);
+        els = doc.getElementsByTagName(tag);
     for (i = 0; i < els.length; i++) {
       el = els[i];
       if (item = interpret(intr, el)) {
@@ -188,26 +188,28 @@
     // exception for pure classname selectors (it's faster)
     var clas = /^\.([\w\-]+)$/, m;
     function qsa(selector, root) {
-      var root = (typeof root == 'string') ? document.querySelector(root) : root, i;
+      root = (typeof root == 'string') ? doc.querySelector(root) : root;
+      var i;
       if (i = selector.match(idOnly)) {
-        return [document.getElementById(i[1])];
+        return [doc.getElementById(i[1])];
       }
       // taking for granted that every browser that supports qsa, also supports getElsByClsName
-      if (m = selector.match(clas)) {
-        return array((root || document).getElementsByClassName(m[1]), 0);
+      if (doc[getElementsByClassName] && (m = selector.match(clas))) {
+        return array((root || doc).getElementsByClassName(m[1]), 0);
       }
-      return array((root || document).querySelectorAll(selector), 0);
+      return array((root || doc).querySelectorAll(selector), 0);
     }
 
     // return fast
-    if (document.querySelector && document.querySelectorAll) {
+    if (doc.querySelector && doc.querySelectorAll) {
       return qsa;
     }
 
     return function (selector, root) {
-      var root = (typeof root == 'string') ? qwery(root)[0] : (root || document), i;
+      root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
+      var i;
       if (i = selector.match(idOnly)) {
-        return [document.getElementById(i[1])];
+        return [doc.getElementById(i[1])];
       }
       if (i = selector.match(tagOnly)) {
         return [root.getElementsByTagName(i[1])];
@@ -221,7 +223,7 @@
       _(collections).each(function (collection) {
         var ret = collection;
         // allow contexts
-        if (root !== document) {
+        if (root !== doc) {
           ret = [];
           _(collection).each(function (element) {
             // make sure element is a descendent of root
@@ -242,4 +244,4 @@
   };
   context.qwery = qwery;
 
-}(this, document);
+}(this, doc);
