@@ -238,4 +238,4 @@
   };
   context.qwery = qwery;
 
-}(this, doc);
+}(this, document);
