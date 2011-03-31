@@ -5,6 +5,13 @@
   * MIT License
   */
 !function (context, doc) {
+  var id = /#([\w\-]+)/,
+      clas = /\.[\w\-]+/g,
+      idOnly = /^#([\w\-]+$)/,
+      tagOnly = /^([\w\-]+)$/,
+      html = doc.getElementsByTagName('html')[0],
+      simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
+      attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/;
 
   function array(ar) {
     var i, len, r = [];
@@ -20,15 +27,15 @@
 
   iter.prototype = {
     each: function (fn) {
-      for (var i = 0; i  < this.obj.length; i ++) {
+      for (var i = 0, l = this.obj.length; i < l; i ++) {
         fn.call(this.obj[i], this.obj[i], i, this.obj);
       }
       return this;
     },
 
     map: function (fn) {
-      var collection = [], i;
-      for (i = 0; i  < this.obj.length; i ++) {
+      var collection = [], i, l;
+      for (i = 0, l = this.obj.length; i < l; i ++) {
         collection[i] = fn.call(this.obj[i], this.obj[i], i, this.obj);
       }
       return collection;
@@ -39,52 +46,37 @@
     return new iter(obj);
   }
 
-  var id = /#([\w\-]+)/,
-      clas = /\.[\w\-]+/g,
-      idOnly = /^#([\w\-]+$)/,
-      tagOnly = /^([\w\-]+)$/,
-      html = doc.getElementsByTagName('html')[0],
-      simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
-      attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/;
   function q(query) {
     return query.match(new RegExp(simple.source + '(' + attr.source + ')?'));
   }
 
-  function interpret(token, el) {
-    var whole = token[0],
-        tag = token[1],
-        idsAndClasses = token[2],
-        wholeAttribute = token[3],
-        attribute = token[4],
-        qualifier = token[5],
-        value = token[6],
-        v, c, i, m, classes;
-    if (tag && el.tagName.toLowerCase() !== tag) {
+  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value) {
+    var v, c, i, m, classes;
+    if (tag && this.tagName.toLowerCase() !== tag) {
       return false;
     }
-    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== el.id) {
+    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) {
       return false;
     }
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = 0; i < classes.length; i++) {
-        if (!(new RegExp('(^|\\s+)' + classes[i].slice(1) + '(\\s+|$)')).test(el.className)) {
+        if (!(new RegExp('(^|\\s+)' + classes[i].slice(1) + '(\\s+|$)')).test(this.className)) {
           return false;
         }
       }
     }
     if (wholeAttribute && !value) {
-      var o = el.attributes, k;
+      var o = this.attributes, k;
       for (k in o) {
         if (o.hasOwnProperty(k) && o[k].name == attribute) {
-          return el;
+          return this;
         }
       }
     }
-
-    if (wholeAttribute && !checkAttr(qualifier, el.getAttribute(attribute) || '', value)) {
+    if (wholeAttribute && !checkAttr(qualifier, this.getAttribute(attribute) || '', value)) {
       return false;
     }
-    return el;
+    return this;
   }
 
   function loopAll(token) {
@@ -92,7 +84,7 @@
         els = doc.getElementsByTagName(tag);
     for (i = 0; i < els.length; i++) {
       el = els[i];
-      if (item = interpret(intr, el)) {
+      if (item = interpret.apply(el, intr)) {
         r.push(item);
       }
     }
@@ -160,7 +152,7 @@
         found = false;
         parents:
         while (p !== html && (p = p.parentNode)) { // loop through parent nodes
-          if (interpret(q(tokens[i]), p)) {
+          if (interpret.apply(p, q(tokens[i]))) {
             found = true;
             break parents;
           }
