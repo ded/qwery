@@ -59,7 +59,7 @@
       return false;
     }
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
-      for (i = 0; i < classes.length; i++) {
+      for (i = classes.length; i--;) {
         if (!(new RegExp('(^|\\s+)' + classes[i].slice(1) + '(\\s+|$)')).test(this.className)) {
           return false;
         }
@@ -80,37 +80,14 @@
   }
 
   function loopAll(token) {
-    var i, item, r = [], intr = q(token), tag = intr[1] || '*',
+    var i, l, item, r = [], intr = q(token), tag = intr[1] || '*',
         els = doc.getElementsByTagName(tag);
-    for (i = 0; i < els.length; i++) {
+    for (i = 0, l = els.length; i < l; i++) {
       el = els[i];
       if (item = interpret.apply(el, intr)) {
         r.push(item);
       }
     }
-    return r;
-  }
-
-  function getTokens(input) {
-    var r = [],
-        temp = [],
-        catting = false;
-    _(input.split(/\s+/)).each(function (m) {
-      if (catting) {
-        temp.push(m);
-        if (/\]/.test(m)) {
-          catting = false;
-          r = r.concat(temp.join(' '));
-        }
-      } else if (/\[[^\]]*$/.test(m)) {
-        catting = true;
-        temp = [];
-        temp.push(m);
-      } else {
-        r.push(m);
-      }
-
-    });
     return r;
   }
 
@@ -134,8 +111,8 @@
 
   function _qwery(selector) {
     var r = [], context, token, i, j, k, p, ret = [],
-        el, node, found = true;
-    var tokens = getTokens(selector);
+        el, node, found = false,
+        tokens = selector.split(/\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/);
     if (!tokens.length) {
       return r;
     }
@@ -149,11 +126,9 @@
       p = node;
       // loop through each token
       for (i = tokens.length; i--;) {
-        found = false;
         parents:
         while (p !== html && (p = p.parentNode)) { // loop through parent nodes
-          if (interpret.apply(p, q(tokens[i]))) {
-            found = true;
+          if (found = interpret.apply(p, q(tokens[i]))) {
             break parents;
           }
         }

@@ -61,4 +61,16 @@ sink('CSS 2', function (test, ok) {
 
 });
 
+sink('tokenizer', function (test, ok) {
+
+  test('gets weird tokens', 5, function () {
+    ok(Q('div .tokens[title="one"]')[0] == document.getElementById('token-one'), 'found the right element');
+    ok(Q('div .tokens[title="one two"]')[0] == document.getElementById('token-two'), 'found the right element');
+    ok(Q('div .tokens[title="one two three #%"]')[0] == document.getElementById('token-three'), 'found the right element');
+    ok(Q("div .tokens[title='one two three #%'] a")[0] == document.getElementById('token-four'), 'found the right element');
+    ok(Q('div .tokens[title="one two three #%"] a[href=foo] div')[0] == document.getElementById('token-five'), 'found the right element');
+  });
+
+});
+
 start();
