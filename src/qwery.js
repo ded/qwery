@@ -64,7 +64,7 @@
     if (wholeAttribute && !value) {
       o = this.attributes;
       for (var k in o) {
-        if (o.hasOwnProperty(k) && o[k].name == attribute) {
+        if (Object.prototype.hasOwnProperty.call(o, k) && (o[k].name || k) == attribute) {
           return this;
         }
       }
@@ -163,9 +163,9 @@
     }
 
     // return fast
-    if (doc.querySelector && doc.querySelectorAll) {
-      return qsa;
-    }
+    // if (doc.querySelector && doc.querySelectorAll) {
+    //   return qsa;
+    // }
 
     return function (selector, root, f) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);

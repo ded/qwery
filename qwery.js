@@ -15,6 +15,7 @@
       tagOnly = /^([\w\-]+)$/,
       tagAndOrClass = /^([\w]+)?\.([\w\-])+$/,
       html = doc.getElementsByTagName('html')[0],
+      tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?');
@@ -43,7 +44,8 @@
 
   var classCache = new cache(),
       cleanCache = new cache(),
-      attrCache = new cache();
+      attrCache = new cache(),
+      tokenCache = new cache();
 
   function q(query) {
     return query.match(chunker);
@@ -68,7 +70,7 @@
     if (wholeAttribute && !value) {
       o = this.attributes;
       for (var k in o) {
-        if (o.hasOwnProperty(k) && o[k].name == attribute) {
+        if (Object.prototype.hasOwnProperty.call(o, k) && (o[k].name || k) == attribute) {
           return this;
         }
       }
@@ -111,7 +113,8 @@
 
   function _qwery(selector) {
     var r = [], ret = [], i,
-        tokens = selector.split(/\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/);
+        tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr));
+    tokens = tokens.slice(0);
     if (!tokens.length) {
       return r;
     }
@@ -119,7 +122,7 @@
     if (!tokens.length) {
       return r;
     }
-    // loop through all found base elements
+    // loop through all descendent tokens
     for (j = r.length; j--;) {
       node = r[j];
       p = node;
@@ -154,7 +157,6 @@
     };
 
   var qwery = function () {
-    // exception for pure classname selectors (it's faster)
     function qsa(selector, root) {
       root = (typeof root == 'string') ? qsa(root)[0] : root;
       if (m = selector.match(idOnly)) {
@@ -167,9 +169,9 @@
     }
 
     // return fast
-    if (doc.querySelector && doc.querySelectorAll) {
-      return qsa;
-    }
+    // if (doc.querySelector && doc.querySelectorAll) {
+    //   return qsa;
+    // }
 
     return function (selector, root, f) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
@@ -182,8 +184,9 @@
       }
       if (m = selector.match(tagAndOrClass)) {
         items = root.getElementsByTagName(m[1] || '*');
+        r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
         for (i = items.length; i--;) {
-          (classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'))).test(items[i].className) && result.push(items[i]);
+          r.test(items[i].className) && result.push(items[i]);
         }
         return result;
       }
