@@ -156,7 +156,13 @@
       return false;
     };
 
-  var qwery = document.querySelectorAll;
+    var qwery = function( selector ) {
+        if( selector.match(/#[^\s]+$/) ) {
+            return [ document.getElementById( selector.substring(1) ) ];
+        } else {
+            return document.querySelectorAll( selector );
+        }   
+    }
 
   // being nice
   var oldQwery = context.qwery;
