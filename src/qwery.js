@@ -75,9 +75,10 @@
     return this;
   }
 
-  function loopAll(token) {
-    var r = [], intr = q(token), tag = intr[1] || '*',
-        els = doc.getElementsByTagName(tag), i, l;
+  function loopAll(tokens) {
+    var r = [], token = tokens.pop(), intr = q(token), tag = intr[1] || '*', i, l;
+    var root = tokens.length && (m = tokens[0].match(idOnly)) ? doc.getElementById(m[1]) : doc,
+        els = root.getElementsByTagName(tag);
     for (i = 0, l = els.length; i < l; i++) {
       el = els[i];
       if (item = interpret.apply(el, intr)) {
@@ -112,7 +113,7 @@
     if (!tokens.length) {
       return r;
     }
-    r = loopAll(tokens.pop());
+    r = loopAll(tokens);
     if (!tokens.length) {
       return r;
     }
@@ -162,12 +163,12 @@
       return array((root || doc).querySelectorAll(selector), 0);
     }
 
-    // return fast
+    // return fast. boosh.
     if (doc.querySelector && doc.querySelectorAll) {
       return qsa;
     }
 
-    return function (selector, root, f) {
+    return function (selector, root) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
       var i, result = [], collections = [], element;
       if (m = selector.match(idOnly)) {
