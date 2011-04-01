@@ -169,9 +169,9 @@
     }
 
     // return fast
-    // if (doc.querySelector && doc.querySelectorAll) {
-    //   return qsa;
-    // }
+    if (doc.querySelector && doc.querySelectorAll) {
+      return qsa;
+    }
 
     return function (selector, root, f) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
