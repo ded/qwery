@@ -18,12 +18,6 @@ sink('Contexts', function (test, ok) {
   });
 });
 
-sink('jdalton trolls', function (test, ok) {
-  test('getting selectors by attribute shouldnt throw an error', 1, function () {
-    ok(Q('[foo^="bar"]').length === 1, 'found 1 element');
-  });
-});
-
 sink('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = Q('#boosh');
@@ -52,6 +46,10 @@ sink('CSS 2', function (test, ok) {
     var expected = document.getElementById('booshTest');
     ok(wanted == expected, 'found attribute');
     ok(Q('#boosh div[test=fg]')[0] == expected, 'found attribute with value');
+  });
+
+  test('should not throw error by attribute selector', 1, function () {
+    ok(Q('[foo^="bar"]').length === 1, 'found 1 element');
   });
 
   test('crazy town', 1, function () {
