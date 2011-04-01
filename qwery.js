@@ -52,7 +52,7 @@
   }
 
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value) {
-    var m, c;
+    var m, c, k;
     if (tag && this.tagName.toLowerCase() !== tag) {
       return false;
     }
@@ -69,7 +69,7 @@
     }
     if (wholeAttribute && !value) {
       o = this.attributes;
-      for (var k in o) {
+      for (k in o) {
         if (Object.prototype.hasOwnProperty.call(o, k) && (o[k].name || k) == attribute) {
           return this;
         }
