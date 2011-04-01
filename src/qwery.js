@@ -1,51 +1,50 @@
 !function (context, doc) {
-  var id = /#([\w\-]+)/,
+
+  var c, i, j, k, l, m, o, p, r, v,
+      el, node, len, found, classes, item, items, token, collection,
+      id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
+      classOnly = /^\.([\w\-]+)$/,
       tagOnly = /^([\w\-]+)$/,
+      tagAndOrClass = /^([\w]+)?\.([\w\-])+$/,
       html = doc.getElementsByTagName('html')[0],
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
-      attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/;
+      attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
+      chunker = new RegExp(simple.source + '(' + attr.source + ')?');
 
   function array(ar) {
-    var i, len, r = [];
+    r = [];
     for (i = 0, len = ar.length; i < len; i++) {
       r[i] = ar[i];
     }
     return r;
   }
 
-  function iter(obj) {
-    this.obj = array(obj);
-  }
 
-  iter.prototype = {
-    each: function (fn) {
-      for (var i = 0, l = this.obj.length; i < l; i ++) {
-        fn.call(this.obj[i], this.obj[i], i, this.obj);
-      }
-      return this;
+  var cache = function () {
+    this.c = {};
+  };
+  cache.prototype = {
+    g: function (k) {
+      return this.c[k] || undefined;
     },
-
-    map: function (fn) {
-      var collection = [], i, l;
-      for (i = 0, l = this.obj.length; i < l; i ++) {
-        collection[i] = fn.call(this.obj[i], this.obj[i], i, this.obj);
-      }
-      return collection;
+    s: function (k, v) {
+      this.c[k] = v;
+      return v;
     }
   };
 
-  function _(obj) {
-    return new iter(obj);
-  }
+  var classCache = new cache(),
+      cleanCache = new cache(),
+      attrCache = new cache();
 
   function q(query) {
-    return query.match(new RegExp(simple.source + '(' + attr.source + ')?'));
+    return query.match(chunker);
   }
 
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value) {
-    var v, c, i, m, classes;
+    var m, c;
     if (tag && this.tagName.toLowerCase() !== tag) {
       return false;
     }
@@ -54,14 +53,15 @@
     }
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
-        if (!(new RegExp('(^|\\s+)' + classes[i].slice(1) + '(\\s+|$)')).test(this.className)) {
+        c = classes[i].slice(1);
+        if (!(classCache.g(c) || classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'))).test(this.className)) {
           return false;
         }
       }
     }
     if (wholeAttribute && !value) {
-      var o = this.attributes, k;
-      for (k in o) {
+      o = this.attributes;
+      for (var k in o) {
         if (o.hasOwnProperty(k) && o[k].name == attribute) {
           return this;
         }
@@ -74,8 +74,8 @@
   }
 
   function loopAll(token) {
-    var i, l, item, r = [], intr = q(token), tag = intr[1] || '*',
-        els = doc.getElementsByTagName(tag);
+    var r = [], intr = q(token), tag = intr[1] || '*',
+        els = doc.getElementsByTagName(tag), i, l;
     for (i = 0, l = els.length; i < l; i++) {
       el = els[i];
       if (item = interpret.apply(el, intr)) {
@@ -86,7 +86,7 @@
   }
 
   function clean(s) {
-    return s.replace(/([\.\*\+\?\^\$\{\}\(\)\|\[\]\/\\])/g, '\\$1');
+    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([\.\*\+\?\^\$\{\}\(\)\|\[\]\/\\])/g, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
@@ -94,18 +94,17 @@
     case '=':
       return actual == val;
     case '^=':
-      return actual.match(new RegExp('^' + clean(val)));
+      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))));
     case '$=':
-      return actual.match(new RegExp(clean(val) + '$'));
+      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp('$' + clean(val))));
     case '*=':
-      return actual.match(new RegExp(clean(val)));
+      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
     }
     return false;
   }
 
   function _qwery(selector) {
-    var r = [], context, token, i, j, k, p, ret = [],
-        el, node, found = false,
+    var r = [], ret = [], i,
         tokens = selector.split(/\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/);
     if (!tokens.length) {
       return r;
@@ -132,30 +131,30 @@
     return ret;
   }
 
-  function isAncestor(child, parent) {
-    if (!parent || !child || parent == child) {
+  var isAncestor = 'compareDocumentPosition' in html ?
+    function (element, container) {
+      return (container.compareDocumentPosition(element) & 16) == 16;
+    } : 'contains' in html ?
+    function (element, container) {
+      return container !== element && container.contains(element);
+    } :
+    function (element, container) {
+      while ((element = element.parentNode)) {
+        if (element === container) {
+          return true;
+        }
+      }
       return false;
-    }
-    if (parent.contains && child.nodeType) {
-      return parent.contains(child);
-    }
-    else if (parent.compareDocumentPosition && child.nodeType) {
-      return !!(parent.compareDocumentPosition(child) & 16);
-    }
-    return false;
-  }
+    };
 
   var qwery = function () {
     // exception for pure classname selectors (it's faster)
-    var clas = /^\.([\w\-]+)$/, m;
     function qsa(selector, root) {
-      root = (typeof root == 'string') ? doc.querySelector(root) : root;
-      var i;
-      if (i = selector.match(idOnly)) {
-        return [doc.getElementById(i[1])];
+      root = (typeof root == 'string') ? qsa(root)[0] : root;
+      if (m = selector.match(idOnly)) {
+        return [doc.getElementById(m[1])];
       }
-      // taking for granted that every browser that supports qsa, also supports getElsByClsName
-      if (doc.getElementsByClassName && (m = selector.match(clas))) {
+      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return array((root || doc).getElementsByClassName(m[1]), 0);
       }
       return array((root || doc).querySelectorAll(selector), 0);
@@ -166,33 +165,38 @@
       return qsa;
     }
 
-    return function (selector, root) {
+    return function (selector, root, f) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
-      var i;
-      if (i = selector.match(idOnly)) {
-        return [doc.getElementById(i[1])];
+      var i, result = [], collections = [], element;
+      if (m = selector.match(idOnly)) {
+        return [doc.getElementById(m[1])];
       }
-      if (i = selector.match(tagOnly)) {
-        return [root.getElementsByTagName(i[1])];
+      if (m = selector.match(tagOnly)) {
+        return root.getElementsByTagName(m[1]);
       }
-      var result = [],
-          // here we allow combinator selectors: $('div,span');
-          collections = _(selector.split(',')).map(function (selector) {
-            return _qwery(selector);
-          });
+      if (m = selector.match(tagAndOrClass)) {
+        items = root.getElementsByTagName(m[1] || '*');
+        for (i = items.length; i--;) {
+          (classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'))).test(items[i].className) && result.push(items[i]);
+        }
+        return result;
+      }
+      // here we allow combinator selectors: $('div,span');
+      for (items = selector.split(','), i = items.length; item = items[--i];) {
+        collections[i] = _qwery(item);
+      }
 
-      _(collections).each(function (collection) {
+      for (i = collections.length; collection = collections[--i];) {
         var ret = collection;
-        // allow contexts
         if (root !== doc) {
           ret = [];
-          _(collection).each(function (element) {
+          for (j = collection.length; element = collection[--j];) {
             // make sure element is a descendent of root
             isAncestor(element, root) && ret.push(element);
-          });
+          }
         }
         result = result.concat(ret);
-      });
+      }
       return result;
     };
   }();
