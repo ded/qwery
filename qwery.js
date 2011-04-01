@@ -156,59 +156,7 @@
       return false;
     };
 
-  var qwery = function () {
-    function qsa(selector, root) {
-      root = (typeof root == 'string') ? qsa(root)[0] : root;
-      if (m = selector.match(idOnly)) {
-        return [doc.getElementById(m[1])];
-      }
-      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-        return array((root || doc).getElementsByClassName(m[1]), 0);
-      }
-      return array((root || doc).querySelectorAll(selector), 0);
-    }
-
-    // return fast
-    if (doc.querySelector && doc.querySelectorAll) {
-      return qsa;
-    }
-
-    return function (selector, root, f) {
-      root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
-      var i, result = [], collections = [], element;
-      if (m = selector.match(idOnly)) {
-        return [doc.getElementById(m[1])];
-      }
-      if (m = selector.match(tagOnly)) {
-        return root.getElementsByTagName(m[1]);
-      }
-      if (m = selector.match(tagAndOrClass)) {
-        items = root.getElementsByTagName(m[1] || '*');
-        r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-        for (i = items.length; i--;) {
-          r.test(items[i].className) && result.push(items[i]);
-        }
-        return result;
-      }
-      // here we allow combinator selectors: $('div,span');
-      for (items = selector.split(','), i = items.length; item = items[--i];) {
-        collections[i] = _qwery(item);
-      }
-
-      for (i = collections.length; collection = collections[--i];) {
-        var ret = collection;
-        if (root !== doc) {
-          ret = [];
-          for (j = collection.length; element = collection[--j];) {
-            // make sure element is a descendent of root
-            isAncestor(element, root) && ret.push(element);
-          }
-        }
-        result = result.concat(ret);
-      }
-      return result;
-    };
-  }();
+  var qwery = document.querySelectorAll;
 
   // being nice
   var oldQwery = context.qwery;
