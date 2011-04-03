@@ -17,7 +17,7 @@
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
-      attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
+      attr = /\[([\w\-]+)(?:([\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?');
 
   function array(ar) {
@@ -111,6 +111,8 @@
       return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp('$' + clean(val))));
     case '*=':
       return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
+    case '~=':
+      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
     }
     return false;
   }
@@ -127,7 +129,7 @@
       return r;
     }
     // loop through all descendent tokens
-    for (j = r.length, i = 0; j--;) {
+    for (j = r.length, k = 0; j--;) {
       node = r[j];
       p = node;
       // loop through each token
@@ -139,7 +141,7 @@
           }
         }
       }
-      found && (ret[i++] = node);
+      found && (ret[k++] = node);
     }
     return ret;
   }
