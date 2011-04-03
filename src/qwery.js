@@ -8,7 +8,7 @@
       classOnly = /^\.([\w\-]+)$/,
       tagOnly = /^([\w\-]+)$/,
       tagAndOrClass = /^([\w]+)?\.([\w\-])+$/,
-      html = doc.getElementsByTagName('html')[0],
+      html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\^\$\*]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
@@ -76,9 +76,12 @@
   }
 
   function loopAll(tokens) {
-    var r = [], token = tokens.pop(), intr = q(token), tag = intr[1] || '*', i, l;
-    var root = tokens.length && (m = tokens[0].match(idOnly)) ? doc.getElementById(m[1]) : doc,
-        els = root.getElementsByTagName(tag);
+    var r = [], token = tokens.pop(), intr = q(token), tag = intr[1] || '*', i, l, els;
+    var root = tokens.length && (m = tokens[0].match(idOnly)) ? doc.getElementById(m[1]) : doc;
+    if (!root) {
+      return r;
+    }
+    els = root.getElementsByTagName(tag);
     for (i = 0, l = els.length; i < l; i++) {
       el = els[i];
       if (item = interpret.apply(el, intr)) {
@@ -118,7 +121,7 @@
       return r;
     }
     // loop through all descendent tokens
-    for (j = r.length; j--;) {
+    for (j = r.length, i = 0; j--;) {
       node = r[j];
       p = node;
       // loop through each token
@@ -130,7 +133,7 @@
           }
         }
       }
-      found && ret.push(node);
+      found && (ret[i++] = node);
     }
     return ret;
   }
@@ -157,6 +160,9 @@
       if (m = selector.match(idOnly)) {
         return [doc.getElementById(m[1])];
       }
+      if (m = selector.match(tagOnly)) {
+        return doc.getElementsByTagName(m[1]);
+      }
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return array((root || doc).getElementsByClassName(m[1]), 0);
       }
@@ -180,16 +186,14 @@
       if (m = selector.match(tagAndOrClass)) {
         items = root.getElementsByTagName(m[1] || '*');
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-        for (i = items.length; i--;) {
-          r.test(items[i].className) && result.push(items[i]);
+        for (i = items.length, j = 0; i--;) {
+          r.test(items[i].className) && (result[j++] = items[i]);
         }
         return result;
       }
-      // here we allow combinator selectors: $('div,span');
       for (items = selector.split(','), i = items.length; item = items[--i];) {
         collections[i] = _qwery(item);
       }
-
       for (i = collections.length; collection = collections[--i];) {
         var ret = collection;
         if (root !== doc) {
