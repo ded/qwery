@@ -1,6 +1,6 @@
 Q('wery') - The Tiny Selector Engine
 -----
-Qwery is a 1k *blazing fast* query selector engine allowing you to select elements with CSS1 & CSS2 selectors (including [attribute selectors](http://www.w3.org/TR/css3-selectors/#attribute-selectors)). And according to our benchmarks Qwery is 2x faster (at minimum on average) than Sizzle (from jQuery).
+Qwery is a 1k *blazing fast* query selector engine allowing you to select elements with CSS1 & CSS2 selectors (including [attribute selectors](http://www.w3.org/TR/css3-selectors/#attribute-selectors)).
 
 Acceptable queries
 ---------------
