@@ -17,7 +17,7 @@
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
-      attr = /\[([\w\-]+)(?:([\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
+      attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?');
 
   function array(ar) {
@@ -28,7 +28,6 @@
     return r;
   }
 
-
   var cache = function () {
     this.c = {};
   };
@@ -37,8 +36,7 @@
       return this.c[k] || undefined;
     },
     s: function (k, v) {
-      this.c[k] = v;
-      return v;
+      return this.c[k] = v;
     }
   };
 
@@ -82,8 +80,8 @@
   }
 
   function loopAll(tokens) {
-    var r = [], token = tokens.pop(), intr = q(token), tag = intr[1] || '*', i, l, els;
-    var root = tokens.length && (m = tokens[0].match(idOnly)) ? doc.getElementById(m[1]) : doc;
+    var r = [], token = tokens.pop(), intr = q(token), tag = intr[1] || '*', i, l, els,
+        root = tokens.length && (m = tokens[0].match(idOnly)) ? doc.getElementById(m[1]) : doc;
     if (!root) {
       return r;
     }
@@ -98,7 +96,7 @@
   }
 
   function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1'));
+    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([\.\*\+\?\^\$\{\}\(\)\|\[\]\/\\])/g, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
@@ -108,11 +106,13 @@
     case '^=':
       return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))));
     case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp('$' + clean(val))));
+      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$')));
     case '*=':
       return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
     case '~=':
       return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
+    case '|=':
+      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')));
     }
     return false;
   }
@@ -154,7 +154,7 @@
       return container !== element && container.contains(element);
     } :
     function (element, container) {
-      while ((element = element.parentNode)) {
+      while (element = element.parentNode) {
         if (element === container) {
           return 1;
         }
@@ -222,8 +222,8 @@
         }
         return result;
       }
-      for (items = selector.split(','), i = items.length; item = items[--i];) {
-        collections[i] = _qwery(item);
+      for (items = selector.split(','), i = items.length; i--;) {
+        collections[i] = _qwery(items[i]);
       }
       for (i = collections.length; collection = collections[--i];) {
         var ret = collection;

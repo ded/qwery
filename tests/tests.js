@@ -64,6 +64,53 @@ sink('CSS 2', function (test, ok) {
 
 });
 
+sink('attribute selectors', function (test, ok) {
+
+  /* CSS 2 SPEC */
+
+  test('[attr]', 1, function () {
+    var expected = document.getElementById('attr-test-1');
+    ok(Q('#attributes div[unique-test]')[0] == expected, 'found attribute with [attr]');
+  });
+  
+  test('[attr=val]', 3, function () {
+    var expected = document.getElementById('attr-test-2');
+    ok(Q('#attributes div[test="two-foo"]')[0] == expected, 'found attribute with =');
+    ok(Q("#attributes div[test='two-foo']")[0] == expected, 'found attribute with =');
+    ok(Q('#attributes div[test=two-foo]')[0] == expected, 'found attribute with =');
+  });
+  
+  test('[attr~=val]', 1, function () {
+    var expected = document.getElementById('attr-test-3');
+    ok(Q('#attributes div[test~=three]')[0] == expected, 'found attribute with ~=');
+  });
+  
+  test('[attr|=val]', 2, function () {
+    var expected = document.getElementById('attr-test-2');
+    ok(Q('#attributes div[test|="two-foo"]')[0] == expected, 'found attribute with |=');
+    ok(Q('#attributes div[test|=two]')[0] == expected, 'found attribute with |=');
+  });
+
+  /* CSS 3 SPEC */
+  
+  test('[attr^=val]', 1, function () {
+    var expected = document.getElementById('attr-test-2');
+    ok(Q('#attributes div[test^=two]')[0] == expected, 'found attribute with ^=');
+  });
+  
+  test('[attr$=val]', 1, function () {
+    var expected = document.getElementById('attr-test-2');
+    ok(Q('#attributes div[test$=foo]')[0] == expected, 'found attribute with $=');
+  });
+
+  test('[attr*=val]', 1, function () {
+    var expected = document.getElementById('attr-test-3');
+    ok(Q('#attributes div[test*=hree]')[0] == expected, 'found attribute with *=');
+  });
+
+});
+
+
 sink('tokenizer', function (test, ok) {
 
   test('should not get weird tokens', 5, function () {
