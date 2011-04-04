@@ -161,7 +161,7 @@
       return (el = doc.getElementById(m[1])) ? [el] : [];
     }
     if (m = selector.match(tagOnly)) {
-      return [root.getElementsByTagName(m[1])];
+      return array(root.getElementsByTagName(m[1]));
     }
     return false;
   }
