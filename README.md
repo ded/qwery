@@ -14,7 +14,7 @@ Acceptable queries
     // attributes
     #foo a[href] // simple
     #foo a[href=bar] // attribute values
-    #foo a[href^=http://] // attribute starts with
+    #foo a[href^="http://"] // attribute starts with
     #foo a[href$=com] // attribute ends with
     #foo a[href*=twitter] // attribute wildcards
 
