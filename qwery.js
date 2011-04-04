@@ -156,10 +156,10 @@
     function (element, container) {
       while ((element = element.parentNode)) {
         if (element === container) {
-          return true;
+          return 1;
         }
       }
-      return false;
+      return 0;
     };
 
   function boilerPlate(selector, root) {
@@ -181,9 +181,9 @@
       return m;
     }
     if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-      return array((root).getElementsByClassName(m[1]), 0);
+      return array((root).getElementsByClassName(m[1]));
     }
-    return array((root).querySelectorAll(selector), 0);
+    return array((root).querySelectorAll(selector));
   }
 
   function uniq(ar) {
