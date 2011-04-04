@@ -162,34 +162,57 @@
       return false;
     };
 
-  var qwery = function () {
-    function qsa(selector, root) {
-      root = (typeof root == 'string') ? qsa(root)[0] : root;
-      if (m = selector.match(idOnly)) {
-        return [doc.getElementById(m[1])];
-      }
-      if (m = selector.match(tagOnly)) {
-        return doc.getElementsByTagName(m[1]);
-      }
-      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-        return array((root || doc).getElementsByClassName(m[1]), 0);
-      }
-      return array((root || doc).querySelectorAll(selector), 0);
+  function boilerPlate(selector, root) {
+    if (m = selector.match(idOnly)) {
+      return (el = doc.getElementById(m[1])) ? [el] : [];
     }
+    if (m = selector.match(tagOnly)) {
+      return [root.getElementsByTagName(m[1])];
+    }
+    return false;
+  }
 
+  function qsa(selector, root) {
+    root = (typeof root == 'string') ? qsa(root)[0] : (root || doc);
+    if (!root) {
+      return [];
+    }
+    if (m = boilerPlate(selector, root)) {
+      return m;
+    }
+    if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
+      return array((root || doc).getElementsByClassName(m[1]), 0);
+    }
+    return array((root || doc).querySelectorAll(selector), 0);
+  }
+
+  function uniq(ar) {
+    var a = [], i, j;
+    label:
+    for (i = 0; i < ar.length; i++) {
+      for (j = 0; j < a.length; j++) {
+        if (a[j] == ar[i]) {
+          continue label;
+        }
+      }
+      a[a.length] = ar[i];
+    }
+    return a;
+  }
+
+  var qwery = function () {
     // return fast. boosh.
     if (doc.querySelector && doc.querySelectorAll) {
       return qsa;
     }
-
     return function (selector, root) {
       root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
-      var i, result = [], collections = [], element;
-      if (m = selector.match(idOnly)) {
-        return [doc.getElementById(m[1])];
+      if (!root) {
+        return [];
       }
-      if (m = selector.match(tagOnly)) {
-        return root.getElementsByTagName(m[1]);
+      var i, result = [], collections = [], element;
+      if (m = boilerPlate(selector, root)) {
+        return m;
       }
       if (m = selector.match(tagAndOrClass)) {
         items = root.getElementsByTagName(m[1] || '*');
@@ -213,7 +236,7 @@
         }
         result = result.concat(ret);
       }
-      return result;
+      return uniq(result);
     };
   }();
 
