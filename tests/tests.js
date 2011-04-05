@@ -40,6 +40,9 @@ sink('CSS 1', function (test, ok) {
     ok(Q('#boosh div,#boosh span').length == 3, 'found 2 divs and 1 span');
   });
 
+  test('class with dashes', 1, function() {
+    ok(Q('.class-with-dashes').length == 1, 'found something');
+  });
 });
 
 sink('CSS 2', function (test, ok) {
