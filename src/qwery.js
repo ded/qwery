@@ -26,11 +26,8 @@
     this.c = {};
   };
   cache.prototype = {
-    g: function (k) {
-      return this.c[k] || undefined;
-    },
     s: function (k, v) {
-      return this.c[k] = v;
+      return k !== undefined ? this.c[k] : this.c[k] = v;
     }
   };
 
@@ -54,7 +51,7 @@
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
         c = classes[i].slice(1);
-        if (!(classCache.g(c) || classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'))).test(this.className)) {
+        if (!(classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'))).test(this.className)) {
           return false;
         }
       }
@@ -90,7 +87,7 @@
   }
 
   function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1'));
+    return cleanCache.s(s, s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
@@ -98,22 +95,22 @@
     case '=':
       return actual == val;
     case '^=':
-      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))));
+      return actual.match(attrCache.s('^=' + val, new RegExp('^' + clean(val))));
     case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$')));
+      return actual.match(attrCache.s('$=' + val, new RegExp(clean(val) + '$')));
     case '*=':
-      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
+      return actual.match(attrCache.s(val, new RegExp(clean(val))));
     case '~=':
-      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
+      return actual.match(attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
     case '|=':
-      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')));
+      return actual.match(attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')));
     }
     return false;
   }
 
   function _qwery(selector) {
     var r = [], ret = [], i,
-        tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr));
+        tokens = tokenCache.s(selector, selector.split(tokenizr));
     tokens = tokens.slice(0);
     if (!tokens.length) {
       return r;
@@ -124,14 +121,13 @@
     }
     // loop through all descendent tokens
     for (j = r.length, k = 0; j--;) {
-      node = r[j];
-      p = node;
+      p = node = r[j];
       // loop through each token
       for (i = tokens.length; i--;) {
-        parents:
+        z:
         while (p !== html && (p = p.parentNode)) { // loop through parent nodes
           if (found = interpret.apply(p, q(tokens[i]))) {
-            break parents;
+            break z;
           }
         }
       }
@@ -182,11 +178,11 @@
 
   function uniq(ar) {
     var a = [], i, j;
-    label:
+    l:
     for (i = 0; i < ar.length; i++) {
       for (j = 0; j < a.length; j++) {
         if (a[j] == ar[i]) {
-          continue label;
+          continue l;
         }
       }
       a[a.length] = ar[i];
@@ -210,7 +206,7 @@
       }
       if (m = selector.match(tagAndOrClass)) {
         items = root.getElementsByTagName(m[1] || '*');
-        r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
+        r = classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
         for (i = items.length, j = 0; i--;) {
           r.test(items[i].className) && (result[j++] = items[i]);
         }
