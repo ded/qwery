@@ -13,7 +13,7 @@
       idOnly = /^#([\w\-]+$)/,
       classOnly = /^\.([\w\-]+)$/,
       tagOnly = /^([\w\-]+)$/,
-      tagAndOrClass = /^(\w+)?\.([\w\-]+)$/,
+      tagAndOrClass = /^([\w]+)?\.([\w\-])+$/,
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
