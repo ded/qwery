@@ -93,7 +93,7 @@
   }
 
   function clean(s) {
-    return cleanCache.s(s, s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1'));
+    return cleanCache.s(s, s.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
