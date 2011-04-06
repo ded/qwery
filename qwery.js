@@ -13,7 +13,7 @@
       idOnly = /^#([\w\-]+$)/,
       classOnly = /^\.([\w\-]+)$/,
       tagOnly = /^([\w\-]+)$/,
-      tagAndOrClass = /^([\w]+)?\.([\w\-])+$/,
+      tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
@@ -36,7 +36,8 @@
       return this.c[k] || undefined;
     },
     s: function (k, v) {
-      return this.c[k] = v;
+      this.c[k] = v;
+      return v;
     }
   };
 
@@ -96,7 +97,7 @@
   }
 
   function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1'));
+    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
@@ -134,10 +135,10 @@
       p = node;
       // loop through each token
       for (i = tokens.length; i--;) {
-        parents:
+        z:
         while (p !== html && (p = p.parentNode)) { // loop through parent nodes
           if (found = interpret.apply(p, q(tokens[i]))) {
-            break parents;
+            break z;
           }
         }
       }
