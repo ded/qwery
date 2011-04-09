@@ -1,0 +1,14 @@
+{
+  "name": "qwery",
+  "description": "a compact CSS1, CSS2 query selector engine",
+  "version": "1.0.1",
+  "homepage": "http://dustindiaz.com/qwery",
+  "authors": ["Dustin Diaz", "Jacob Thornton"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ded/qwery.git"
+  },
+  "authors": ["Dustin Diaz, @ded", "Jacob Thornton, @fat"],
+  "main": "./qwery.js",
+  "ender": "./src/ender.js",
+}
