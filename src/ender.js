@@ -1,1 +1,1 @@
-$.select = qwery;
+$._select = qwery.noConflict();
