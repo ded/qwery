@@ -10,5 +10,5 @@
   },
   "authors": ["Dustin Diaz, @ded", "Jacob Thornton, @fat"],
   "main": "./qwery.js",
-  "ender": "./src/ender.js",
+  "ender": "./src/ender.js"
 }
