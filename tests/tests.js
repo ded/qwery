@@ -75,19 +75,19 @@ sink('attribute selectors', function (test, ok) {
     var expected = document.getElementById('attr-test-1');
     ok(Q('#attributes div[unique-test]')[0] == expected, 'found attribute with [attr]');
   });
-  
+
   test('[attr=val]', 3, function () {
     var expected = document.getElementById('attr-test-2');
     ok(Q('#attributes div[test="two-foo"]')[0] == expected, 'found attribute with =');
     ok(Q("#attributes div[test='two-foo']")[0] == expected, 'found attribute with =');
     ok(Q('#attributes div[test=two-foo]')[0] == expected, 'found attribute with =');
   });
-  
+
   test('[attr~=val]', 1, function () {
     var expected = document.getElementById('attr-test-3');
     ok(Q('#attributes div[test~=three]')[0] == expected, 'found attribute with ~=');
   });
-  
+
   test('[attr|=val]', 2, function () {
     var expected = document.getElementById('attr-test-2');
     ok(Q('#attributes div[test|="two-foo"]')[0] == expected, 'found attribute with |=');
@@ -95,12 +95,12 @@ sink('attribute selectors', function (test, ok) {
   });
 
   /* CSS 3 SPEC */
-  
+
   test('[attr^=val]', 1, function () {
     var expected = document.getElementById('attr-test-2');
     ok(Q('#attributes div[test^=two]')[0] == expected, 'found attribute with ^=');
   });
-  
+
   test('[attr$=val]', 1, function () {
     var expected = document.getElementById('attr-test-2');
     ok(Q('#attributes div[test$=foo]')[0] == expected, 'found attribute with $=');
@@ -122,6 +122,29 @@ sink('tokenizer', function (test, ok) {
     ok(Q('div .tokens[title="one two three #%"]')[0] == document.getElementById('token-three'), 'found div .tokens[title="one two three #%"]');
     ok(Q("div .tokens[title='one two three #%'] a")[0] == document.getElementById('token-four'), 'found div .tokens[title=\'one two three #%\'] a');
     ok(Q('div .tokens[title="one two three #%"] a[href=foo] div')[0] == document.getElementById('token-five'), 'found div .tokens[title="one two three #%"] a[href=foo] div');
+  });
+
+});
+
+sink('order matters', function (test, ok) {
+
+  function tag(el) {
+    return el.tagName.toLowerCase();
+  }
+
+  // <div id="order-matters">
+  //   <p class="order-matters"></p>
+  //   <a class="order-matters">
+  //     <em class="order-matters"></em><b class="order-matters"></b>
+  //   </a>
+  // </div>
+
+  test('the order of elements return matters', 4, function () {
+    var els = Q('#order-matters .order-matters');
+    ok(tag(els[0]) == 'p', 'first element matched is a {p} tag');
+    ok(tag(els[1]) == 'a', 'first element matched is a {a} tag');
+    ok(tag(els[2]) == 'em', 'first element matched is a {em} tag');
+    ok(tag(els[3]) == 'b', 'first element matched is a {b} tag');
   });
 
 });
