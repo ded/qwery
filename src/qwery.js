@@ -167,8 +167,15 @@
     return false;
   }
 
-  function qsa(selector, root) {
-    root = (typeof root == 'string') ? qsa(root)[0] : (root || doc);
+  function isNode (el) {
+    return (el === window || el && el.nodeType && el.nodeType.toString().match(/[19]/));
+  }
+
+  function qsa(selector, _root) {
+    var root = (typeof _root == 'string') ? qsa(_root)[0] : (_root || doc);
+    if (isNode(selector)) {
+      return !_root || isAncestor(selector, root) ? [selector] : [];
+    }
     if (!root) {
       return [];
     }
@@ -200,8 +207,11 @@
     if (doc.querySelector && doc.querySelectorAll) {
       return qsa;
     }
-    return function (selector, root) {
-      root = (typeof root == 'string') ? qwery(root)[0] : (root || doc);
+    return function (selector, _root) {
+      var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
+      if (isNode(selector)) {
+        return !_root || isAncestor(selector, root) ? [selector] : [];
+      }
       if (!root) {
         return [];
       }
