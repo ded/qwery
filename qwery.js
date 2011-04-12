@@ -173,7 +173,7 @@
     return false;
   }
 
-  function isNode (el) {
+  function isNode(el) {
     return (el === window || el && el.nodeType && el.nodeType.toString().match(/[19]/));
   }
 
