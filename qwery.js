@@ -163,7 +163,11 @@
       return 0;
     };
 
-  function boilerPlate(selector, root) {
+  function boilerPlate(selector, _root, fn) {
+    var root = (typeof _root == 'string') ? fn(_root)[0] : (_root || doc);
+    if (isNode(selector)) {
+      return !_root || (isNode(root) && isAncestor(selector, root)) ? [selector] : [];
+    }
     if (m = selector.match(idOnly)) {
       return (el = doc.getElementById(m[1])) ? [el] : [];
     }
@@ -179,13 +183,10 @@
 
   function qsa(selector, _root) {
     var root = (typeof _root == 'string') ? qsa(_root)[0] : (_root || doc);
-    if (isNode(selector)) {
-      return !_root || isAncestor(selector, root) ? [selector] : [];
-    }
     if (!root) {
       return [];
     }
-    if (m = boilerPlate(selector, root)) {
+    if (m = boilerPlate(selector, _root, qsa)) {
       return m;
     }
     if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
@@ -215,14 +216,11 @@
     }
     return function (selector, _root) {
       var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
-      if (isNode(selector)) {
-        return !_root || isAncestor(selector, root) ? [selector] : [];
-      }
       if (!root) {
         return [];
       }
       var i, l, result = [], collections = [], element;
-      if (m = boilerPlate(selector, root)) {
+      if (m = boilerPlate(selector, _root, qwery)) {
         return m;
       }
       if (m = selector.match(tagAndOrClass)) {
