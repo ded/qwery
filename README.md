@@ -46,11 +46,18 @@ Qwery uses [JSHint](http://www.jshint.com/) to keep some house rules as well as 
 
 Tests
 -----
-point your browser at _qwery/tests/index.html_
+
+    $ open tests/index.html
 
 Note
 ----
 Qwery uses querySelectorAll when available. All querySelectorAll default behavior then applies.
+
+Ender support
+-------------
+Qwery is the default selector engine for [Ender](http://ender.no.de). However to use it in a custom builds of Ender you can include it as such:
+
+    ender -b qwery[,mod2,mod3,...]
 
 Contributors
 -------
