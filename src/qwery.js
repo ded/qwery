@@ -162,7 +162,7 @@
     if (isNode(selector)) {
       return !_root || (isNode(root) && isAncestor(selector, root)) ? [selector] : [];
     }
-    if (typeof selector === 'object' && (selector.length || selector.length === 0)) {
+    if (selector && typeof selector === 'object' && selector.length && isFinite(selector.length)) {
       return array(selector);
     }
     if (m = selector.match(idOnly)) {
