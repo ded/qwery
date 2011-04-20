@@ -1,0 +1,3 @@
+[submodule "build/colors"]
+	path = build/colors
+	url = https://github.com/Marak/colors.js.git
