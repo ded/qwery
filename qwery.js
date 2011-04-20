@@ -252,7 +252,7 @@
     };
   }();
 
-  // being nice
+  qwery.uniq = uniq;
   var oldQwery = context.qwery;
   qwery.noConflict = function () {
     context.qwery = oldQwery;
