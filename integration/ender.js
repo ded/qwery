@@ -3,7 +3,7 @@
   * copyright Dustin Diaz & Jacob Thornton 2011 (@ded @fat)
   * https://github.com/ded/Ender.js
   * License MIT
-  * Build: ender build bonzo domready
+  * Build: ender build domready bonzo
   */
 !function (context) {
 
@@ -273,6 +273,7 @@
     },
 
     related: function (method) {
+      var i, l;
       this.elements = this.map(
         function (el) {
           el = el[method];
@@ -285,6 +286,13 @@
           return el;
         }
       );
+      for (i = 0, l = this.length; i < l; i++) {
+        delete this[i];
+      }
+      for (i = 0, l = this.elements.length; i < l; i++) {
+        this[i] = this.elements[i];
+      }
+      this.length = l;
       return this;
     },
 
