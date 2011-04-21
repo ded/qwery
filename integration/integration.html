@@ -8,7 +8,8 @@
     <script src="../src/ender.js"></script>
     <script type="text/javascript">
       $.domReady(function () {
-        var elements = $('#test').find('li.check').css('color', 'red').append(' ✓').next().css('color', 'blue');
+        var test = $('#test');
+        var elements = test.find('li.check').css('color', 'red').append(' ✓').next().css('color', 'blue');
       });
     </script>
   </head>
