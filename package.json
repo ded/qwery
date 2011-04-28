@@ -1,7 +1,7 @@
 {
   "name": "qwery",
   "description": "a compact CSS1, CSS2 query selector engine",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "homepage": "http://dustindiaz.com/qwery",
   "authors": ["Dustin Diaz, @ded", "Jacob Thornton, @fat"],
   "repository": {

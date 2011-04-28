@@ -10,6 +10,7 @@
       $.domReady(function () {
         var test = $('#test');
         var elements = test.find('li.check').css('color', 'red').append(' ✓').next().css('color', 'blue');
+        $('b').closest('body').css({ width: '500px', margin: '0 auto'});
       });
     </script>
   </head>
@@ -17,7 +18,7 @@
     <div id="test">
       <ul>
         <li class="check">uno</li>
-        <li>dos</li>
+        <li><span><b>dos</b></span></li>
         <li class="check">tres</li>
       </ul>
     </div>
