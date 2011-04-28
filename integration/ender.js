@@ -1,7 +1,7 @@
 /*!
-  * Ender.js: a small, powerful JavaScript library composed of application agnostic submodules
+  * Ender: open module JavaScript framework
   * copyright Dustin Diaz & Jacob Thornton 2011 (@ded @fat)
-  * https://github.com/ded/Ender.js
+  * https://github.com/ender-js/ender
   * License MIT
   * Build: ender build domready bonzo
   */
@@ -9,12 +9,12 @@
 
   function aug(o, o2) {
     for (var k in o2) {
-      o[k] = o2[k];
+      k != 'noConflict' && (o[k] = o2[k]);
     }
   }
 
   function _$(s, r) {
-    this.elements = $._select(s, r);
+    this.elements = typeof s !== 'string' && !s.nodeType && typeof s.length !== 'undefined' ? s : $._select(s, r);
     this.length = this.elements.length;
     for (var i = 0; i < this.length; i++) {
       this[i] = this.elements[i];
@@ -45,12 +45,14 @@
     (context.$ = $);
 
 }(this);
-!function () { var module = { exports: {} }; !function (doc) {
+!function () { var exports = {}, module = { exports: exports }; !function (doc) {
   var loaded = 0, fns = [], ol, f = false,
       testEl = doc.createElement('a'),
       domContentLoaded = 'DOMContentLoaded',
       addEventListener = 'addEventListener',
       onreadystatechange = 'onreadystatechange';
+
+  /^loade|c/.test(doc.readyState) && (loaded = 1);
 
   function flush() {
     loaded = 1;
@@ -109,7 +111,9 @@
       html = doc.documentElement,
       specialAttributes = /^checked|value|selected$/,
       stateAttributes = /^checked|selected$/,
-      ie = /msie/.test(navigator.userAgent);
+      ie = /msie/.test(navigator.userAgent),
+      uidList = [],
+      uuids = 0;
 
   function classReg(c) {
     return new RegExp("(^|\\s+)" + c + "(\\s+|$)");
@@ -144,11 +148,24 @@
     return false;
   }
 
+  function sucks(o) {
+    for (var k in o) {
+      switch (k) {
+      case 'opacity':
+        o.filter = 'alpha(opacity=' + (o[k] * 100) + ')';
+        delete o[k];
+        break;
+      case '':
+        break;
+      }
+    }
+  }
+
   function _bonzo(elements) {
     this.elements = [];
     this.length = 0;
     if (elements) {
-      this.elements = Object.prototype.hasOwnProperty.call(elements, 'length') ? elements : [elements];
+      this.elements = typeof elements !== 'string' && !elements.nodeType && typeof elements.length !== 'undefined' ? elements : [elements];
       this.length = this.elements.length;
       for (var i = 0; i < this.length; i++) {
         this[i] = this.elements[i];
@@ -175,26 +192,15 @@
     },
 
     first: function () {
-      this.elements = [this[0]];
-      this.each(function (el, i) {
-        i && (delete this[i]);
-      });
-      this.length = 1;
-      return this;
+      return bonzo(this[0]);
     },
 
     last: function () {
-      this.elements = [this[this.length - 1]];
-      this[0] = this.elements[0];
-      this.each(function (el, i) {
-        i && (delete this[i]);
-      });
-      this.length = 1;
-      return this;
+      return bonzo(this[this.length - 1]);
     },
 
     html: function (html) {
-      return typeof html == 'string' ?
+      return typeof html !== 'undefined' ?
         this.each(function (el) {
           el.innerHTML = html;
         }) :
@@ -221,7 +227,10 @@
         classReg(c).test(el.className);
     },
 
-    toggleClass: function (c) {
+    toggleClass: function (c, condition) {
+      if (typeof condition !== 'undefined' && !condition) {
+        return this;
+      }
       return this.each(function (el) {
         this.hasClass(el, c) ?
           (el.className = trim(el.className.replace(classReg(c), ' '))) :
@@ -243,7 +252,7 @@
 
     append: function (node) {
       return this.each(function (el) {
-        each(bonzo.create(node), function (i) {
+        each(normalize(node), function (i) {
           el.appendChild(i);
         });
       });
@@ -252,7 +261,7 @@
     prepend: function (node) {
       return this.each(function (el) {
         var first = el.firstChild;
-        each(bonzo.create(node), function (i) {
+        each(normalize(node), function (i) {
           el.insertBefore(i, first);
         });
       });
@@ -273,8 +282,7 @@
     },
 
     related: function (method) {
-      var i, l;
-      this.elements = this.map(
+      return this.map(
         function (el) {
           el = el[method];
           while (el && el.nodeType !== 1) {
@@ -286,14 +294,6 @@
           return el;
         }
       );
-      for (i = 0, l = this.length; i < l; i++) {
-        delete this[i];
-      }
-      for (i = 0, l = this.elements.length; i < l; i++) {
-        this[i] = this.elements[i];
-      }
-      this.length = l;
-      return this;
     },
 
     prependTo: function (target) {
@@ -310,6 +310,22 @@
       });
     },
 
+    insertBefore: function (node) {
+      return this.each(function (el) {
+        each(normalize(node), function (n) {
+          n.parentNode.insertBefore(el, n);
+        });
+      });
+    },
+
+    insertAfter: function (node) {
+      return this.each(function (el) {
+        each(normalize(node), function (n) {
+          n.parentNode.insertBefore(el, (n.nextSibling || n));
+        });
+      });
+    },
+
     after: function (node) {
       return this.each(function (el) {
         each(bonzo.create(node), function (i) {
@@ -322,15 +338,17 @@
       if (v === undefined && typeof o == 'string') {
         return this[0].style[camelize(o)];
       }
-      var fn = typeof o == 'string' ?
-        function (el) {
-          el.style[camelize(o)] = v;
-        } :
-        function (el) {
-          for (var k in o) {
-            o.hasOwnProperty(k) && (el.style[camelize(k)] = o[k]);
-          }
-        };
+      var iter = o;
+      if (typeof o == 'string') {
+        iter = {};
+        iter[o] = v;
+      }
+      ie && sucks(iter);
+      var fn = function (el) {
+        for (var k in iter) {
+          iter.hasOwnProperty(k) && (el.style[camelize(k)] = iter[k]);
+        }
+      };
       return this.each(fn);
     },
 
@@ -364,6 +382,30 @@
         });
     },
 
+    removeAttr: function (k) {
+      return this.each(function (el) {
+        el.removeAttribute(k);
+      });
+    },
+
+    data: function (k, v) {
+      var el = this.elements[0];
+      if (typeof v === 'undefined') {
+        el.getAttribute('data-node-uid') || el.setAttribute('data-node-uid', ++uuids);
+        var uid = el.getAttribute('data-node-uid');
+        uidList[uid] || (uidList[uid] = {});
+        return uidList[uid][k];
+      } else {
+        return this.each(function (el) {
+          el.getAttribute('data-node-uid') || el.setAttribute('data-node-uid', ++uuids);
+          var uid = el.getAttribute('data-node-uid');
+          var o = {};
+          o[k] = v;
+          uidList[uid] = o;
+        });
+      }
+    },
+
     remove: function () {
       return this.each(function (el) {
         el.parentNode && el.parentNode.removeChild(el);
@@ -390,9 +432,64 @@
 
     scrollLeft: function (x) {
       return scroll.call(this, x, null, 'x');
-    }
+    },
 
+    serialize: function () {
+      var form = this[0],
+          inputs = form.getElementsByTagName('input'),
+          selects = form.getElementsByTagName('select'),
+          texts = form.getElementsByTagName('textarea');
+      return (bonzo(inputs).map(serial).join('') +
+      bonzo(selects).map(serial).join('') +
+      bonzo(texts).map(serial).join('')).replace(/&$/, '');
+    },
+
+    serializeArray: function () {
+      for (var pairs = this.serialize().split('&'), i = 0, l = pairs.length, r = [], o; i < l; i++) {
+        pairs[i] && (o = pairs[i].split('=')) && r.push({name: o[0], value: o[1]});
+      }
+      return r;
+    }
   };
+
+  function enc(v) {
+    return encodeURIComponent(v);
+  }
+
+  function serial(el) {
+    var n = el.name;
+    // don't serialize elements that are disabled or without a name
+    if (el.disabled || !n) {
+      return '';
+    }
+    n = enc(n);
+    switch (el.tagName.toLowerCase()) {
+    case 'input':
+      switch (el.type) {
+      case 'reset':
+      case 'button':
+      case 'image':
+      case 'file':
+        return '';
+      case 'checkbox':
+      case 'radio':
+        return el.checked ? n + '=' + (el.value ? enc(el.value) : true) + '&' : '';
+      default: // text hidden password submit
+        return n + '=' + (el.value ? enc(el.value) : true) + '&';
+      }
+      break;
+    case 'textarea':
+      return n + '=' + enc(el.value) + '&';
+    case 'select':
+      // @todo refactor beyond basic single selected value case
+      return n + '=' + enc(el.options[el.selectedIndex].value) + '&';
+    }
+    return '';
+  }
+
+  function normalize(node) {
+    return typeof node == 'string' ? bonzo.create(node) : is(node) ? [node] : node;
+  }
 
   function scroll(x, y, type) {
     var el = this.elements[0];
@@ -503,29 +600,78 @@
       return $(b.create(node));
     }
   });
+
+  function indexOf(ar, val) {
+    for (var i = 0; i < ar.length; i++) {
+      if ( ar[i] === val ) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function uniq(ar) {
+    var a = [], i, j;
+    label:
+    for (i = 0; i < ar.length; i++) {
+      for (j = 0; j < a.length; j++) {
+        if (a[j] == ar[i]) {
+          continue label;
+        }
+      }
+      a[a.length] = ar[i];
+    }
+    return a;
+  }
   $.ender({
-    parents: function (selector) {
-      var collection = $(selector), i, l, j, k, r = [];
-      collect:
-      for (i = 0, l = collection.length; i < l; i++) {
-        for (j = 0, k = this.length; j < k; j++) {
-          if (b.isAncestor(collection[i], this[j])) {
-            r.push(collection[i]);
-            continue collect;
+    parents: function (selector, closest) {
+      var collection = $(selector), j, k, p, r = [];
+      for (j = 0, k = this.length; j < k; j++) {
+        p = this[j];
+        while (p = p.parentNode) {
+          if (indexOf(collection, p) !== -1) {
+            r.push(p);
+            if (closest) break;
           }
         }
       }
-      this.elements = [];
+      return $(uniq(r));
+    },
+
+    closest: function (selector) {
+      return this.parents(selector, true);
+    },
+
+    first: function () {
+      return $(this[0]);
+    },
+
+    last: function () {
+      return $(this[this.length - 1]);
+    },
+
+    next: function () {
+      return $(b(this).next());
+    },
+
+    previous: function () {
+      return $(b(this).previous());
+    },
+
+    siblings: function () {
+      var i, l, p, r = [];
       for (i = 0, l = this.length; i < l; i++) {
-        delete this[i];
+        p = this[i];
+        while (p = p.previousSibling) {
+          p.nodeType == 1 && r.push(p);
+        }
+        p = this[i];
+        while (p = p.nextSibling) {
+          p.nodeType == 1 && r.push(p);
+        }
       }
-      for (i = 0, l = r.length; i < l; i++) {
-        this[i] = r[i];
-      }
-      this.length = r.length;
-      return this;
+      return $(uniq(r));
     }
   }, true);
 
 }();
-

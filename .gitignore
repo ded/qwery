@@ -3,3 +3,4 @@
 tmp/
 tmp/qwery.js
 tmp/qwery.min.js
+node_modules

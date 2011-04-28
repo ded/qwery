@@ -1,6 +1,19 @@
-!function () {
+!function (doc) {
   var q = qwery.noConflict();
-  $._select = q;
+  function create(node, root) {
+    var el = (root || doc).createElement('div'), els = [];
+    el.innerHTML = node;
+    var nodes = el.childNodes;
+    el = el.firstChild;
+    els.push(el);
+    while (el = el.nextSibling) {
+      (el.nodeType == 1) && els.push(el);
+    }
+    return els;
+  };
+  $._select = function (s, r) {
+    return /^\s*</.test(s) ? create(s, r) : q(s, r);
+  };
   $.ender({
     find: function (s) {
       var r = [], i, l, j, k, els;
@@ -13,4 +26,4 @@
       return $(q.uniq(r));
     }
   }, true);
-}();
+}(document);
