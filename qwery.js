@@ -186,7 +186,7 @@
 
   function qsa(selector, _root) {
     var root = (typeof _root == 'string') ? qsa(_root)[0] : (_root || doc);
-    if (!root) {
+    if (!root || !selector) {
       return [];
     }
     if (m = boilerPlate(selector, _root, qsa)) {
@@ -219,7 +219,7 @@
     }
     return function (selector, _root) {
       var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
-      if (!root) {
+      if (!root || !selector) {
         return [];
       }
       var i, l, result = [], collections = [], element;
