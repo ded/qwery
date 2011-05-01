@@ -168,7 +168,7 @@
     if (isNode(selector)) {
       return !_root || (isNode(root) && isAncestor(selector, root)) ? [selector] : [];
     }
-    if (selector && typeof selector === 'object' && selector.length && isFinite(selector.length)) {
+    if (selector && typeof selector === 'object' && isFinite(selector.length)) {
       return array(selector);
     }
     if (m = selector.match(idOnly)) {
