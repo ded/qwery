@@ -55,12 +55,39 @@ Qwery uses querySelectorAll when available. All querySelectorAll default behavio
 
 Ender support
 -------------
-Qwery is the default selector engine for [Ender](http://ender.no.de). However to use it in a custom builds of Ender you can include it as such:
+Qwery is the recommended selector engine for [Ender](http://ender.no.de). If you don't have Ender, install it, and don't ever look back.
 
-    ender -b qwery[,mod2,mod3,...]
+    $ npm install ender -g
+
+To include Query in a custom build of Ender you can include it as such:
+
+    $ ender -b qwery[,mod2,mod3,...]
+
+Or add it to an existing Ender installation
+
+    $ ender add qwery
+
+Recommended sibling modules
+----------
+In most cases, if you're hunting for a selector engine, you probably want to pair Qwery with some solid DOM modules. In that case qwery pairs quite nicely with [Bonzo](https://github.com/ded/bonzo) (a DOM util) and [Bean](https://github.com/fat/bean) (an event util). Add them to your Ender installation as such:
+
+    $ ender -b qwery bonzo bean
+
+Then write code like a boss:
+
+    $('a.boosh')
+      .css({
+        color: 'red',
+        background: 'white'
+      })
+      .after('√')
+      .bind({
+        'click.button': function () {
+          $(this).hide().remove('click.button');
+        }
+      });
 
 Contributors
 -------
   * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
   * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
-  * Follow our software [@dedfat](http://twitter.com/dedfat)
