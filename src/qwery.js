@@ -141,26 +141,10 @@
     return ret;
   }
 
-  var isAncestor = 'compareDocumentPosition' in html ?
-    function (element, container) {
-      return (container.compareDocumentPosition(element) & 16) == 16;
-    } : 'contains' in html ?
-    function (element, container) {
-      return container !== element && container.contains(element);
-    } :
-    function (element, container) {
-      while (element = element.parentNode) {
-        if (element === container) {
-          return 1;
-        }
-      }
-      return 0;
-    };
-
   function boilerPlate(selector, _root, fn) {
     var root = (typeof _root == 'string') ? fn(_root)[0] : (_root || doc);
-    if (isNode(selector)) {
-      return !_root || (isNode(root) && isAncestor(selector, root)) ? [selector] : [];
+    if (selector === window || isNode(selector)) {
+      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
     }
     if (selector && typeof selector === 'object' && isFinite(selector.length)) {
       return array(selector);
@@ -175,21 +159,7 @@
   }
 
   function isNode(el) {
-    return (el === window || el && el.nodeType && el.nodeType.toString().match(/[19]/));
-  }
-
-  function qsa(selector, _root) {
-    var root = (typeof _root == 'string') ? qsa(_root)[0] : (_root || doc);
-    if (!root || !selector) {
-      return [];
-    }
-    if (m = boilerPlate(selector, _root, qsa)) {
-      return m;
-    }
-    if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-      return array((root).getElementsByClassName(m[1]));
-    }
-    return array((root).querySelectorAll(selector));
+    return (el && el.nodeType == 1 || el.nodeType == 9);
   }
 
   function uniq(ar) {
@@ -206,45 +176,63 @@
     return a;
   }
 
-  var qwery = function () {
-    // return fast. boosh.
-    if (doc.querySelector && doc.querySelectorAll) {
-      return qsa;
+  function qwery(selector, _root) {
+    var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
+    if (!root || !selector) {
+      return [];
     }
-    return function (selector, _root) {
-      var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
-      if (!root || !selector) {
-        return [];
-      }
-      var i, l, result = [], collections = [], element;
-      if (m = boilerPlate(selector, _root, qwery)) {
-        return m;
-      }
-      if (m = selector.match(tagAndOrClass)) {
-        items = root.getElementsByTagName(m[1] || '*');
-        r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-        for (i = 0, l = items.length, j = 0; i < l; i++) {
-          r.test(items[i].className) && (result[j++] = items[i]);
+    if (m = boilerPlate(selector, _root, qwery)) {
+      return m;
+    }
+    return select(selector, root);
+  }
+
+  var isAncestor = 'compareDocumentPosition' in html ?
+    function (element, container) {
+      return (container.compareDocumentPosition(element) & 16) == 16;
+    } : 'contains' in html ?
+    function (element, container) {
+      return container !== element && container.contains(element);
+    } :
+    function (element, container) {
+      while (element = element.parentNode) {
+        if (element === container) {
+          return 1;
         }
-        return result;
       }
-      for (i = 0, items = selector.split(','), l = items.length; i < l; i++) {
-        collections[i] = _qwery(items[i]);
+      return 0;
+    },
+
+  select = doc.querySelector && doc.querySelectorAll ? function (selector, root) {
+    if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
+      return array((root).getElementsByClassName(m[1]));
+    }
+    return array((root).querySelectorAll(selector));
+  } : function (selector, root) {
+    if (m = selector.match(tagAndOrClass)) {
+      items = root.getElementsByTagName(m[1] || '*');
+      r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
+      for (i = 0, l = items.length, j = 0; i < l; i++) {
+        r.test(items[i].className) && (result[j++] = items[i]);
       }
-      for (i = 0, l = collections.length; i < l && (collection = collections[i]); i++) {
-        var ret = collection;
-        if (root !== doc) {
-          ret = [];
-          for (j = 0, m = collection.length; j < m && (element = collection[j]); j++) {
-            // make sure element is a descendent of root
-            isAncestor(element, root) && ret.push(element);
-          }
+      return result;
+    }
+    for (i = 0, items = selector.split(','), l = items.length; i < l; i++) {
+      collections[i] = _qwery(items[i]);
+    }
+    for (i = 0, l = collections.length; i < l && (collection = collections[i]); i++) {
+      var ret = collection;
+      if (root !== doc) {
+        ret = [];
+        for (j = 0, m = collection.length; j < m && (element = collection[j]); j++) {
+          // make sure element is a descendent of root
+          isAncestor(element, root) && ret.push(element);
         }
-        result = result.concat(ret);
       }
-      return uniq(result);
-    };
-  }();
+      result = result.concat(ret);
+    }
+    return uniq(result);
+  };
 
   qwery.uniq = uniq;
   var oldQwery = context.qwery;
