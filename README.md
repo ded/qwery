@@ -5,33 +5,38 @@ Qwery is a 1k *blazing fast* query selector engine allowing you to select elemen
 Acceptable queries
 ---------------
 
-    // basic
-    #foo // id
-    .bar // class
-    #foo a // descendents
-    #foo a.bar element attribute comibination
+``` js
+// basic
+#foo // id
+.bar // class
+#foo a // descendents
+#foo a.bar element attribute comibination
 
-    // attributes
-    #foo a[href] // simple
-    #foo a[href=bar] // attribute values
-    #foo a[href^="http://"] // attribute starts with
-    #foo a[href$=com] // attribute ends with
-    #foo a[href*=twitter] // attribute wildcards
+// attributes
+#foo a[href] // simple
+#foo a[href=bar] // attribute values
+#foo a[href^="http://"] // attribute starts with
+#foo a[href$=com] // attribute ends with
+#foo a[href*=twitter] // attribute wildcards
+#foo a[lang|=en] // subcodes
 
-    // combos
-    div,p
+// combos
+div,p
 
-    // variations
-    #foo.bar.baz
-    div#baz.thunk a[-data-info*="hello world"] strong
-    #thunk[title$='huzza']
+// variations
+#foo.bar.baz
+div#baz.thunk a[-data-info*="hello world"] strong
+#thunk[title$='huzza']
+```
 
 Contexts
 -------
 Each query can optionally pass in a context
 
-    qwery('div', node); // existing DOM node or...
-    qwery('div', '#foo'); // another query
+``` js
+qwery('div', node); // existing DOM node or...
+qwery('div', '#foo'); // another query
+```
 
 Browser Support
 ---------------
@@ -67,25 +72,39 @@ Or add it to an existing Ender installation
 
     $ ender add qwery
 
+Ender bridge additions
+---------
+Assuming you already know the happs on Ender -- Qwery provides some additional niceties when included with Ender:
+
+``` js
+// the context finder
+find all p elements descended from a div element
+$('div').find('p')
+
+// element creation
+$('<p>hello world</p>'); // => [HTMLParagraphElement "hello world"]
+```
 Recommended sibling modules
 ----------
-In most cases, if you're hunting for a selector engine, you probably want to pair Qwery with some solid DOM modules. In that case qwery pairs quite nicely with [Bonzo](https://github.com/ded/bonzo) (a DOM util) and [Bean](https://github.com/fat/bean) (an event util). Add them to your Ender installation as such:
+In most cases, if you're hunting for a selector engine, you probably want to pair Qwery with a DOM module. In that case qwery pairs quite nicely with [Bonzo](https://github.com/ded/bonzo) (a DOM util) and [Bean](https://github.com/fat/bean) (an event util). Add them to your Ender installation as such:
 
     $ ender -b qwery bonzo bean
 
 Then write code like a boss:
 
-    $('a.boosh')
-      .css({
-        color: 'red',
-        background: 'white'
-      })
-      .after('√')
-      .bind({
-        'click.button': function () {
-          $(this).hide().remove('click.button');
-        }
-      });
+``` js
+$('a.boosh')
+  .css({
+    color: 'red',
+    background: 'white'
+  })
+  .after('√')
+  .bind({
+    'click.button': function () {
+      $(this).hide().remove('click.button');
+    }
+  });
+```
 
 Contributors
 -------

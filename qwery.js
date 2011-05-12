@@ -4,6 +4,12 @@
   * Follow our software http://twitter.com/dedfat
   * MIT License
   */
+/*!
+  * qwery.js - copyright @dedfat
+  * https://github.com/ded/qwery
+  * Follow our software http://twitter.com/dedfat
+  * MIT License
+  */
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
@@ -16,6 +22,7 @@
       tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?');
@@ -97,7 +104,7 @@
   }
 
   function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, '\\$1'));
+    return cleanCache.g(s) || cleanCache.s(s, s.replace(specialChars, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
