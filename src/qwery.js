@@ -7,7 +7,7 @@
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
-      el, node, len, found, classes, item, items, token, collection,
+      el, node, len, found, classes, item, items, token,
       id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
@@ -166,7 +166,7 @@
   }
 
   function isNode(el) {
-    return (el && el.nodeType == 1 || el.nodeType == 9);
+    return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9));
   }
 
   function uniq(ar) {
@@ -211,36 +211,39 @@
       return 0;
     },
 
-  select = doc.querySelector && doc.querySelectorAll ? function (selector, root) {
-    if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-      return array((root).getElementsByClassName(m[1]));
-    }
-    return array((root).querySelectorAll(selector));
-  } : function (selector, root) {
-    if (m = selector.match(tagAndOrClass)) {
-      items = root.getElementsByTagName(m[1] || '*');
-      r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-      for (i = 0, l = items.length, j = 0; i < l; i++) {
-        r.test(items[i].className) && (result[j++] = items[i]);
+  select = (false && doc.querySelector && doc.querySelectorAll) ?
+    function (selector, root) {
+      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
+        return array((root).getElementsByClassName(m[1]));
       }
-      return result;
-    }
-    for (i = 0, items = selector.split(','), l = items.length; i < l; i++) {
-      collections[i] = _qwery(items[i]);
-    }
-    for (i = 0, l = collections.length; i < l && (collection = collections[i]); i++) {
-      var ret = collection;
-      if (root !== doc) {
-        ret = [];
-        for (j = 0, m = collection.length; j < m && (element = collection[j]); j++) {
-          // make sure element is a descendent of root
-          isAncestor(element, root) && ret.push(element);
+      return array((root).querySelectorAll(selector));
+    } :
+    function (selector, root) {
+      var result = [], collection, collections = [], i;
+      if (m = selector.match(tagAndOrClass)) {
+        items = root.getElementsByTagName(m[1] || '*');
+        r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
+        for (i = 0, l = items.length, j = 0; i < l; i++) {
+          r.test(items[i].className) && (result[j++] = items[i]);
         }
+        return result;
       }
-      result = result.concat(ret);
-    }
-    return uniq(result);
-  };
+      for (i = 0, items = selector.split(','), l = items.length; i < l; i++) {
+        collections[i] = _qwery(items[i]);
+      }
+      for (i = 0, l = collections.length; i < l && (collection = collections[i]); i++) {
+        var ret = collection;
+        if (root !== doc) {
+          ret = [];
+          for (j = 0, m = collection.length; j < m && (element = collection[j]); j++) {
+            // make sure element is a descendent of root
+            isAncestor(element, root) && ret.push(element);
+          }
+        }
+        result = result.concat(ret);
+      }
+      return uniq(result);
+    };
 
   qwery.uniq = uniq;
   var oldQwery = context.qwery;
