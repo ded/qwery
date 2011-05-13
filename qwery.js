@@ -205,6 +205,7 @@
       return (container.compareDocumentPosition(element) & 16) == 16;
     } : 'contains' in html ?
     function (element, container) {
+      container = container == doc || container == window ? html : container;
       return container !== element && container.contains(element);
     } :
     function (element, container) {
