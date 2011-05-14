@@ -25,5 +25,12 @@
       }
       return $(q.uniq(r));
     }
+    , and: function (s) {
+      var plus = $(s);
+      for (var i = this.length, j = 0, l = this.length + plus.length; i < l; i++, j++) {
+        this[i] = plus[j];
+      }
+      return this;
+    }
   }, true);
 }(document);

@@ -77,9 +77,11 @@ Ender bridge additions
 Assuming you already know the happs on Ender -- Qwery provides some additional niceties when included with Ender:
 
 ``` js
-// the context finder
-find all p elements descended from a div element
+// the context finder - find all p elements descended from a div element
 $('div').find('p')
+
+// join one set with another
+$('div').and('p')
 
 // element creation
 $('<p>hello world</p>'); // => [HTMLParagraphElement "hello world"]
