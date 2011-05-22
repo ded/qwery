@@ -10,7 +10,7 @@ Acceptable queries
 #foo // id
 .bar // class
 #foo a // descendents
-#foo a.bar element attribute comibination
+#foo a.bar element attribute combination
 
 // attributes
 #foo a[href] // simple
