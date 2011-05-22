@@ -1,7 +1,7 @@
 /*!
-  * qwery.js - copyright @dedfat
+  * Qwery - A Blazing Fast query selector engine
   * https://github.com/ded/qwery
-  * Follow our software http://twitter.com/dedfat
+  * copyright Dustin Diaz & Jacob Thornton 2011
   * MIT License
   */
 
