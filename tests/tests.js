@@ -150,12 +150,11 @@ sink('order matters', function (test, ok) {
 });
 
 sink('argument types', function (test, ok) {
-  test('should be able to pass in nodes as arguments', 6, function () {
+  test('should be able to pass in nodes as arguments', 5, function () {
     var el = document.getElementById('boosh');
     ok(Q(el)[0] == el, 'Q(el)[0] == el');
     ok(Q(el, 'body')[0] == el, "Q(el, 'body')[0] == el");
     ok(Q(el, document)[0] == el, "Q(el, document)[0] == el");
-    ok(Q(window, document)[0] == null, 'Q(window, document)[0] == null');
     ok(Q(window)[0] == window, 'Q(window)[0] == window');
     ok(Q(document)[0] == document, 'Q(document)[0] == document');
   });

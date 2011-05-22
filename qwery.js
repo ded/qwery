@@ -4,12 +4,7 @@
   * Follow our software http://twitter.com/dedfat
   * MIT License
   */
-/*!
-  * qwery.js - copyright @dedfat
-  * https://github.com/ded/qwery
-  * Follow our software http://twitter.com/dedfat
-  * MIT License
-  */
+
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
@@ -257,6 +252,6 @@
     context.qwery = oldQwery;
     return this;
   };
-  context.qwery = qwery;
+  context['qwery'] = qwery;
 
 }(this, document);

@@ -1,4 +1,6 @@
 boosh:
-	node Makefile.js
+	smoosh make ./config/smoosh.json
+
+# requires npm >= 1.0.0
 install:
-	npm install smoosh
+	npm install smoosh -g
