@@ -108,6 +108,12 @@ $('a.boosh')
   });
 ```
 
+Qwery Mobile!
+------------
+If you're building a Webkit (iPhone / Android / Chrome OS) application, you may be interested in qwery-mobile! Include this (instead of qwery) in your Ender build and get a full qwery interface for just 600 bytes :)
+
+    $ ender add qwery-mobile
+
 Contributors
 -------
   * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
