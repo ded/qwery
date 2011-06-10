@@ -1,6 +1,6 @@
 !function (doc) {
   var q = qwery.noConflict();
-  var table,
+  var table = 'table',
       nodeMap = {
         thead: table,
         tbody: table,
