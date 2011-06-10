@@ -5,9 +5,9 @@
         thead: table,
         tbody: table,
         tfoot: table,
-        th: table,
-        tr: table,
-        td: table,
+        tr: 'tbody',
+        th: 'tr',
+        td: 'tr',
         fieldset: 'form',
         option: 'select'
       }
