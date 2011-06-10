@@ -1,7 +1,14 @@
 !function (doc) {
   var q = qwery.noConflict();
+  var nodeMap = {
+    thead: 'table',
+    th: 'table',
+    tr: 'table',
+    td: 'table'
+  }
   function create(node, root) {
-    var el = (root || doc).createElement('div'), els = [];
+    var tag = /^<([^\s>]+)/.exec(node)[1]
+    var el = (root || doc).createElement(nodeMap[tag] || 'div'), els = [];
     el.innerHTML = node;
     var nodes = el.childNodes;
     el = el.firstChild;
@@ -10,7 +17,7 @@
       (el.nodeType == 1) && els.push(el);
     }
     return els;
-  };
+  }
   $._select = function (s, r) {
     return /^\s*</.test(s) ? create(s, r) : q(s, r);
   };
