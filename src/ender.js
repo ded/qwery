@@ -1,11 +1,16 @@
 !function (doc) {
   var q = qwery.noConflict();
-  var nodeMap = {
-    thead: 'table',
-    th: 'table',
-    tr: 'table',
-    td: 'table'
-  }
+  var table,
+      nodeMap = {
+        thead: table,
+        tbody: table,
+        tfoot: table,
+        th: table,
+        tr: table,
+        td: table,
+        fieldset: 'form',
+        option: 'select'
+      }
   function create(node, root) {
     var tag = /^<([^\s>]+)/.exec(node)[1]
     var el = (root || doc).createElement(nodeMap[tag] || 'div'), els = [];
