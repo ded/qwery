@@ -1,31 +1,39 @@
-Q('wery') - The Tiny Selector Engine
+Qwery - The Tiny Selector Engine
 -----
-Qwery is a 1k *blazing fast* query selector engine allowing you to select elements with CSS1 & CSS2 selectors (including [attribute selectors](http://www.w3.org/TR/css3-selectors/#attribute-selectors)).
+Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3 queries
 
-Acceptable queries
+Acceptable selectors
 ---------------
 
 ``` css
 basic
 #foo {} id
 .bar {} class
-#foo a {} descendents
-#foo a.bar {} element attribute combination
+a#foo.bar {} element attribute combinations
 
 attributes
 #foo a[href] {} simple
 #foo a[href=bar] {} attribute values
+#foo a[lang|=en] {} subcodes
+#foo a[title~=hello] {} attribute contains
 #foo a[href^="http://"] {} attribute starts with
 #foo a[href$=com] {} attribute ends with
 #foo a[href*=twitter] {} attribute wildcards
-#foo a[lang|=en] {} subcodes
+
+descendants
+#foo a {} all descendants
+ul#list > li {} direct children
+
+siblings
+span ~ strong {} all adjacent
+p + p {} immediate adjacent
 
 combos
 div,p {}
 
 variations
 #foo.bar.baz {}
-div#baz.thunk a[-data-info*="hello world"] strong {}
+div#baz.thunk a[-data-info*="hello world"] span + strong {}
 #thunk[title$='huzza'] {}
 ```
 
@@ -43,7 +51,7 @@ Browser Support
 Qwery attempts to stay up to date with Yahoo's [Grade A Browser Support](http://developer.yahoo.com/yui/articles/gbs) in addition to future browser candidates.
 
   - IE6, IE7, IE8, IE9
-  - Chrome 1 - 11
+  - Chrome 1 - 12
   - Safari 3, 4, 5
   - Firefox 2, 3, 4, 5, Aurora
   - Opera

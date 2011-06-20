@@ -18,6 +18,10 @@
   </head>
   <body>
     <h1>Qwery Tests</h1>
+      <div id="spaced-tokens">
+        <p><em><a href="#"></a></em></p>
+        <p></p>
+      </div>
       <div foo="bar"></div>
       <div class="a"></div>
       <div class="class-with-dashes"></div>
@@ -51,7 +55,17 @@
           <em class="order-matters"></em><b class="order-matters"></b>
         </a>
       </div>
-
+      <div id="direct-descend">
+        <div class="direct-descend">
+          <div class="direct-descend"></div>
+        </div>
+        <div class="direct-descend">
+          <div class="direct-descend"></div>
+        </div>
+      </div>
+      <div id="sibling-selector"></div>
+      <div class="sibling-selector"></div>
+      <div class="sibling-selector"></div>
      <ol id="tests"></ol>
      <script src="tests.js"></script>
   </body>

@@ -1,7 +1,7 @@
 {
   "name": "qwery-mobile",
   "description": "Mobile query selector engine",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/ded/qwery",
   "authors": ["Dustin Diaz, @ded", "Jacob Thornton, @fat"],
   "repository": {

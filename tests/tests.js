@@ -28,7 +28,7 @@ sink('CSS 1', function (test, ok) {
     ok(!!Q('h1')[0], 'found 1 h1');
   });
 
-  test('get element by class', 5, function () {
+  test('get elements by class', 5, function () {
     ok(Q('#boosh .a').length == 2, 'found two elements');
     ok(!!Q('#boosh div.a')[0], 'found one element');
     ok(Q('#boosh div').length == 2, 'found two {div} elements');
@@ -111,6 +111,17 @@ sink('attribute selectors', function (test, ok) {
     ok(Q('#attributes div[test*=hree]')[0] == expected, 'found attribute with *=');
   });
 
+  test('direct descendants', 1, function () {
+    ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
+  })
+
+  test('sibling elements', 4, function () {
+    ok(Q('#sibling-selector ~ .sibling-selector').length == 2, 'found two siblings')
+    ok(Q('#sibling-selector ~ div.sibling-selector').length == 2, 'found two siblings')
+    ok(Q('#sibling-selector + div.sibling-selector').length == 1, 'found two siblings')
+    ok(Q('#sibling-selector + .sibling-selector').length == 1, 'found two siblings')
+  })
+
 });
 
 
@@ -125,6 +136,12 @@ sink('tokenizer', function (test, ok) {
   });
 
 });
+
+sink('interesting syntaxes', function (test, ok) {
+  test('should parse bad selectors', 1, function () {
+    ok(Q('#spaced-tokens    p    em    a').length, 'found element with funny tokens')
+  })
+})
 
 sink('order matters', function (test, ok) {
 
