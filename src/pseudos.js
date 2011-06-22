@@ -31,4 +31,21 @@
     }
     return false;
   };
+
+  qwery.pseudos.checked = function (el) {
+    return el.checked;
+  };
+
+  qwery.pseudos.enabled = function (el) {
+    return !el.disabled;
+  };
+
+  qwery.pseudos.disabled = function (el) {
+    return el.disabled;
+  };
+
+  qwery.pseudos.empty = function (el) {
+    return !el.childNodes.length;
+  };
+
 }();
