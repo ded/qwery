@@ -46,6 +46,29 @@ qwery('div', node); // existing DOM node or...
 qwery('div', '#foo'); // another query
 ```
 
+pseudo selector API
+-------------------
+
+Optionally, Qwery provides a [pseudo selector interface](https://github.com/ded/qwery/blob/master/src/pseudos.js) allowing you to extend into advanced CSS3 matchers. It looks like this:
+
+``` js
+qwery.pseudos['first-child'] = function (el, val) {
+  var p;
+  return el.parentNode && (p = el.parentNode) && (childs = p.getElementsByTagName('*')) && childs[0] == el;
+};
+```
+
+To create a new pseudo matcher you must set a property on `qwery.psuedos` with a boolean method that is passed back a candidate element, and a value (if any). For example:
+
+``` js
+qwery('#content p.surprise:foo(bar)')
+
+qwery.pseudos.foo = function (el, val) {
+  // val == 'bar'
+  return el.getAttribute(val)
+}
+```
+
 Browser Support
 ---------------
 Qwery attempts to stay up to date with Yahoo's [Grade A Browser Support](http://developer.yahoo.com/yui/articles/gbs) in addition to future browser candidates.
