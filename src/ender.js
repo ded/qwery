@@ -26,6 +26,7 @@
   $._select = function (s, r) {
     return /^\s*</.test(s) ? create(s, r) : q(s, r);
   };
+  $.pseudos = q.pseudos;
   $.ender({
     find: function (s) {
       var r = [], i, l, j, k, els;
