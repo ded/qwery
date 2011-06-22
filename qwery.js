@@ -45,8 +45,6 @@
       return p1 && p2 && p1 == p2 && p1;
     }
   };
-  window.tokenizr = tokenizr;
-  window.dividers = dividers;
   function cache() {
     this.c = {};
   }
