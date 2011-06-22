@@ -166,6 +166,35 @@ sink('order matters', function (test, ok) {
 
 });
 
+sink('pseudo selectors', function (test, ok) {
+
+  test(':first-child', 2, function () {
+    ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
+    ok(Q('#pseudos div:first-child').length == 1, 'found only 1')
+  })
+
+  test(':last-child', 2, function () {
+    var all = document.getElementById('pseudos').getElementsByTagName('div');
+    ok(Q('#pseudos div:last-child')[0] == all[all.length - 1], 'found last child')
+    ok(Q('#pseudos div:last-child').length == 1, 'found only 1')
+  })
+
+  test(':nth-child(odd|even|n)', 4, function () {
+    var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
+    ok(Q('#pseudos :nth-child(odd)').length == 4, 'found 4 odd elements');
+    ok(Q('#pseudos div:nth-child(odd)').length == 3, 'found 3 odd elements with div tag');
+    ok(Q('#pseudos div:nth-child(even)').length == 3, 'found 4 even elements with div tag');
+    ok(Q('#pseudos div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
+  })
+
+  test('ol > li[attr="boosh"]:last-child', 2, function () {
+    var expected = document.getElementById('attr-child-boosh');
+    ok(Q('ol > li[attr="boosh"]:last-child').length == 1, 'only 1 element found');
+    ok(Q('ol > li[attr="boosh"]:last-child')[0] == expected, 'found correct element');
+  })
+
+})
+
 sink('argument types', function (test, ok) {
   test('should be able to pass in nodes as arguments', 5, function () {
     var el = document.getElementById('boosh');

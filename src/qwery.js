@@ -14,7 +14,8 @@
       specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
-      chunker = new RegExp(simple.source + '(' + attr.source + ')?'),
+      pseudo = /:([\w\-]+)(\(['"]?(\w+)['"]?\))?/,
+      chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?'),
       walker = {
     ' ': function (node) {
       return node && node !== html && node.parentNode
@@ -74,7 +75,12 @@
     return query.match(chunker);
   }
 
-  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value) {
+  // this next method expect at most these args
+  // given => div.hello[title="world"]:foo('bar')
+
+  // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
+
+  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var m, c, k;
     if (tag && this.tagName.toLowerCase() !== tag) {
       return false;
@@ -89,6 +95,9 @@
           return false;
         }
       }
+    }
+    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
+      return false;
     }
     if (wholeAttribute && !value) {
       o = this.attributes;
@@ -127,7 +136,7 @@
   }
 
   function _qwery(selector) {
-    var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item,
+    var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item, children,
         tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr));
     tokens = tokens.slice(0); // this makes a copy of the array so the cached original is not effected
 
@@ -239,7 +248,7 @@
       return 0;
     },
 
-  select = (doc.querySelector && doc.querySelectorAll) ?
+  select = false && (doc.querySelector && doc.querySelectorAll) ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return array((root).getElementsByClassName(m[1]));
@@ -275,6 +284,8 @@
     };
 
   qwery.uniq = uniq;
+  qwery.pseudos = {};
+
   var oldQwery = context.qwery;
   qwery.noConflict = function () {
     context.qwery = oldQwery;

@@ -3,6 +3,12 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Qwery tests</title>
+    <style type="text/css">
+      #fixtures {
+        position: absolute;
+        top: -9999px;
+      }
+    </style>
     <link rel="stylesheet" href="../build/sink/src/sink.css" type="text/css">
     <script src="../build/sink/src/sink.js"></script>
     <script type="text/javascript">
@@ -12,15 +18,35 @@
       };
     </script>
     <script src="../src/qwery.js"></script>
+    <script src="../src/pseudos.js"></script>
     <script type="text/javascript">
       var Q = qwery.noConflict();
     </script>
   </head>
   <body>
     <h1>Qwery Tests</h1>
+    <div id="fixtures">
+      <ol id="list">
+        <li>hello</li>
+        <li>world</li>
+        <ol>
+          <li>world</li>
+          <li id="attr-child-boosh" attr="boosh">hello</li>
+        </ol>
+        <li>humans</li>
+      </ol>
       <div id="spaced-tokens">
         <p><em><a href="#"></a></em></p>
         <p></p>
+      </div>
+      <div id="pseudos">
+        <div class="odd pseudos pseudo-1"></div>
+        <div class="even pseudos pseudo-2"></div>
+        <div class="odd"></div>
+        <div class="even"></div>
+        <a class="odd"></a>
+        <div class="even"></div>
+        <div class="odd"></div>
       </div>
       <div foo="bar"></div>
       <div class="a"></div>
@@ -66,6 +92,7 @@
       <div id="sibling-selector"></div>
       <div class="sibling-selector"></div>
       <div class="sibling-selector"></div>
+    </div>
      <ol id="tests"></ol>
      <script src="tests.js"></script>
   </body>
