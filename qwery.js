@@ -9,19 +9,23 @@
 
   var c, i, j, k, l, m, o, p, r, v,
       el, node, len, found, classes, item, items, token,
+      html = doc.documentElement,
       id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
       classOnly = /^\.([\w\-]+)$/,
       tagOnly = /^([\w\-]+)$/,
       tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
-      html = doc.documentElement,
       normalizr = /\s*([\s\+\~>])\s*/g,
-      tokenizr = /([\s\>\+\~])(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      splitters = /[\s\>\+\~]/,
+      splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g'),
+      tokenizr = new RegExp(splitters.source + splittersMore.source),
       specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
-      chunker = new RegExp(simple.source + '(' + attr.source + ')?'),
+      pseudo = /:([\w\-]+)(\(['"]?(\w+)['"]?\))?/,
+      chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?'),
       walker = {
     ' ': function (node) {
       return node && node !== html && node.parentNode
@@ -41,7 +45,8 @@
       return p1 && p2 && p1 == p2 && p1;
     }
   };
-
+  window.tokenizr = tokenizr;
+  window.dividers = dividers;
   function cache() {
     this.c = {};
   }
@@ -81,7 +86,12 @@
     return query.match(chunker);
   }
 
-  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value) {
+  // this next method expect at most these args
+  // given => div.hello[title="world"]:foo('bar')
+
+  // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
+
+  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var m, c, k;
     if (tag && this.tagName.toLowerCase() !== tag) {
       return false;
@@ -96,6 +106,9 @@
           return false;
         }
       }
+    }
+    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
+      return false;
     }
     if (wholeAttribute && !value) {
       o = this.attributes;
@@ -134,34 +147,32 @@
   }
 
   function _qwery(selector) {
-    var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item,
-        tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr));
+    var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item, children,
+        tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr)),
+        dividedTokens = selector.match(dividers), dividedToken;
     tokens = tokens.slice(0); // this makes a copy of the array so the cached original is not effected
-
     if (!tokens.length) {
       return r;
     }
 
     token = tokens.pop();
-    root = tokens.length && (m = tokens[tokens.length - 2].match(idOnly)) ? doc.getElementById(m[1]) : doc;
+    root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc.getElementById(m[1]) : doc;
     if (!root) {
       return r;
     }
     intr = q(token);
-    els = /^[+~]$/.test(tokens[tokens.length - 1]) ? function (r) {
-        r = []
+    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
         return r
-      }() :
+      }([]) :
       root.getElementsByTagName(intr[1] || '*');
     for (i = 0, l = els.length; i < l; i++) {
       if (item = interpret.apply(els[i], intr)) {
         r[j++] = item;
       }
     }
-
     if (!tokens.length) {
       return r;
     }
@@ -170,9 +181,9 @@
     for (j = 0, l = r.length, k = 0; j < l; j++) {
       p = r[j];
       // loop through each token backwards crawling up tree
-      for (i = tokens.length - 2; i >= 0;i = i - 2) {
+      for (i = tokens.length; i--;) {
         // loop through parent nodes
-        while (p = walker[tokens[i + 1]](p, r[j])) {
+        while (p = walker[dividedTokens[i]](p, r[j])) {
           if (found = interpret.apply(p, q(tokens[i]))) {
             break;
           }
@@ -282,6 +293,8 @@
     };
 
   qwery.uniq = uniq;
+  qwery.pseudos = {};
+
   var oldQwery = context.qwery;
   qwery.noConflict = function () {
     context.qwery = oldQwery;

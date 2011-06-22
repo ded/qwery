@@ -250,7 +250,7 @@
       return 0;
     },
 
-  select = false && (doc.querySelector && doc.querySelectorAll) ?
+  select = (doc.querySelector && doc.querySelectorAll) ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return array((root).getElementsByClassName(m[1]));
