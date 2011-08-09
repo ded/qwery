@@ -1,4 +1,4 @@
-!function (doc) {
+!function (doc, $) {
   var q = qwery.noConflict();
   var table = 'table',
       nodeMap = {
@@ -46,4 +46,4 @@
       return this;
     }
   }, true);
-}(document);
+}(document, ender || $);
