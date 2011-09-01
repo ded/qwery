@@ -185,23 +185,6 @@
     return ret;
   }
 
-  function boilerPlate(selector, _root, fn) {
-    var root = (typeof _root == 'string') ? fn(_root)[0] : (_root || doc);
-    if (selector === window || isNode(selector)) {
-      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
-    }
-    if (selector && typeof selector === 'object' && isFinite(selector.length)) {
-      return array(selector);
-    }
-    if (m = selector.match(idOnly)) {
-      return (el = doc.getElementById(m[1])) ? [el] : [];
-    }
-    if (m = selector.match(tagOnly)) {
-      return array(root.getElementsByTagName(m[1]));
-    }
-    return false;
-  }
-
   function isNode(el) {
     return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9));
   }
@@ -220,13 +203,36 @@
     return a;
   }
 
+  function normalizeRoot(root) {
+    if (!root) {
+      return doc;
+    }
+    if (typeof root == 'string') {
+      return qwery(root)[0];
+    }
+    if (typeof root === 'object' && isFinite(root.length)) {
+      return root[0];
+    }
+    return root;
+  }
+
   function qwery(selector, _root) {
-    var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
+    var root = normalizeRoot(_root);
+    
     if (!root || !selector) {
       return [];
     }
-    if (m = boilerPlate(selector, _root, qwery)) {
-      return m;
+    if (selector === window || isNode(selector)) {
+      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
+    }
+    if (selector && typeof selector === 'object' && isFinite(selector.length)) {
+      return array(selector);
+    }
+    if (m = selector.match(idOnly)) {
+      return (el = doc.getElementById(m[1])) ? [el] : [];
+    }
+    if (m = selector.match(tagOnly)) {
+      return array(root.getElementsByTagName(m[1]));
     }
     return select(selector, root);
   }
