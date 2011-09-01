@@ -1,7 +1,7 @@
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
-      el, node, len, found, classes, item, items, token,
+      el, node, found, classes, item, items, token,
       html = doc.documentElement,
       id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
@@ -56,10 +56,14 @@
       attrCache = new cache(),
       tokenCache = new cache();
 
-  function array(ar) {
+  function flatten(ar) {
     r = [];
-    for (i = 0, len = ar.length; i < len; i++) {
-      r[i] = ar[i];
+    for (i = 0, l = ar.length; i < l; i++) {
+      if (arrayLike(ar[i])) {
+        r = r.concat(ar[i]);
+      } else {
+        r.push(ar[i]);
+      }
     }
     return r;
   }
@@ -203,6 +207,10 @@
     return a;
   }
 
+  function arrayLike(o) {
+    return (typeof o === 'object' && isFinite(o.length));
+  }
+
   function normalizeRoot(root) {
     if (!root) {
       return doc;
@@ -210,7 +218,7 @@
     if (typeof root == 'string') {
       return qwery(root)[0];
     }
-    if (typeof root === 'object' && isFinite(root.length)) {
+    if (arrayLike(root)) {
       return root[0];
     }
     return root;
@@ -225,14 +233,14 @@
     if (selector === window || isNode(selector)) {
       return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
     }
-    if (selector && typeof selector === 'object' && isFinite(selector.length)) {
-      return array(selector);
+    if (selector && arrayLike(selector)) {
+      return flatten(selector);
     }
     if (m = selector.match(idOnly)) {
       return (el = doc.getElementById(m[1])) ? [el] : [];
     }
     if (m = selector.match(tagOnly)) {
-      return array(root.getElementsByTagName(m[1]));
+      return flatten(root.getElementsByTagName(m[1]));
     }
     return select(selector, root);
   }
@@ -257,9 +265,9 @@
   select = (doc.querySelector && doc.querySelectorAll) ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-        return array((root).getElementsByClassName(m[1]));
+        return flatten((root).getElementsByClassName(m[1]));
       }
-      return array((root).querySelectorAll(selector));
+      return flatten((root).querySelectorAll(selector));
     } :
     function (selector, root) {
       selector = selector.replace(normalizr, '$1');
