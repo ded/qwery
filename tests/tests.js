@@ -16,6 +16,13 @@ sink('Contexts', function (test, ok) {
     ok(Q('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
+  test('should be able to pass qwery result as context', 5, function() {
+    ok(Q('.a', Q('#boosh')).length == 2, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', Q('.a')).length == 0, 'context found 0 elements(.a, .a)');
+    ok(Q('.a', Q('.b')).length == 1, 'context found 1 elements(.a, .b)');
+    ok(Q('.a', Q('#boosh .b')).length == 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
+  });
   test('should not return duplicates from combinators', 1, function () {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
   });
