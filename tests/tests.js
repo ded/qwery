@@ -214,7 +214,7 @@ sink('argument types', function (test, ok) {
   
   test('should be able to pass in an array of results as arguments', 5, function () {
     var el = document.getElementById('boosh');
-    var result = Q([Q('#boosh'), Q(document), Q(window)])    
+    var result = Q([Q('#boosh'), Q(document), Q(window)]);
     ok(result.length == 3, '3 elements in the combined set');
     ok(result[0] == el, "result[0] == el");
     ok(result[1] == document, "result[0] == document");
