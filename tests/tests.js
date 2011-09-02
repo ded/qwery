@@ -174,7 +174,6 @@ sink('order matters', function (test, ok) {
 });
 
 sink('pseudo selectors', function (test, ok) {
-
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
     ok(Q('#pseudos div:first-child').length == 1, 'found only 1')
@@ -219,8 +218,7 @@ sink('argument types', function (test, ok) {
     ok(result[0] == el, "result[0] == el");
     ok(result[1] == document, "result[0] == document");
     ok(result[2] == window, 'result[0] == window');
-    ok(Q([Q('#pseudos div:nth-child(odd)'),
-          Q('#pseudos div:nth-child(even)')]).length == 6, 'found all the even and odd divs');
+    ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length == 6, 'found all the odd and even divs');
   })
 })
 
