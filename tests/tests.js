@@ -16,6 +16,13 @@ sink('Contexts', function (test, ok) {
     ok(Q('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
+  test('should be able to pass qwery result as context', 5, function() {
+    ok(Q('.a', Q('#boosh')).length == 2, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', Q('.a')).length == 0, 'context found 0 elements(.a, .a)');
+    ok(Q('.a', Q('.b')).length == 1, 'context found 1 elements(.a, .b)');
+    ok(Q('.a', Q('#boosh .b')).length == 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
+  });
   test('should not return duplicates from combinators', 1, function () {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
   });
@@ -167,7 +174,6 @@ sink('order matters', function (test, ok) {
 });
 
 sink('pseudo selectors', function (test, ok) {
-
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
     ok(Q('#pseudos div:first-child').length == 1, 'found only 1')
@@ -183,7 +189,7 @@ sink('pseudo selectors', function (test, ok) {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
     ok(Q('#pseudos :nth-child(odd)').length == 4, 'found 4 odd elements');
     ok(Q('#pseudos div:nth-child(odd)').length == 3, 'found 3 odd elements with div tag');
-    ok(Q('#pseudos div:nth-child(even)').length == 3, 'found 4 even elements with div tag');
+    ok(Q('#pseudos div:nth-child(even)').length == 3, 'found 3 even elements with div tag');
     ok(Q('#pseudos div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
   })
 
@@ -203,7 +209,17 @@ sink('argument types', function (test, ok) {
     ok(Q(el, document)[0] == el, "Q(el, document)[0] == el");
     ok(Q(window)[0] == window, 'Q(window)[0] == window');
     ok(Q(document)[0] == document, 'Q(document)[0] == document');
-  });
-});
+  })
+  
+  test('should be able to pass in an array of results as arguments', 5, function () {
+    var el = document.getElementById('boosh');
+    var result = Q([Q('#boosh'), Q(document), Q(window)]);
+    ok(result.length == 3, '3 elements in the combined set');
+    ok(result[0] == el, "result[0] == el");
+    ok(result[1] == document, "result[0] == document");
+    ok(result[2] == window, 'result[0] == window');
+    ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length == 6, 'found all the odd and even divs');
+  })
+})
 
 start();
