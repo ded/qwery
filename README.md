@@ -2,8 +2,7 @@ Qwery - The Tiny Selector Engine
 -----
 Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3 queries
 
-Acceptable selectors
----------------
+##Acceptable selectors
 
 ``` css
 basic
@@ -96,7 +95,7 @@ Qwery is the recommended selector engine for [Ender](http://ender.no.de). If you
 
 To include Query in a custom build of Ender you can include it as such:
 
-    $ ender -b qwery[,mod2,mod3,...]
+    $ ender build qwery[,mod2,mod3,...]
 
 Or add it to an existing Ender installation
 
@@ -133,9 +132,9 @@ $('a.boosh')
   .after('√')
   .bind({
     'click.button': function () {
-      $(this).hide().unbind('click.button');
+      $(this).hide().unbind('click.button')
     }
-  });
+  })
 ```
 
 Qwery Mobile!

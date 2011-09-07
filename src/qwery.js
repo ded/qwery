@@ -226,7 +226,7 @@
 
   function qwery(selector, _root) {
     var root = normalizeRoot(_root);
-    
+
     if (!root || !selector) {
       return [];
     }
@@ -305,6 +305,7 @@
     context.qwery = oldQwery;
     return this;
   };
-  context['qwery'] = qwery;
+
+  if (typeof module !== 'undefined') module.exports = qwery; else context['qwery'] = qwery
 
 }(this, document);
