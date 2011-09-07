@@ -1,7 +1,7 @@
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
-      el, node, len, found, classes, item, items, token,
+      el, node, found, classes, item, items, token,
       html = doc.documentElement,
       id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
@@ -56,10 +56,14 @@
       attrCache = new cache(),
       tokenCache = new cache();
 
-  function array(ar) {
+  function flatten(ar) {
     r = [];
-    for (i = 0, len = ar.length; i < len; i++) {
-      r[i] = ar[i];
+    for (i = 0, l = ar.length; i < l; i++) {
+      if (arrayLike(ar[i])) {
+        r = r.concat(ar[i]);
+      } else {
+        r.push(ar[i]);
+      }
     }
     return r;
   }
@@ -185,23 +189,6 @@
     return ret;
   }
 
-  function boilerPlate(selector, _root, fn) {
-    var root = (typeof _root == 'string') ? fn(_root)[0] : (_root || doc);
-    if (selector === window || isNode(selector)) {
-      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
-    }
-    if (selector && typeof selector === 'object' && isFinite(selector.length)) {
-      return array(selector);
-    }
-    if (m = selector.match(idOnly)) {
-      return (el = doc.getElementById(m[1])) ? [el] : [];
-    }
-    if (m = selector.match(tagOnly)) {
-      return array(root.getElementsByTagName(m[1]));
-    }
-    return false;
-  }
-
   function isNode(el) {
     return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9));
   }
@@ -220,13 +207,40 @@
     return a;
   }
 
+  function arrayLike(o) {
+    return (typeof o === 'object' && isFinite(o.length));
+  }
+
+  function normalizeRoot(root) {
+    if (!root) {
+      return doc;
+    }
+    if (typeof root == 'string') {
+      return qwery(root)[0];
+    }
+    if (arrayLike(root)) {
+      return root[0];
+    }
+    return root;
+  }
+
   function qwery(selector, _root) {
-    var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
+    var root = normalizeRoot(_root);
+    
     if (!root || !selector) {
       return [];
     }
-    if (m = boilerPlate(selector, _root, qwery)) {
-      return m;
+    if (selector === window || isNode(selector)) {
+      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
+    }
+    if (selector && arrayLike(selector)) {
+      return flatten(selector);
+    }
+    if (m = selector.match(idOnly)) {
+      return (el = doc.getElementById(m[1])) ? [el] : [];
+    }
+    if (m = selector.match(tagOnly)) {
+      return flatten(root.getElementsByTagName(m[1]));
     }
     return select(selector, root);
   }
@@ -251,9 +265,9 @@
   select = (doc.querySelector && doc.querySelectorAll) ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-        return array((root).getElementsByClassName(m[1]));
+        return flatten((root).getElementsByClassName(m[1]));
       }
-      return array((root).querySelectorAll(selector));
+      return flatten((root).querySelectorAll(selector));
     } :
     function (selector, root) {
       selector = selector.replace(normalizr, '$1');
