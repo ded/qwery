@@ -102,7 +102,7 @@
         }
       }
     }
-    if (pseudo && qwery.pseudos && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
+    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
       return false;
     }
     if (wholeAttribute && !value) {
@@ -308,6 +308,7 @@
     };
 
   qwery.uniq = uniq;
+  qwery.pseudos = {};
 
   var oldQwery = context.qwery;
   qwery.noConflict = function () {
