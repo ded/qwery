@@ -1,8 +1,7 @@
 !function () {
-  var Q, pseudos, i, l, p, r, nodes, m, _nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)\s*?/;
+  var pseudos, i, l, p, r, nodes, m, _nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)\s*?/;
   
-  Q = qwery;
-  Q.pseudos = pseudos = {};
+  qwery.pseudos = pseudos = {};
 
   function _children(node, ofType) {
     nodes = node.childNodes, r = [];
