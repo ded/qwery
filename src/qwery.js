@@ -11,13 +11,13 @@
       tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
       normalizr = /\s*([\s\+\~>])\s*/g,
       splitters = /[\s\>\+\~]/,
-      splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/,
       dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g'),
       tokenizr = new RegExp(splitters.source + splittersMore.source),
       specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
-      pseudo = /:([\w\-]+)(\(['"]?(\w+)['"]?\))?/,
+      pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?'),
       walker = {
     ' ': function (node) {
@@ -102,7 +102,7 @@
         }
       }
     }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
+    if (pseudo && qwery.pseudos && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
       return false;
     }
     if (wholeAttribute && !value) {
@@ -298,7 +298,6 @@
     };
 
   qwery.uniq = uniq;
-  qwery.pseudos = {};
 
   var oldQwery = context.qwery;
   qwery.noConflict = function () {
