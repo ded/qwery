@@ -205,14 +205,13 @@ sink('pseudo-selectors', function (test, ok) {
     ok(Q('#pseudos div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
   });
 
-  test(':nth-child(expr)', 7, function () {
+  test(':nth-child(expr)', 6, function () {
     var fifth = document.getElementById('pseudos').getElementsByTagName('a')[0];
     var sixth = document.getElementById('pseudos').getElementsByTagName('div')[4];
 
     ok(Q('#pseudos :nth-child(3n+1)').length == 3, 'found 3 elements');
     ok(Q('#pseudos :nth-child(+3n-2)').length == 3, 'found 3 elements');
     ok(Q('#pseudos :nth-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
     ok(Q('#pseudos :nth-child(3n)')[1] == sixth, 'second :nth-child(3n) is the sixth child');
@@ -226,13 +225,12 @@ sink('pseudo-selectors', function (test, ok) {
     ok(Q('#pseudos div:nth-last-child(6)')[0] == second, '6th nth-last-child should be 2nd of 7 elements');
   });
 
-  test(':nth-last-child(expr)', 6, function () {
+  test(':nth-last-child(expr)', 5, function () {
     var third = document.getElementById('pseudos').getElementsByTagName('div')[2];
 
     ok(Q('#pseudos :nth-last-child(3n+1)').length == 3, 'found 3 elements');
     ok(Q('#pseudos :nth-last-child(+3n-2)').length == 3, 'found 3 elements');
     ok(Q('#pseudos :nth-last-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-last-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-last-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
   });
