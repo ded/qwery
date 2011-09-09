@@ -1,5 +1,5 @@
 !function () {
-  var pseudos = qwery.pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)\s*?/;
+  var pseudos = qwery.pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/;
 
   function children(node, ofType) {
     nodes = node.childNodes, r = [];
