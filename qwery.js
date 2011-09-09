@@ -18,13 +18,13 @@
       tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
       normalizr = /\s*([\s\+\~>])\s*/g,
       splitters = /[\s\>\+\~]/,
-      splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/,
       dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g'),
       tokenizr = new RegExp(splitters.source + splittersMore.source),
       specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
-      pseudo = /:([\w\-]+)(\(['"]?(\w+)['"]?\))?/,
+      pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?'),
       walker = {
     ' ': function (node) {
@@ -269,7 +269,17 @@
       return 0;
     },
 
-  select = (doc.querySelector && doc.querySelectorAll) ?
+  supportsCSS3 = (function () {
+    if (!doc.querySelector || !doc.querySelectorAll) return false;
+    
+    try {
+      return (doc.querySelectorAll(':nth-of-type(1)').length > 0);
+    } catch (e) {
+      return false;
+    }
+  })(),
+
+  select = supportsCSS3 ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return flatten((root).getElementsByClassName(m[1]));
