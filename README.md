@@ -78,9 +78,11 @@ Qwery attempts to stay up to date with Yahoo's [Grade A Browser Support](http://
   - Firefox 2, 3, 4, 5, Aurora
   - Opera
 
-Tests
+Dev Env & Testing
 -----
 
+    $ npm install --dev
+    $ make
     $ open tests/index.html
 
 Note

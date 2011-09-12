@@ -9,18 +9,18 @@
         top: -9999px;
       }
     </style>
-    <link rel="stylesheet" href="../build/sink/src/sink.css" type="text/css">
-    <script src="../build/sink/src/sink.js"></script>
+    <link rel="stylesheet" href="../node_modules/sink-test/src/sink.css" type="text/css">
+    <script src="../node_modules/sink-test/src/sink.js"></script>
     <script type="text/javascript">
       // test for noConflict()
-      var qwery = function () {
-        return 'success';
-      };
+      function qwery() {
+        return 'success'
+      }
     </script>
     <script src="../src/qwery.js"></script>
     <script src="../src/pseudos.js"></script>
     <script type="text/javascript">
-      var Q = qwery.noConflict();
+      var Q = qwery.noConflict()
     </script>
   </head>
   <body>
