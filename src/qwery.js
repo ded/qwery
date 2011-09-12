@@ -1,6 +1,11 @@
-!function (context, doc) {
-
-  var c, i, j, k, l, m, o, p, r, v
+!function (name, definition) {
+  if (typeof define == 'function') define(definition)
+  else if (typeof module != 'undefined') module.exports = definition()
+  else this[name] = definition()
+}('qwery', function () {
+  var context = this
+    , doc = document
+    , c, i, j, k, l, m, o, p, r, v
     , el, node, found, classes, item, items, token
     , html = doc.documentElement
     , id = /#([\w\-]+)/
@@ -286,6 +291,5 @@
     return this
   }
 
-  if (typeof module !== 'undefined') module.exports = qwery; else context['qwery'] = qwery
-
-}(this, document);
+  return qwery
+})
