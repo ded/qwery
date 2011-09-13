@@ -12,6 +12,7 @@
 }('qwery', function () {
   var context = this
     , doc = document
+    , old = context.qwery
     , c, i, j, k, l, m, o, p, r, v
     , el, node, found, classes, item, items, token
     , html = doc.documentElement
@@ -292,7 +293,6 @@
   qwery.uniq = uniq
   qwery.pseudos = {}
 
-  var old = context.qwery
   qwery.noConflict = function () {
     context.qwery = old
     return this
