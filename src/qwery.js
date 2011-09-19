@@ -30,18 +30,16 @@
         return node && node !== html && node.parentNode
       }
     , '>': function (node, contestant) {
-        return node && node.parentNode == contestant.parentNode && node.parentNode;
+        return node && node.parentNode == contestant.parentNode && node.parentNode
       }
     , '~': function (node) {
-        return node && node.previousSibling;
+        return node && node.previousSibling
       }
     , '+': function (node, contestant, p1, p2) {
-        if (!node) {
-          return false;
-        }
-        p1 = previous(node);
-        p2 = previous(contestant);
-        return p1 && p2 && p1 == p2 && p1;
+        if (!node) return false
+        p1 = previous(node)
+        p2 = previous(contestant)
+        return p1 && p2 && p1 == p2 && p1
       }
   }
   function cache() {
@@ -65,21 +63,14 @@
   function flatten(ar) {
     r = []
     for (i = 0, l = ar.length; i < l; i++) {
-      if (arrayLike(ar[i])) {
-        r = r.concat(ar[i])
-      } else {
-        r.push(ar[i])
-      }
+      if (arrayLike(ar[i])) r = r.concat(ar[i])
+      else r.push(ar[i])
     }
     return r
   }
 
   function previous(n) {
-    while (n = n.previousSibling) {
-      if (n.nodeType == 1) {
-        break;
-      }
-    }
+    while (n = n.previousSibling) if (n.nodeType == 1) break;
     return n
   }
 
@@ -94,12 +85,8 @@
 
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var m, c, k;
-    if (tag && this.tagName.toLowerCase() !== tag) {
-      return false
-    }
-    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) {
-      return false
-    }
+    if (tag && this.tagName.toLowerCase() !== tag) return false
+    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
         c = classes[i].slice(1)
@@ -195,9 +182,7 @@
     label:
     for (i = 0; i < ar.length; i++) {
       for (j = 0; j < a.length; j++) {
-        if (a[j] == ar[i]) {
-          continue label;
-        }
+        if (a[j] == ar[i]) continue label;
       }
       a[a.length] = ar[i]
     }
@@ -230,7 +215,7 @@
 
   var isAncestor = 'compareDocumentPosition' in html ?
     function (element, container) {
-      return (container.compareDocumentPosition(element) & 16) == 16;
+      return (container.compareDocumentPosition(element) & 16) == 16
     } : 'contains' in html ?
     function (element, container) {
       container = container == doc || container == window ? html : container
@@ -244,16 +229,15 @@
   supportsCSS3 = function () {
     if (!doc.querySelector || !doc.querySelectorAll) return false
 
-    try { return (doc.querySelectorAll(':nth-of-type(1)').length > 0) }
+    try { return (doc.querySelectorAll(':nth-of-type(1)').length) }
     catch (e) { return false }
   }(),
 
   select = supportsCSS3 ?
     function (selector, root) {
-      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-        return flatten((root).getElementsByClassName(m[1]));
-      }
-      return flatten((root).querySelectorAll(selector))
+      return doc.getElementsByClassName && (m = selector.match(classOnly)) ?
+        flatten(root.getElementsByClassName(m[1])) :
+        flatten(root.querySelectorAll(selector))
     } :
     function (selector, root) {
       selector = selector.replace(normalizr, '$1')

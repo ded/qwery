@@ -1,7 +1,7 @@
 {
     "name": "qwery"
   , "description": "blazing fast CSS3 query selector engine"
-  , "version": "2.2.4"
+  , "version": "2.2.5"
   , "homepage": "https://github.com/ded/qwery"
   , "author": "Dustin Diaz <dustin@dustindiaz.com> (http://dustindiaz.com)"
   , "contributors": ["Jacob Thornton <> (https://github.com/fat)"]
