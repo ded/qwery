@@ -127,11 +127,26 @@ sink('attribute selectors', function (test, ok) {
     ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
   });
 
-  test('sibling elements', 4, function () {
+  test('sibling elements', 17, function () {
     ok(Q('#sibling-selector ~ .sibling-selector').length == 2, 'found two siblings')
     ok(Q('#sibling-selector ~ div.sibling-selector').length == 2, 'found two siblings')
     ok(Q('#sibling-selector + div.sibling-selector').length == 1, 'found two siblings')
     ok(Q('#sibling-selector + .sibling-selector').length == 1, 'found two siblings')
+
+    ok(Q('.parent .oldest ~ .sibling').length == 4, 'found four younger siblings')
+    ok(Q('.parent .middle ~ .sibling').length == 2, 'found two younger siblings')
+    ok(Q('.parent .middle ~ h4').length == 1, 'found next sibling by tag')
+    ok(Q('.parent .middle ~ h4.younger').length == 1, 'found next sibling by tag and class')
+    ok(Q('.parent .middle ~ h3').length == 0, 'an element can\'t be its own sibling')
+    ok(Q('.parent .middle ~ h2').length == 0, 'didn\'t find an older sibling')
+    ok(Q('.parent .youngest ~ .sibling').length == 0, 'found no younger siblings')
+
+    ok(Q('.parent .oldest + .sibling').length == 1, 'found next sibling')
+    ok(Q('.parent .middle + .sibling').length == 1, 'found next sibling')
+    ok(Q('.parent .middle + h4').length == 1, 'found next sibling by tag')
+    ok(Q('.parent .middle + h3').length == 0, 'an element can\'t be its own sibling')
+    ok(Q('.parent .middle + h2').length == 0, 'didn\'t find an older sibling')
+    ok(Q('.parent .youngest + .sibling').length == 0, 'found no younger siblings')
   });
 
 });
