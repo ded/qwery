@@ -5,12 +5,12 @@ sink('no conflict', function (test, ok) {
 });
 
 sink('Contexts', function (test, ok) {
-  
+
   test('should be able to pass optional context', 2, function () {
     ok(Q('.a').length === 3, 'no context found 3 elements (.a)');
     ok(Q('.a', Q('#boosh')[0]).length === 2, 'context found 2 elements (#boosh .a)');
   });
-  
+
   test('should be able to pass string as context', 5, function() {
     ok(Q('.a', '#boosh').length == 2, 'context found 2 elements(.a, #boosh)');
     ok(Q('.a', '.a').length == 0, 'context found 0 elements(.a, .a)');
@@ -18,7 +18,7 @@ sink('Contexts', function (test, ok) {
     ok(Q('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
-  
+
   test('should be able to pass qwery result as context', 5, function() {
     ok(Q('.a', Q('#boosh')).length == 2, 'context found 2 elements(.a, #boosh)');
     ok(Q('.a', Q('.a')).length == 0, 'context found 0 elements(.a, .a)');
@@ -26,11 +26,11 @@ sink('Contexts', function (test, ok) {
     ok(Q('.a', Q('#boosh .b')).length == 1, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
-  
+
   test('should not return duplicates from combinators', 1, function () {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
   });
-  
+
 });
 
 sink('CSS 1', function (test, ok) {
@@ -79,7 +79,7 @@ sink('CSS 2', function (test, ok) {
 
 });
 
-sink('attribute selectors', function (test, ok) {
+sink('attribute selectors', function (test, ok, b, a, assert) {
 
   /* CSS 2 SPEC */
 
@@ -128,25 +128,25 @@ sink('attribute selectors', function (test, ok) {
   });
 
   test('sibling elements', 17, function () {
-    ok(Q('#sibling-selector ~ .sibling-selector').length == 2, 'found two siblings')
-    ok(Q('#sibling-selector ~ div.sibling-selector').length == 2, 'found two siblings')
-    ok(Q('#sibling-selector + div.sibling-selector').length == 1, 'found two siblings')
-    ok(Q('#sibling-selector + .sibling-selector').length == 1, 'found two siblings')
+    assert(Q('#sibling-selector ~ .sibling-selector').length, 2, 'found two siblings')
+    assert(Q('#sibling-selector ~ div.sibling-selector').length, 2, 'found two siblings')
+    assert(Q('#sibling-selector + div.sibling-selector').length, 1, 'found two siblings')
+    assert(Q('#sibling-selector + .sibling-selector').length, 1, 'found two siblings')
 
-    ok(Q('.parent .oldest ~ .sibling').length == 4, 'found four younger siblings')
-    ok(Q('.parent .middle ~ .sibling').length == 2, 'found two younger siblings')
-    ok(Q('.parent .middle ~ h4').length == 1, 'found next sibling by tag')
-    ok(Q('.parent .middle ~ h4.younger').length == 1, 'found next sibling by tag and class')
-    ok(Q('.parent .middle ~ h3').length == 0, 'an element can\'t be its own sibling')
-    ok(Q('.parent .middle ~ h2').length == 0, 'didn\'t find an older sibling')
-    ok(Q('.parent .youngest ~ .sibling').length == 0, 'found no younger siblings')
+    assert(Q('.parent .oldest ~ .sibling').length, 4, 'found four younger siblings')
+    assert(Q('.parent .middle ~ .sibling').length, 2, 'found two younger siblings')
+    assert(Q('.parent .middle ~ h4').length, 1, 'found next sibling by tag')
+    assert(Q('.parent .middle ~ h4.younger').length, 1, 'found next sibling by tag and class')
+    assert(Q('.parent .middle ~ h3').length, 0, 'an element can\'t be its own sibling')
+    assert(Q('.parent .middle ~ h2').length, 0, 'didn\'t find an older sibling')
+    assert(Q('.parent .youngest ~ .sibling').length, 0, 'found no younger siblings')
 
-    ok(Q('.parent .oldest + .sibling').length == 1, 'found next sibling')
-    ok(Q('.parent .middle + .sibling').length == 1, 'found next sibling')
-    ok(Q('.parent .middle + h4').length == 1, 'found next sibling by tag')
-    ok(Q('.parent .middle + h3').length == 0, 'an element can\'t be its own sibling')
-    ok(Q('.parent .middle + h2').length == 0, 'didn\'t find an older sibling')
-    ok(Q('.parent .youngest + .sibling').length == 0, 'found no younger siblings')
+    assert(Q('.parent .oldest + .sibling').length, 1, 'found next sibling')
+    assert(Q('.parent .middle + .sibling').length, 1, 'found next sibling')
+    assert(Q('.parent .middle + h4').length, 1, 'found next sibling by tag')
+    assert(Q('.parent .middle + h3').length, 0, 'an element can\'t be its own sibling')
+    assert(Q('.parent .middle + h2').length, 0, 'didn\'t find an older sibling')
+    assert(Q('.parent .youngest + .sibling').length, 0, 'found no younger siblings')
   });
 
 });
@@ -194,7 +194,7 @@ sink('order matters', function (test, ok) {
 });
 
 sink('pseudo-selectors', function (test, ok) {
-  
+
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
     ok(Q('#pseudos div:first-child').length == 1, 'found only 1')
@@ -296,7 +296,7 @@ sink('pseudo-selectors', function (test, ok) {
 });
 
 sink('argument types', function (test, ok) {
-  
+
   test('should be able to pass in nodes as arguments', 5, function () {
     var el = document.getElementById('boosh');
     ok(Q(el)[0] == el, 'Q(el)[0] == el');
@@ -305,7 +305,7 @@ sink('argument types', function (test, ok) {
     ok(Q(window)[0] == window, 'Q(window)[0] == window');
     ok(Q(document)[0] == document, 'Q(document)[0] == document');
   });
-  
+
   test('should be able to pass in an array of results as arguments', 5, function () {
     var el = document.getElementById('boosh');
     var result = Q([Q('#boosh'), Q(document), Q(window)]);
@@ -315,7 +315,7 @@ sink('argument types', function (test, ok) {
     ok(result[2] == window, 'result[0] == window');
     ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length == 6, 'found all the odd and even divs');
   });
-  
+
 });
 
 start();
