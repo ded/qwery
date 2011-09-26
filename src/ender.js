@@ -12,13 +12,27 @@
         , option: 'select'
       }
   function create(node, root) {
-    var tag = /^<([^\s>]+)/.exec(node)[1]
-      , el = (root || doc).createElement(nodeMap[tag] || 'div'), els = []
+    var match
+      , tag
+      , el
+      , els
+      , nodes
+      
+    match = /^\s*<([^\s>]+)/.exec(node)
+    
+    if (!match) {
+      throw new Error("couldn't match html element in '" + node + "'")
+    }
+    
+    tag = match[1]
+    el = (root || doc).createElement(nodeMap[tag] || 'div')
+    els = []
+
     el.innerHTML = node
-    var nodes = el.childNodes
+    nodes = el.childNodes
     el = el.firstChild
     els.push(el)
-    while (el = el.nextSibling) (el.nodeType == 1) && els.push(el)
+    while (el = el.nextSibling) (el.nodeType === 1) && els.push(el)
     return els
   }
 
