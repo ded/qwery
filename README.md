@@ -114,6 +114,9 @@ $('div').find('p')
 // join one set with another
 $('div').and('p')
 
+// test nodes against selectors
+$('#foo').is('div.bar'); // => true if any nodes match
+
 // element creation
 $('<p>hello world</p>'); // => [HTMLParagraphElement "hello world"]
 ```
