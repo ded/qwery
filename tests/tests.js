@@ -318,4 +318,35 @@ sink('argument types', function (test, ok) {
 
 });
 
+sink('testing is()', function (test, ok) {
+  test('simple selectors', 9, function () {
+    var el = document.getElementById('attr-child-boosh');
+    ok(Q.is(el, 'li'), 'tag');
+    ok(Q.is(el, '*'), 'wildcard');
+    ok(Q.is(el, '#attr-child-boosh'), '#id');
+    ok(Q.is(el, '[attr]'), '[attr]');
+    ok(Q.is(el, '[attr=boosh]'), '[attr=val]');
+    ok(!Q.is(el, 'div'), 'wrong tag');
+    ok(!Q.is(el, '#foo'), 'wrong #id');
+    ok(!Q.is(el, '[foo]'), 'wrong [attr]');
+    ok(!Q.is(el, '[attr=foo]'), 'wrong [attr=val]');
+  });
+  test('selector sequences', 2, function () {
+    var el = document.getElementById('attr-child-boosh');
+    ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]'), 'tag#id[attr=val]');
+    ok(!Q.is(el, 'div#attr-child-boosh[attr=boosh]'), 'wrong tag#id[attr=val]');
+  });
+  test('selector sequences combinators', 7, function () {
+    var el = document.getElementById('attr-child-boosh');
+    ok(Q.is(el, 'ol li'), 'tag tag');
+    ok(Q.is(el, 'ol>li'), 'tag>tag');
+    ok(Q.is(el, 'ol>li+li'), 'tab>tag+tag');
+    ok(Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]'), 'tag#id tag#id[attr=val]');
+    ok(!Q.is(el, 'ol#list>li#attr-child-boosh[attr=boosh]'), 'wrong tag#id>tag#id[attr=val]');
+    ok(Q.is(el, 'ol ol li#attr-child-boosh[attr=boosh]'), 'tag tag tag#id[attr=val]');
+    ok(Q.is(document.getElementById('token-four'), 'div#fixtures>div a'), 'tag#id>tag tag where ambiguous middle tag requires backtracking');
+  });
+
+});
+
 start();
