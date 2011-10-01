@@ -49,7 +49,7 @@
       var i, l
       for (i = 0, l = this.length; i < l; i++) {
         if (q.is(this[i], s, r)) {
-          return true;
+          return true
         }
       }
       return false
