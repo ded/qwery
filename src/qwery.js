@@ -160,7 +160,7 @@
 
     // loop through all descendent tokens
     for (j = 0, l = r.length, k = 0; j < l; j++) {
-      if(_ancestorsMatch(r[j], tokens, dividedTokens)) {
+      if (_ancestorMatch(r[j], tokens, dividedTokens)) {
           ret[k++] = r[j];
       }
     }
@@ -168,24 +168,22 @@
   }
 
   function is(el, selector, root) {
-    if (!selector) return false;
-    
     if (isNode(selector)) return el == selector
     
     if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
     
     var selectors = selector.split(','), tokens, dividedTokens
     while (selector = selectors.pop()) {
-      tokens = tokenCache.s(selector, selector.split(tokenizr))
+      tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       dividedTokens = selector.match(dividers)
       tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
-      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorsMatch(el, tokens, dividedTokens, root))) {
+      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
     }      
   }
   
-  function _ancestorsMatch(el, tokens, dividedTokens, root) {
+  function _ancestorMatch(el, tokens, dividedTokens, root) {
     var p = el, found;
     // loop through each token backwards crawling up tree
     for (i = tokens.length; i--;) {
@@ -195,7 +193,7 @@
       }
     }
 
-    if(found && root) found = isAncestor(found, root)
+    if (root && found) found = isAncestor(found, root)
 
     return !!found
   }
