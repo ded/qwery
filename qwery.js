@@ -184,7 +184,7 @@
     while (selector = selectors.pop()) {
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       dividedTokens = selector.match(dividers)
-      tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
+      tokens = tokens.slice(0) // copy array
       if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
