@@ -33,22 +33,30 @@
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
     , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
     , walker = {
-      ' ': function (node) {
-        return node && node !== html && node.parentNode
+        ' ': function (node) {
+          return node && node !== html && node.parentNode
+        }
+      , '>': function (node, contestant) {
+          return node && node.parentNode == contestant.parentNode && node.parentNode
+        }
+      , '~': function (node) {
+          return node && node.previousSibling
+        }
+      , '+': function (node, contestant, p1, p2) {
+          if (!node) return false
+          p1 = previous(node)
+          p2 = previous(contestant)
+          return p1 && p2 && p1 == p2 && p1
+        }
       }
-    , '>': function (node, contestant) {
-        return node && node.parentNode == contestant.parentNode && node.parentNode
+    , hrefExtended = function() {
+        var e = doc.createElement('div')
+        return (e.innerHTML = '<a href="#x">x</a>') && e.firstChild.getAttribute('href') != '#x'
+      }()
+    , getAttr = function(e, a) {
+        return (a == 'href' || a == 'src') && hrefExtended ? e.getAttribute(a, 2) : e.getAttribute(a)
       }
-    , '~': function (node) {
-        return node && node.previousSibling
-      }
-    , '+': function (node, contestant, p1, p2) {
-        if (!node) return false
-        p1 = previous(node)
-        p2 = previous(contestant)
-        return p1 && p2 && p1 == p2 && p1
-      }
-  }
+
   function cache() {
     this.c = {}
   }
@@ -113,7 +121,7 @@
         }
       }
     }
-    if (wholeAttribute && !checkAttr(qualifier, this.getAttribute(attribute) || '', value)) {
+    if (wholeAttribute && !checkAttr(qualifier, getAttr(this, attribute) || '', value)) {
       return false
     }
     return this

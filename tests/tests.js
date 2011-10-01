@@ -123,6 +123,11 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
     ok(Q('#attributes div[test*=hree]')[0] == expected, 'found attribute with *=');
   });
 
+  test('[href=#x] special case', 1, function () {
+    var expected = document.getElementById('attr-test-4');
+    ok(Q('#attributes a[href="#aname"]')[0] == expected, 'found attribute with href=#x');
+  });
+
   test('direct descendants', 1, function () {
     ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
   });
