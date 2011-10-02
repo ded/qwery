@@ -53,9 +53,6 @@
         var e = doc.createElement('div')
         return (e.innerHTML = '<a href="#x">x</a>') && e.firstChild.getAttribute('href') != '#x'
       }()
-    , getAttr = function(e, a) {
-        return (a == 'href' || a == 'src') && hrefExtended ? e.getAttribute(a, 2) : e.getAttribute(a)
-      }
 
   function cache() {
     this.c = {}
@@ -87,6 +84,10 @@
   function previous(n) {
     while (n = n.previousSibling) if (n.nodeType == 1) break;
     return n
+  }
+
+  function getAttr(e, a) {
+    return (a == 'href' || a == 'src') && hrefExtended ? e.getAttribute(a, 2) : e.getAttribute(a)
   }
 
   function q(query) {
