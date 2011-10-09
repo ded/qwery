@@ -7,7 +7,7 @@
     , doc = document
     , old = context.qwery
     , c, i, j, k, l, m, o, p, r, v
-    , el, node, found, classes, item, items, token
+    , el, node, classes, item, items, token
     , html = doc.documentElement
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
@@ -137,8 +137,8 @@
   function _qwery(selector) {
     var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item, children
       , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
-      , dividedTokens = selector.match(dividers), dividedToken
-    tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not effected
+      , dividedTokens = selector.match(dividers)
+    tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
     if (!tokens.length) return r
 
@@ -160,19 +160,44 @@
 
     // loop through all descendent tokens
     for (j = 0, l = r.length, k = 0; j < l; j++) {
-      p = r[j]
-      // loop through each token backwards crawling up tree
-      for (i = tokens.length; i--;) {
-        // loop through parent nodes
-        while (p = walker[dividedTokens[i]](p, r[j])) {
-          if (found = interpret.apply(p, q(tokens[i]))) break;
-        }
+      if (_ancestorMatch(r[j], tokens, dividedTokens)) {
+          ret[k++] = r[j];
       }
-      found && (ret[k++] = r[j])
     }
     return ret
   }
 
+  function is(el, selector, root) {
+    if (isNode(selector)) return el == selector
+    
+    if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
+    
+    var selectors = selector.split(','), tokens, dividedTokens
+    while (selector = selectors.pop()) {
+      tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
+      dividedTokens = selector.match(dividers)
+      tokens = tokens.slice(0) // copy array
+      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
+        return true
+      }
+    }      
+  }
+  
+  function _ancestorMatch(el, tokens, dividedTokens, root) {
+    var p = el, found;
+    // loop through each token backwards crawling up tree
+    for (i = tokens.length; i--;) {
+      // loop through parent nodes
+      while (p = walker[dividedTokens[i]](p, el)) {
+        if (found = interpret.apply(p, q(tokens[i]))) break
+      }
+    }
+
+    if (root && found) found = isAncestor(found, root)
+
+    return !!found
+  }
+  
   function isNode(el) {
     return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9))
   }
@@ -268,6 +293,7 @@
     }
 
   qwery.uniq = uniq
+  qwery.is = is
   qwery.pseudos = {}
 
   qwery.noConflict = function () {
