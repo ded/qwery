@@ -148,7 +148,7 @@
     if (!root) return r
 
     intr = q(token)
-    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
+    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) && root.nodeType !== 9 ? function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
