@@ -50,7 +50,7 @@
         }
       }
     , hrefExtended = function() {
-        var e = doc.createElement('div')
+        var e = doc.createElement('p')
         return (e.innerHTML = '<a href="#x">x</a>') && e.firstChild.getAttribute('href') != '#x'
       }()
 
