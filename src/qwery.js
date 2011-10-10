@@ -184,12 +184,12 @@
   }
   
   function _ancestorMatch(el, tokens, dividedTokens, root) {
-    var p = el, found;
+    var i, p = el, found;
     // loop through each token backwards crawling up tree
     for (i = tokens.length; i--;) {
       // loop through parent nodes
       while (p = walker[dividedTokens[i]](p, el)) {
-        if (found = interpret.apply(p, q(tokens[i]))) break
+        if (found = interpret.apply(p, q(tokens[i]))) break;
       }
     }
 
