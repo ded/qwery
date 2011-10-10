@@ -148,7 +148,7 @@
     if (!root) return r
 
     intr = q(token)
-    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
+    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) && root.nodeType !== 9 ? function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
@@ -184,12 +184,12 @@
   }
   
   function _ancestorMatch(el, tokens, dividedTokens, root) {
-    var p = el, found;
+    var i, p = el, found;
     // loop through each token backwards crawling up tree
     for (i = tokens.length; i--;) {
       // loop through parent nodes
       while (p = walker[dividedTokens[i]](p, el)) {
-        if (found = interpret.apply(p, q(tokens[i]))) break
+        if (found = interpret.apply(p, q(tokens[i]))) break;
       }
     }
 
