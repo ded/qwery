@@ -33,22 +33,27 @@
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
     , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
     , walker = {
-      ' ': function (node) {
-        return node && node !== html && node.parentNode
+        ' ': function (node) {
+          return node && node !== html && node.parentNode
+        }
+      , '>': function (node, contestant) {
+          return node && node.parentNode == contestant.parentNode && node.parentNode
+        }
+      , '~': function (node) {
+          return node && node.previousSibling
+        }
+      , '+': function (node, contestant, p1, p2) {
+          if (!node) return false
+          p1 = previous(node)
+          p2 = previous(contestant)
+          return p1 && p2 && p1 == p2 && p1
+        }
       }
-    , '>': function (node, contestant) {
-        return node && node.parentNode == contestant.parentNode && node.parentNode
-      }
-    , '~': function (node) {
-        return node && node.previousSibling
-      }
-    , '+': function (node, contestant, p1, p2) {
-        if (!node) return false
-        p1 = previous(node)
-        p2 = previous(contestant)
-        return p1 && p2 && p1 == p2 && p1
-      }
-  }
+    , hrefExtended = function() {
+        var e = doc.createElement('p')
+        return (e.innerHTML = '<a href="#x">x</a>') && e.firstChild.getAttribute('href') != '#x'
+      }()
+
   function cache() {
     this.c = {}
   }
@@ -79,6 +84,10 @@
   function previous(n) {
     while (n = n.previousSibling) if (n.nodeType == 1) break;
     return n
+  }
+
+  function getAttr(e, a) {
+    return (a == 'href' || a == 'src') && hrefExtended ? e.getAttribute(a, 2) : e.getAttribute(a)
   }
 
   function q(query) {
@@ -113,7 +122,7 @@
         }
       }
     }
-    if (wholeAttribute && !checkAttr(qualifier, this.getAttribute(attribute) || '', value)) {
+    if (wholeAttribute && !checkAttr(qualifier, getAttr(this, attribute) || '', value)) {
       return false
     }
     return this
@@ -155,7 +164,7 @@
     if (!root) return r
 
     intr = q(token)
-    els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
+    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
@@ -191,7 +200,7 @@
   }
   
   function _ancestorMatch(el, tokens, dividedTokens, root) {
-    var i, p = el, found;
+    var p = el, found;
     // loop through each token backwards crawling up tree
     for (i = tokens.length; i--;) {
       // loop through parent nodes
