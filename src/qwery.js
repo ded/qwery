@@ -277,6 +277,10 @@
       selector = selector.replace(normalizr, '$1')
       var result = [], element, collection, collections = [], i
       if (m = selector.match(tagAndOrClass)) {
+        // simple & common case, safe to use non-CSS3 qSA if present
+        if (root.querySelectorAll) {
+          return flatten(root.querySelectorAll(selector))
+        }
         items = root.getElementsByTagName(m[1] || '*');
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
         for (i = 0, l = items.length, j = 0; i < l; i++) {
