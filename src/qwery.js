@@ -157,7 +157,7 @@
     if (!root) return r
 
     intr = q(token)
-    els = dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
+    els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
@@ -193,7 +193,7 @@
   }
   
   function _ancestorMatch(el, tokens, dividedTokens, root) {
-    var p = el, found;
+    var i, p = el, found;
     // loop through each token backwards crawling up tree
     for (i = tokens.length; i--;) {
       // loop through parent nodes
@@ -277,6 +277,10 @@
       selector = selector.replace(normalizr, '$1')
       var result = [], element, collection, collections = [], i
       if (m = selector.match(tagAndOrClass)) {
+        // simple & common case, safe to use non-CSS3 qSA if present
+        if (root.querySelectorAll) {
+          return flatten(root.querySelectorAll(selector))
+        }
         items = root.getElementsByTagName(m[1] || '*');
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
         for (i = 0, l = items.length, j = 0; i < l; i++) {
