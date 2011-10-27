@@ -178,9 +178,9 @@
 
   function is(el, selector, root) {
     if (isNode(selector)) return el == selector
-    
+
     if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
-    
+
     var selectors = selector.split(','), tokens, dividedTokens
     while (selector = selectors.pop()) {
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
@@ -189,9 +189,9 @@
       if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
-    }      
+    }
   }
-  
+
   function _ancestorMatch(el, tokens, dividedTokens, root) {
     var i, p = el, found;
     // loop through each token backwards crawling up tree
@@ -206,7 +206,7 @@
 
     return !!found
   }
-  
+
   function isNode(el) {
     return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9))
   }
