@@ -17,6 +17,7 @@
     , classOnly = /^\.([\w\-]+)$/
     , tagOnly = /^([\w\-]+)$/
     , tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/
+    , sibFirst = /^\s*[\~+]/
     , normalizr = /\s*([\s\+\~>])\s*/g
     , splitters = /[\s\>\+\~]/
     , splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/
@@ -147,8 +148,8 @@
     return 0
   }
 
-  function _qwery(selector) {
-    var r = [], ret = [], m, token, tag, els, root, intr, item 
+  function _qwery(selector, _root) {
+    var r = [], ret = [], m, token, tag, els, root, intr, item, skipCheck
       , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       , dividedTokens = selector.match(dividers)
 
@@ -156,8 +157,11 @@
     tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
     token = tokens.pop()
-    if (!(root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc))
+    if (!(root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc)) {
       return r
+    } else if (tokens.length && tokens[0] === '') {
+      root = _root
+    }
 
     intr = q(token)
     els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
@@ -172,7 +176,8 @@
     if (!tokens.length) return r
 
     // loop through all descendent tokens
-    each(r, function(e) { if (_ancestorMatch(e, tokens, dividedTokens)) ret.push(e) })
+    skipCheck = sibFirst.test(selector)
+    each(r, function(e) { if (skipCheck || _ancestorMatch(e, tokens, dividedTokens, _root)) ret.push(e) })
     return ret
   }
 
@@ -265,13 +270,13 @@
     } catch (e) { return false }
   }(),
 
-  select = false && supportsCSS3 ?
+  select = supportsCSS3 ?
     function (selector, root) {
       var m
       return flatten((m = selector.match(classOnly)) ? root[byClass](m[1]) : root[qSA](selector))
     } :
     function (selector, root) {
-      var result = [], collections = [], m, r
+      var result = [], m, r, skipCheck
       selector = selector.replace(normalizr, '$1')
       if (m = selector.match(tagAndOrClass)) {
         // simple & common case, safe to use non-CSS3 qSA if present
@@ -280,9 +285,12 @@
         each(root[byTag](m[1] || '*'), function(it) { r.test(it.className) && result.push(it) })
         return result
       }
-      each(selector.split(','), function(it) { collections = collections.concat(_qwery(it)) })
-      // make sure element is descendent of root
-      each(collections, function(e) { (root === doc || isAncestor(e, root)) && result.push(e) })
+      each(selector.split(','), function(it) {
+        skipCheck = root === doc || sibFirst.test(it)
+        each(_qwery(it, root), function(e) {
+          if (skipCheck || isAncestor(e, root)) result.push(e)
+        })
+      })
       return uniq(result)
     }
 
