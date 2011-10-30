@@ -6,9 +6,11 @@
   var context = this
     , doc = document
     , old = context.qwery
-    , c, i, j, k, l, m, o, p, r, v
-    , el, node, classes, item, items, token
     , html = doc.documentElement
+    , byClass = 'getElementsByClassName'
+    , byTag = 'getElementsByTagName'
+    , byId = 'getElementById'
+    , qSA = 'querySelectorAll'
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
     , idOnly = /^#([\w\-]+$)/
@@ -37,9 +39,7 @@
         }
       , '+': function (node, contestant, p1, p2) {
           if (!node) return false
-          p1 = previous(node)
-          p2 = previous(contestant)
-          return p1 && p2 && p1 == p2 && p1
+          return (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
         }
       }
     , hrefExtended = function() {
@@ -55,8 +55,7 @@
         return this.c[k] || undefined
       }
     , s: function (k, v) {
-        this.c[k] = v
-        return v
+        return (this.c[k] = v)
       }
   }
 
@@ -65,12 +64,17 @@
     , attrCache = new cache()
     , tokenCache = new cache()
 
+  function each(a, fn) {
+    // don't bother with native forEach, slow for this simple case
+    for (var i = 0, l = a.length; i < l; i++) fn.call(null, a[i])
+  }
+
   function flatten(ar) {
-    r = []
-    for (i = 0, l = ar.length; i < l; i++) {
-      if (arrayLike(ar[i])) r = r.concat(ar[i])
-      else r.push(ar[i])
-    }
+    var r = []
+    each(ar, function(a) {
+      if (arrayLike(a)) r = r.concat(a)
+      else r.push(a)
+    });
     return r
   }
 
@@ -93,7 +97,7 @@
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
 
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
-    var m, c, k;
+    var i, m, c, k, o, classes
     if (tag && this.tagName.toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
@@ -144,43 +148,38 @@
   }
 
   function _qwery(selector) {
-    var r = [], ret = [], i, j = 0, k, l, m, p, token, tag, els, root, intr, item, children
+    var r = [], ret = [], m, token, tag, els, root, intr, item 
       , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       , dividedTokens = selector.match(dividers)
-    tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
     if (!tokens.length) return r
+    tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
     token = tokens.pop()
-    root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc.getElementById(m[1]) : doc
-
-    if (!root) return r
+    if (!(root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc))
+      return r
 
     intr = q(token)
-    els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ? function (r) {
+    els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
+      function (r) {
         while (root = root.nextSibling) {
-          root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
+          root.nodeType === 1 && (intr[1] ? intr[1] === root.tagName.toLowerCase() : 1) && r.push(root)
         }
         return r
       }([]) :
-      root.getElementsByTagName(intr[1] || '*')
-    for (i = 0, l = els.length; i < l; i++) if (item = interpret.apply(els[i], intr)) r[j++] = item
+      root[byTag](intr[1] || '*')
+    each(els, function(e) { if (item = interpret.apply(e, intr)) r.push(item) })
     if (!tokens.length) return r
 
     // loop through all descendent tokens
-    for (j = 0, l = r.length, k = 0; j < l; j++) {
-      if (_ancestorMatch(r[j], tokens, dividedTokens)) {
-          ret[k++] = r[j];
-      }
-    }
+    each(r, function(e) { if (_ancestorMatch(e, tokens, dividedTokens)) ret.push(e) })
     return ret
   }
 
   function is(el, selector, root) {
     if (isNode(selector)) return el == selector
-    
     if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
-    
+
     var selectors = selector.split(','), tokens, dividedTokens
     while (selector = selectors.pop()) {
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
@@ -189,9 +188,9 @@
       if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
-    }      
+    }
   }
-  
+
   function _ancestorMatch(el, tokens, dividedTokens, root) {
     var i, p = el, found;
     // loop through each token backwards crawling up tree
@@ -206,7 +205,7 @@
 
     return !!found
   }
-  
+
   function isNode(el) {
     return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9))
   }
@@ -229,21 +228,21 @@
 
   function normalizeRoot(root) {
     if (!root) return doc
-    if (typeof root == 'string') return qwery(root)[0]
+    if (typeof root === 'string') return qwery(root)[0]
     if (arrayLike(root)) return root[0]
     return root
   }
 
   function qwery(selector, _root) {
-    var root = normalizeRoot(_root)
+    var m, el, root = normalizeRoot(_root)
 
     if (!root || !selector) return []
     if (selector === window || isNode(selector)) {
       return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : []
     }
     if (selector && arrayLike(selector)) return flatten(selector)
-    if (m = selector.match(idOnly)) return (el = doc.getElementById(m[1])) ? [el] : []
-    if (m = selector.match(tagOnly)) return flatten(root.getElementsByTagName(m[1]))
+    if (m = selector.match(idOnly)) return (el = doc[byId](m[1])) ? [el] : []
+    if (m = selector.match(tagOnly)) return flatten(root[byTag](m[1]))
     return select(selector, root)
   }
 
@@ -261,47 +260,29 @@
     },
 
   supportsCSS3 = function () {
-    if (!doc.querySelector || !doc.querySelectorAll) return false
-
-    try { return (doc.querySelectorAll(':nth-of-type(1)').length) }
-    catch (e) { return false }
+    try {
+      return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA](':nth-of-type(1)').length
+    } catch (e) { return false }
   }(),
 
-  select = supportsCSS3 ?
+  select = false && supportsCSS3 ?
     function (selector, root) {
-      return doc.getElementsByClassName && (m = selector.match(classOnly)) ?
-        flatten(root.getElementsByClassName(m[1])) :
-        flatten(root.querySelectorAll(selector))
+      var m
+      return flatten((m = selector.match(classOnly)) ? root[byClass](m[1]) : root[qSA](selector))
     } :
     function (selector, root) {
+      var result = [], collections = [], m, r
       selector = selector.replace(normalizr, '$1')
-      var result = [], element, collection, collections = [], i
       if (m = selector.match(tagAndOrClass)) {
         // simple & common case, safe to use non-CSS3 qSA if present
-        if (root.querySelectorAll) {
-          return flatten(root.querySelectorAll(selector))
-        }
-        items = root.getElementsByTagName(m[1] || '*');
+        if (root[qSA]) return flatten(root[qSA](selector))
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-        for (i = 0, l = items.length, j = 0; i < l; i++) {
-          r.test(items[i].className) && (result[j++] = items[i]);
-        }
+        each(root[byTag](m[1] || '*'), function(it) { r.test(it.className) && result.push(it) })
         return result
       }
-      for (i = 0, items = selector.split(','), l = items.length; i < l; i++) {
-        collections[i] = _qwery(items[i])
-      }
-      for (i = 0, l = collections.length; i < l && (collection = collections[i]); i++) {
-        var ret = collection
-        if (root !== doc) {
-          ret = []
-          for (j = 0, m = collection.length; j < m && (element = collection[j]); j++) {
-            // make sure element is a descendent of root
-            isAncestor(element, root) && ret.push(element)
-          }
-        }
-        result = result.concat(ret)
-      }
+      each(selector.split(','), function(it) { collections = collections.concat(_qwery(it)) })
+      // make sure element is descendent of root
+      each(collections, function(e) { (root === doc || isAncestor(e, root)) && result.push(e) })
       return uniq(result)
     }
 
