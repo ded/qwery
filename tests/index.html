@@ -22,6 +22,7 @@
     <script type="text/javascript">
       var Q = qwery.noConflict()
     </script>
+    <script src="../vendor/sizzle.js"></script>
   </head>
   <body>
     <h1>Qwery Tests</h1>
@@ -76,23 +77,41 @@
           </a>
         </div>
       </div>
-      <div id="order-matters">
+      <div id="order-matters" class="order-matters">
         <p class="order-matters"></p>
         <a class="order-matters">
           <em class="order-matters"></em><b class="order-matters"></b>
         </a>
       </div>
       <div id="direct-descend">
+        <div></div>
+        <div class="direct-descend">
+          <div class="direct-descend">
+            <div class="lvl2" id="toodeep"></div>
+          </div>
+	  <div class="direct-descend"></div>
+          <div class="lvl2" id="l2">
+            <div class="direct-descend"></div>
+          </div>
+          <div class="lvl2" id="l3"></div>
+        </div>
+        <div class="ignoreme"></div>
         <div class="direct-descend">
           <div class="direct-descend"></div>
+          <div class="lvl2" id="l4"></div>
         </div>
-        <div class="direct-descend">
-          <div class="direct-descend"></div>
-        </div>
+        <div></div>
       </div>
       <div id="sibling-selector"></div>
-      <div class="sibling-selector"></div>
-      <div class="sibling-selector"></div>
+      <div class="sibling-selector" id="sib1">
+       <div class="sibling-selector"></div>
+       <div class="sibling-selector"></div>
+      </div>
+      <div class="sibling-selector" id="sib2">
+       <div class="sibling-selector">
+         <div class="sibling-selector"></div>
+       </div>
+      </div>
       
       <div class="parent">
         <h1 class="sibling oldest"></h1>

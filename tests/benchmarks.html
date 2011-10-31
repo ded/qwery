@@ -49,10 +49,13 @@
     <div id="attr-test2" -data-attr></div>
     <div id="attr-test3" class="found you" -data-attr title="whatup duders"></div>
     <script type="text/javascript">
-      var i = 0, j;
-      var start = +new Date;
-      var tests = ['div .a', 'div', 'div#attr-test3.found.you[title="whatup duders"]', '#boosh', '.a', 'div.a', '#boosh a'];
-      while (i < 1000) {
+      var i = 0, j
+        , iters = 1000
+        , start = +new Date
+        //, tests = ['div .a', 'div', 'div#attr-test3.found.you[title="whatup duders"]', '#boosh', '.a', 'div.a', '#boosh a', '.b > .e .a'];
+        , tests = [ 'div .a', 'div', 'div#attr-test3.found.you[title="whatup duders"]', '#boosh', '.a', 'div.a', '#boosh a'/*, '.b > .e .a' */];
+
+      while (i < iters) {
         i++;
         for (j = 0; j < tests.length; j++) {
           Q(tests[j]);
@@ -62,7 +65,7 @@
       var qweryTime = +new Date - start;
       i = 0;
       var start2 = +new Date;
-      while (i < 1000) {
+      while (i < iters) {
         i++;
         for (j = 0; j < tests.length; j++) {
           Sizzle(tests[j]);
@@ -72,16 +75,13 @@
 
       i = 0;
       var start3 = +new Date;
-      while (i < 1000) {
+      while (i < iters) {
         i++;
         for (j = 0; j < tests.length; j++) {
           NW.Dom.select(tests[j]);
         }
       }
       var nwTime = +new Date - start3;
-
-
-
 
       Q('#qwery')[0].innerHTML = qweryTime;
       Sizzle('#sizzle')[0].innerHTML = sizzleTime;

@@ -128,15 +128,16 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
     ok(Q('#attributes a[href="#aname"]')[0] == expected, 'found attribute with href=#x');
   });
 
-  test('direct descendants', 1, function () {
+  test('direct descendants', 2, function () {
     ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
+    ok(Q('#direct-descend > .direct-descend > .lvl2').length == 3, 'found three second-level direct descendents');
   });
 
   test('sibling elements', 17, function () {
     assert(Q('#sibling-selector ~ .sibling-selector').length, 2, 'found two siblings')
     assert(Q('#sibling-selector ~ div.sibling-selector').length, 2, 'found two siblings')
-    assert(Q('#sibling-selector + div.sibling-selector').length, 1, 'found two siblings')
-    assert(Q('#sibling-selector + .sibling-selector').length, 1, 'found two siblings')
+    assert(Q('#sibling-selector + div.sibling-selector').length, 1, 'found one sibling')
+    assert(Q('#sibling-selector + .sibling-selector').length, 1, 'found one sibling')
 
     assert(Q('.parent .oldest ~ .sibling').length, 4, 'found four younger siblings')
     assert(Q('.parent .middle ~ .sibling').length, 2, 'found two younger siblings')
@@ -156,6 +157,25 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
+sink('Element-context queries', function(test, ok) {
+  test('relationship-first queries', 3, function() {
+    var pass = false
+    try { pass = Q('> .direct-descend', Q('#direct-descend')[0]).length == 2 } catch (e) { }
+    ok(pass, 'found two direct descendents using > first');
+
+    pass = false
+    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')[0]).length == 2 } catch (e) { }
+    ok(pass, 'found two siblings with ~ first')
+
+    pass = false
+    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')[0]).length == 1 } catch (e) { }
+    ok(pass, 'found one sibling with + first')
+  })
+
+  test('exclude self in match', 1, function() {
+    ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
+  });
+})
 
 sink('tokenizer', function (test, ok) {
 

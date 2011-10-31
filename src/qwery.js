@@ -17,7 +17,7 @@
     , classOnly = /^\.([\w\-]+)$/
     , tagOnly = /^([\w\-]+)$/
     , tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/
-    , sibFirst = /^\s*[\~+]/
+    , splittable = /(^|,)\s*[>~+]/
     , normalizr = /\s*([\s\+\~>])\s*/g
     , splitters = /[\s\>\+\~]/
     , splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/
@@ -67,13 +67,15 @@
 
   function each(a, fn) {
     // don't bother with native forEach, slow for this simple case
-    for (var i = 0, l = a.length; i < l; i++) fn.call(null, a[i])
+    var i = 0, l = a.length
+    for (; i < l; i++) fn.call(null, a[i])
   }
 
   function flatten(ar) {
     var r = []
     each(ar, function(a) {
-      if (arrayLike(a)) r = r.concat(a)
+      // concat won't work properly with NodeList
+      if (arrayLike(a)) each(a, function(e) { r.push(e) })
       else r.push(a)
     });
     return r
@@ -94,9 +96,7 @@
 
   // this next method expect at most these args
   // given => div.hello[title="world"]:foo('bar')
-
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
-
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var i, m, c, k, o, classes
     if (tag && this.tagName.toLowerCase() !== tag) return false
@@ -148,7 +148,7 @@
     return 0
   }
 
-  function _qwery(selector, _root) {
+  function _qwery(selector) {
     var r = [], ret = [], m, token, tag, els, root, intr, item, skipCheck
       , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       , dividedTokens = selector.match(dividers)
@@ -157,27 +157,23 @@
     tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
     token = tokens.pop()
-    if (!(root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc)) {
+    if (!(root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc))
       return r
-    } else if (tokens.length && tokens[0] === '') {
-      root = _root
-    }
 
     intr = q(token)
     els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
       function (r) {
         while (root = root.nextSibling) {
-          root.nodeType === 1 && (intr[1] ? intr[1] === root.tagName.toLowerCase() : 1) && r.push(root)
+          root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && r.push(root)
         }
         return r
       }([]) :
       root[byTag](intr[1] || '*')
-    each(els, function(e) { if (item = interpret.apply(e, intr)) r.push(item) })
+    for (var i = 0, l = els.length; i < l; i++) if (item = interpret.apply(els[i], intr)) r.push(item)
     if (!tokens.length) return r
 
     // loop through all descendent tokens
-    skipCheck = sibFirst.test(selector)
-    each(r, function(e) { if (skipCheck || _ancestorMatch(e, tokens, dividedTokens, _root)) ret.push(e) })
+    each(r, function(e) { if (ancestorMatch(e, tokens, dividedTokens)) ret.push(e) })
     return ret
   }
 
@@ -190,25 +186,24 @@
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       dividedTokens = selector.match(dividers)
       tokens = tokens.slice(0) // copy array
-      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || _ancestorMatch(el, tokens, dividedTokens, root))) {
+      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
     }
   }
 
-  function _ancestorMatch(el, tokens, dividedTokens, root) {
-    var i, p = el, found;
-    // loop through each token backwards crawling up tree
-    for (i = tokens.length; i--;) {
-      // loop through parent nodes
-      while (p = walker[dividedTokens[i]](p, el)) {
-        if (found = interpret.apply(p, q(tokens[i]))) break;
+  function ancestorMatch(el, tokens, dividedTokens, root) {
+    var cand
+    function walk(e, i, p) {
+      while (p = walker[dividedTokens[i]](p, e)) {
+        if (found = interpret.apply(p, q(tokens[i]))) {
+          if (i) {
+            if (cand = walk(p, i - 1, p)) return cand
+          } else return p
+        }
       }
     }
-
-    if (root && found) found = isAncestor(found, root)
-
-    return !!found
+    return (cand = walk(el, tokens.length - 1, el)) && (!root || isAncestor(cand, root))
   }
 
   function isNode(el) {
@@ -233,7 +228,7 @@
 
   function normalizeRoot(root) {
     if (!root) return doc
-    if (typeof root === 'string') return qwery(root)[0]
+    if (typeof root == 'string') return qwery(root)[0]
     if (arrayLike(root)) return root[0]
     return root
   }
@@ -249,6 +244,25 @@
     if (m = selector.match(idOnly)) return (el = doc[byId](m[1])) ? [el] : []
     if (m = selector.match(tagOnly)) return flatten(root[byTag](m[1]))
     return select(selector, root)
+  }
+
+  function relationshipFirst(root, collector) {
+    var quick = function(s) {
+          collector(root, s)
+        }
+      , splitter = function(s) {
+          var oid, nid, ctx = root;
+          if (!(nid = oid = root.getAttribute('id')))
+            root.setAttribute('id', nid = '__qwerymeupscotty')
+          ctx = doc
+          s = '#' + nid + s
+          collector(ctx, s)
+          !oid && root.setAttribute('id', oid)
+        }
+
+    return function(s) {
+      (root !== doc && splittable.test(s) ? splitter : quick)(s)
+    }
   }
 
   var isAncestor = 'compareDocumentPosition' in html ?
@@ -272,8 +286,13 @@
 
   select = supportsCSS3 ?
     function (selector, root) {
-      var m
-      return flatten((m = selector.match(classOnly)) ? root[byClass](m[1]) : root[qSA](selector))
+      var results = [], m = selector.match(classOnly)
+      if (m) return flatten(root[byClass](m[1]))
+      if (root === doc || !splittable.test(selector)) return root[qSA](selector)
+      each(selector.split(','), relationshipFirst(root, function(ctx, s) {
+        results.push(ctx[qSA](s))
+      }))
+      return flatten(results)
     } :
     function (selector, root) {
       var result = [], m, r, skipCheck
@@ -282,15 +301,17 @@
         // simple & common case, safe to use non-CSS3 qSA if present
         if (root[qSA]) return flatten(root[qSA](selector))
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
-        each(root[byTag](m[1] || '*'), function(it) { r.test(it.className) && result.push(it) })
+        items = root[byTag](m[1] || '*')
+        for (var i = 0, l = items.length; i < l; i++) {
+          r.test(items[i].className) && result.push(items[i])
+        }
         return result
       }
-      each(selector.split(','), function(it) {
-        skipCheck = root === doc || sibFirst.test(it)
-        each(_qwery(it, root), function(e) {
-          if (skipCheck || isAncestor(e, root)) result.push(e)
+      each(selector.split(','), relationshipFirst(root, function(ctx, s) {
+        each(_qwery(s), function(e) {
+          if (ctx === doc || isAncestor(e, root)) result.push(e)
         })
-      })
+      }))
       return uniq(result)
     }
 
