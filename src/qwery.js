@@ -81,6 +81,12 @@
     return r
   }
 
+  function arrayify(ar) {
+    var i = 0, l = ar.length, r = []
+    for (; i < l; i++) r[i] = ar[i]
+    return r
+  }
+
   function previous(n) {
     while (n = n.previousSibling) if (n.nodeType == 1) break;
     return n
@@ -295,18 +301,6 @@
         } :
         function(e, a) { return e.getAttribute(a) }
    }()
-  , arrayify = function() {
-      // can we turn a NodeList to an array with slice?
-      try {
-        Array.prototype.slice.call(html.childNodes, 0)[0].nodeType
-        return function(ar) { return Array.prototype.slice.call(ar, 0) }
-      } catch(e) {}
-      return function(ar) {
-        var i = 0, l = ar.length, r = []
-        for (; i < l; i++) r[i] = ar[i]
-        return r
-      }
-    }()
   , supportsCSS3 = function () {
       // does native qSA support CSS3 level selectors
       try {
