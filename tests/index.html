@@ -22,7 +22,6 @@
     <script type="text/javascript">
       var Q = qwery.noConflict()
     </script>
-    <script src="../vendor/sizzle.js"></script>
   </head>
   <body>
     <h1>Qwery Tests</h1>
@@ -83,15 +82,17 @@
           <em class="order-matters"></em><b class="order-matters"></b>
         </a>
       </div>
-      <div id="direct-descend">
+      <div id="direct-descend" class="oogabooga">
         <div></div>
         <div class="direct-descend">
+          <span></span>
           <div class="direct-descend">
-            <div class="lvl2" id="toodeep"></div>
+            <div class="lvl2" id="toodeep"><span></span></div>
           </div>
-	  <div class="direct-descend"></div>
+	  <div class="direct-descend"><span></span></div>
           <div class="lvl2" id="l2">
-            <div class="direct-descend"></div>
+            <span></span>
+            <div class="direct-descend"><span></span></div>
           </div>
           <div class="lvl2" id="l3"></div>
         </div>
