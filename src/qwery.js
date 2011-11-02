@@ -260,11 +260,12 @@
       var oid, nid
       if (splittable.test(s)) {
         if (root !== doc) {
+         // make sure the el has an id, rewrite the query, set root to doc and run it
          if (!(nid = oid = root.getAttribute('id')))
            root.setAttribute('id', nid = '__qwerymeupscotty')
          s = '#' + nid + s
          collector(doc, s)
-         oid || root.setAttribute('id', oid)
+         oid || root.removeAttribute('id')
         }
         return
       }
@@ -314,7 +315,7 @@
     }()
   , select = supportsCSS3 ?
     function (selector, root) {
-      var res = [], ss, e
+      var result = [], ss, e
       if (root === doc || !splittable.test(selector)) {
         // most work is done right here, defer to qSA
         return (e = root[qSA](selector)).length === 1 ? [e.item(0)] : e.length ? arrayify(e) : []
@@ -322,13 +323,13 @@
       // special case where we need the services of `collectSelector()`
       each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
         e = ctx[qSA](s)
-        if (e.length == 1) res[res.length] = e.item(0)
-        else if (e.length) res = res.concat(arrayify(e))
+        if (e.length == 1) result[result.length] = e.item(0)
+        else if (e.length) result = result.concat(arrayify(e))
       }))
-      return ss.length > 1 && res.length > 1 ? uniq(res) : res
+      return ss.length > 1 && result.length > 1 ? uniq(result) : result
     } :
     function (selector, root) {
-      var res = [], m, i, l, r, ss
+      var result = [], m, i, l, r, ss
       selector = selector.replace(normalizr, '$1')
       if (m = selector.match(tagAndOrClass)) {
         // simple & common case, safe to use non-CSS3 qSA if present
@@ -336,18 +337,18 @@
         r = classRegex(m[2])
         items = root[byTag](m[1] || '*')
         for (i = 0, l = items.length; i < l; i++) {
-          if (r.test(items[i].className)) res[res.length] = items[i]
+          if (r.test(items[i].className)) result[result.length] = items[i]
         }
-        return res
+        return result
       }
       // more complex selector, get `_qwery()` to do the work for us
       each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
         var i = 0, r = _qwery(s), l = r.length
         for (; i < l; i++) {
-          if (ctx === doc || isAncestor(r[i], root)) res[res.length] = r[i]
+          if (ctx === doc || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
-      return ss.length > 1 && res.length > 1 ? uniq(res) : res
+      return ss.length > 1 && result.length > 1 ? uniq(result) : result
     }
 
   qwery.uniq = uniq

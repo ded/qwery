@@ -173,7 +173,7 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 });
 
 sink('Element-context queries', function(test, ok) {
-  test('relationship-first queries', 3, function() {
+  test('relationship-first queries', 5, function() {
     var pass = false
     try { pass = Q('> .direct-descend', Q('#direct-descend')[0]).length == 2 } catch (e) { }
     ok(pass, 'found two direct descendents using > first');
@@ -185,6 +185,12 @@ sink('Element-context queries', function(test, ok) {
     pass = false
     try { pass = Q('+ .sibling-selector', Q('#sibling-selector')[0]).length == 1 } catch (e) { }
     ok(pass, 'found one sibling with + first')
+
+    pass = false
+    var ctx = Q('.idless')[0]
+    try { pass = Q('> .tokens a', ctx).length == 1 } catch (e) { }
+    ok(pass, 'found one sibling from a root with no id')
+    ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
   })
 
   test('exclude self in match', 1, function() {
