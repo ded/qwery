@@ -312,7 +312,7 @@
       var result = [], ss, e
       if (root === doc || !splittable.test(selector)) {
         // most work is done right here, defer to qSA
-        return (e = root[qSA](selector)).length === 1 ? [e.item(0)] : e.length ? arrayify(e) : []
+        return arrayify(root[qSA](selector))
       }
       // special case where we need the services of `collectSelector()`
       each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
