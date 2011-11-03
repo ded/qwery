@@ -215,7 +215,7 @@
   }
 
   function isNode(el) {
-    return typeof el === 'object' && (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9))
+    return el && typeof el === 'object' && el.nodeType && (el.nodeType == 1 || el.nodeType == 9)
   }
 
   function uniq(ar) {
