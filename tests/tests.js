@@ -40,12 +40,13 @@ sink('CSS 1', function (test, ok) {
     ok(!!Q('h1')[0], 'found 1 h1');
   });
 
-  test('get elements by class', 5, function () {
+  test('get elements by class', 6, function () {
     ok(Q('#boosh .a').length == 2, 'found two elements');
     ok(!!Q('#boosh div.a')[0], 'found one element');
     ok(Q('#boosh div').length == 2, 'found two {div} elements');
     ok(!!Q('#boosh span')[0], 'found one {span} element');
     ok(!!Q('#boosh div div')[0], 'found a single div');
+    ok(Q('a.odd').length == 1, 'found single a');
   });
 
   test('combos', 1, function () {
@@ -54,6 +55,20 @@ sink('CSS 1', function (test, ok) {
 
   test('class with dashes', 1, function() {
     ok(Q('.class-with-dashes').length == 1, 'found something');
+  });
+
+  test('deep messy relationships', 6, function() {
+    // these are mostly characterised by a combination of tight relationships and loose relationships
+    // on the right side of the query it's easy to find matches but they tighten up quickly as you
+    // go to the left
+    // they are useful for making sure the dom crawler doesn't stop short or over-extend as it works
+    // up the tree the crawl needs to be comprehensive
+    ok(Q('div#fixtures > div a').length == 5, 'found four results for "div#fixtures > div a"')
+    ok(Q('.direct-descend > .direct-descend .lvl2').length == 1, 'found one result for ".direct-descend > .direct-descend .lvl2"')
+    ok(Q('.direct-descend > .direct-descend div').length == 1, 'found one result for ".direct-descend > .direct-descend div"')
+    ok(Q('.direct-descend > .direct-descend div').length == 1, 'found one result for ".direct-descend > .direct-descend div"')
+    ok(Q('div#fixtures div ~ a div').length == 0, 'found no results for odd query')
+    ok(Q('.direct-descend > .direct-descend > .direct-descend ~ .lvl2').length == 0, 'found no results for another odd query')
   });
 });
 
@@ -106,6 +121,11 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
     ok(Q('#attributes div[test|=two]')[0] == expected, 'found attribute with |=');
   });
 
+  test('[href=#x] special case', 1, function () {
+    var expected = document.getElementById('attr-test-4');
+    ok(Q('#attributes a[href="#aname"]')[0] == expected, 'found attribute with href=#x');
+  });
+
   /* CSS 3 SPEC */
 
   test('[attr^=val]', 1, function () {
@@ -123,20 +143,16 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
     ok(Q('#attributes div[test*=hree]')[0] == expected, 'found attribute with *=');
   });
 
-  test('[href=#x] special case', 1, function () {
-    var expected = document.getElementById('attr-test-4');
-    ok(Q('#attributes a[href="#aname"]')[0] == expected, 'found attribute with href=#x');
-  });
-
-  test('direct descendants', 1, function () {
+  test('direct descendants', 2, function () {
     ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
+    ok(Q('#direct-descend > .direct-descend > .lvl2').length == 3, 'found three second-level direct descendents');
   });
 
   test('sibling elements', 17, function () {
     assert(Q('#sibling-selector ~ .sibling-selector').length, 2, 'found two siblings')
     assert(Q('#sibling-selector ~ div.sibling-selector').length, 2, 'found two siblings')
-    assert(Q('#sibling-selector + div.sibling-selector').length, 1, 'found two siblings')
-    assert(Q('#sibling-selector + .sibling-selector').length, 1, 'found two siblings')
+    assert(Q('#sibling-selector + div.sibling-selector').length, 1, 'found one sibling')
+    assert(Q('#sibling-selector + .sibling-selector').length, 1, 'found one sibling')
 
     assert(Q('.parent .oldest ~ .sibling').length, 4, 'found four younger siblings')
     assert(Q('.parent .middle ~ .sibling').length, 2, 'found two younger siblings')
@@ -156,6 +172,31 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
+sink('Element-context queries', function(test, ok) {
+  test('relationship-first queries', 5, function() {
+    var pass = false
+    try { pass = Q('> .direct-descend', Q('#direct-descend')[0]).length == 2 } catch (e) { }
+    ok(pass, 'found two direct descendents using > first');
+
+    pass = false
+    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')[0]).length == 2 } catch (e) { }
+    ok(pass, 'found two siblings with ~ first')
+
+    pass = false
+    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')[0]).length == 1 } catch (e) { }
+    ok(pass, 'found one sibling with + first')
+
+    pass = false
+    var ctx = Q('.idless')[0]
+    try { pass = Q('> .tokens a', ctx).length == 1 } catch (e) { }
+    ok(pass, 'found one sibling from a root with no id')
+    ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
+  })
+
+  test('exclude self in match', 1, function() {
+    ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
+  });
+})
 
 sink('tokenizer', function (test, ok) {
 
