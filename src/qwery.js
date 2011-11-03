@@ -267,13 +267,12 @@
       if (splittable.test(s)) {
         if (root !== doc) {
          // make sure the el has an id, rewrite the query, set root to doc and run it
-         if (!(nid = oid = root.getAttribute('id')))
-           root.setAttribute('id', nid = '__qwerymeupscotty')
+         if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
          s = '#' + nid + s
          collector(doc, s)
          oid || root.removeAttribute('id')
         }
-        return
+        return;
       }
       s.length && collector(root, s)
     }
