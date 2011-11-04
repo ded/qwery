@@ -193,6 +193,14 @@ sink('Element-context queries', function(test, ok) {
     ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
   })
 
+  test('unattached elements', 2, function() {
+    // should be able to query on an element that hasn't been inserted into the dom
+    var el = document.createElement('div')
+    el.innerHTML = '<div><p><em></em><em></em></p></div><p><div class="a"><span></span></div></p>'
+    ok(Q('.a span', el).length == 1, 'should find child elements of unattached element')
+    ok(Q('> div p em', el).length == 2, 'should find child elements of unattached element, relationship first')
+  })
+
   test('exclude self in match', 1, function() {
     ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
   });

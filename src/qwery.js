@@ -149,21 +149,20 @@
   }
 
   // given a selector, first check for simple cases then collect all base candidate matches and filter
-  function _qwery(selector) {
-    var r = [], ret = [], i, l, m, token, tag, els, root, intr, item
+  function _qwery(selector, _root) {
+    var r = [], ret = [], i, l, m, token, tag, els, intr, item, root = _root
       , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       , dividedTokens = selector.match(dividers)
 
     if (!tokens.length) return r
-    tokens = tokens.slice(0) // this makes a copy of the array so the cached original is not affected
 
-    token = tokens.pop()
-    root = tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) ? doc[byId](m[1]) : doc
-    if (!root) return r
+    token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) && !(root = doc[byId](m[1])))
+      return r
 
     intr = q(token)
     // collect base candidates to filter
-    els = root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
+    els = root !== _root && root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
       function (r) {
         while (root = root.nextSibling) {
           root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && (r[r.length] = root)
@@ -268,13 +267,13 @@
         if (root !== doc) {
          // make sure the el has an id, rewrite the query, set root to doc and run it
          if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
-         s = '#' + nid + s
-         collector(doc, s)
+         s = '[id="' + nid + '"]' + s // avoid byId and allow us to match context element
+         collector(root.parentNode || root, s, true)
          oid || root.removeAttribute('id')
         }
         return;
       }
-      s.length && collector(root, s)
+      s.length && collector(root, s, false)
     }
   }
 
@@ -335,10 +334,10 @@
         return result
       }
       // more complex selector, get `_qwery()` to do the work for us
-      each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
-        var i = 0, r = _qwery(s), l = r.length
+      each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
+        var i = 0, r = _qwery(s, ctx), l = r.length
         for (; i < l; i++) {
-          if (ctx === doc || isAncestor(r[i], root)) result[result.length] = r[i]
+          if (ctx === doc || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result
