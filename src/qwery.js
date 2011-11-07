@@ -251,7 +251,7 @@
     }
     if (selector && arrayLike(selector)) return flatten(selector)
     if (m = selector.match(easy)) {
-      if (m[1]) return (el = doc[byId](m[1])) ? [el] : []
+      if (m[1]) return (el = root[byId](m[1])) ? [el] : []
       if (m[2]) return arrayify(root[byTag](m[2]))
       if (supportsCSS3 && m[3]) return arrayify(root[byClass](m[3]))
     }
