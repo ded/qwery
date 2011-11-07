@@ -2,26 +2,7 @@
 <html lang="en-us">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <title>Qwery tests</title>
-    <style type="text/css">
-      #fixtures {
-        position: absolute;
-        top: -9999px;
-      }
-    </style>
-    <link rel="stylesheet" href="../node_modules/sink-test/src/sink.css" type="text/css">
-    <script src="../node_modules/sink-test/src/sink.js"></script>
-    <script type="text/javascript">
-      // test for noConflict()
-      function qwery() {
-        return 'success'
-      }
-    </script>
-    <script src="../src/qwery.js"></script>
-    <script src="../src/pseudos.js"></script>
-    <script type="text/javascript">
-      var Q = qwery.noConflict()
-    </script>
+    <title>Qwery Test iFrame</title>
   </head>
   <body>
     <h1>Qwery Tests</h1>
@@ -44,14 +25,14 @@
         <div class="even pseudos pseudo-2"></div>
         <div class="odd"></div>
         <div class="even"></div>
-        <a class="odd"></a>
+        <br class="odd"></br>
         <div class="even"></div>
         <div class="odd"></div>
       </div>
       <div foo="bar"></div>
       <div class="a"></div>
       <div class="class-with-dashes"></div>
-      <div id="boosh">
+      <div id="hsoob">
         <div class="a b">
           <div class="d e" test="fg" id="booshTest"></div>
           <em nopass="copyrighters" rel="copyright booshrs" test="f g"></em>
@@ -123,7 +104,5 @@
       </div>
     </div>
      <ol id="tests"></ol>
-     <iframe id="frame" src="frame.html" style="width: 0; height: 0; margin-left: -1000px;"></iframe>
-     <script src="tests.js"></script>
   </body>
 </html>
