@@ -310,7 +310,7 @@
   , supportsCSS3 = function () {
       // does native qSA support CSS3 level selectors
       try {
-        return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA](':nth-of-type(1)').length
+        return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA]('body:nth-of-type(1)').length
       } catch (e) { return false }
     }()
   , select = supportsCSS3 ?
