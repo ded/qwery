@@ -101,7 +101,7 @@
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var i, m, k, o, classes
-    if (tag && this.tagName.toLowerCase() !== tag) return false
+    if (tag && this.tagName && this.tagName.toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
@@ -157,7 +157,7 @@
     if (!tokens.length) return r
 
     token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) && !(root = doc[byId](m[1])))
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) && !(root = _root[byId](m[1])))
       return r
 
     intr = q(token)
@@ -264,7 +264,7 @@
     return function(s) {
       var oid, nid
       if (splittable.test(s)) {
-        if (root !== doc) {
+        if (root.nodeType !== 9) {
          // make sure the el has an id, rewrite the query, set root to doc and run it
          if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
          s = '[id="' + nid + '"]' + s // avoid byId and allow us to match context element
@@ -282,7 +282,7 @@
       return (container.compareDocumentPosition(element) & 16) == 16
     } : 'contains' in html ?
     function (element, container) {
-      container = container == doc || container == window ? html : container
+      container = container.nodeType === 9 || container == window ? html : container
       return container !== element && container.contains(element)
     } :
     function (element, container) {
@@ -302,13 +302,13 @@
   , supportsCSS3 = function () {
       // does native qSA support CSS3 level selectors
       try {
-        return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA](':nth-of-type(1)').length
+        return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA]('body:nth-of-type(1)').length
       } catch (e) { return false }
     }()
   , select = supportsCSS3 ?
     function (selector, root) {
       var result = [], ss, e
-      if (root === doc || !splittable.test(selector)) {
+      if (root.nodeType === 9 || !splittable.test(selector)) {
         // most work is done right here, defer to qSA
         return arrayify(root[qSA](selector))
       }
@@ -337,7 +337,7 @@
       each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
         var i = 0, r = _qwery(s, ctx), l = r.length
         for (; i < l; i++) {
-          if (ctx === doc || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
+          if (ctx.nodeType === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result

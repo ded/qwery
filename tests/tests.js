@@ -279,7 +279,7 @@ sink('pseudo-selectors', function (test, ok) {
     var sixth = document.getElementById('pseudos').getElementsByTagName('div')[4];
 
     ok(Q('#pseudos :nth-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-child(+3n-2)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos :nth-child(3n-2)').length == 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
     ok(Q('#pseudos :nth-child(-n+6)').length == 6, 'found 6 elements');
     ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
@@ -405,17 +405,16 @@ sink('testing is()', function (test, ok) {
 });
 
 sink('selecting elements in other documents', function (test, ok) {
-  var doc = document.getElementById('frame').contentDocument;
-  doc.write(
+  var doc = document.getElementById('frame').contentWindow.document
+  doc.body.innerHTML =
     '<div id="hsoob">' +
       '<div class="a b">' +
-        '<div class="d e" test="fg" id="booshTest"></div>' +
-        '<em nopass="copyrighters" rel="copyright booshrs" test="f g"></em>' +
-        '<span class="h i a"></span>' +
+        '<div class="d e sib" test="fg" id="booshTest"></div>' +
+        '<em nopass="copyrighters" rel="copyright booshrs" test="f g" class="sib"></em>' +
+        '<span class="h i a sib"></span>' +
       '</div>' +
       '<p class="odd"></p>' +
     '</div>'
-  );
 
   test('get element by id', 1, function () {
     var result = Q('#hsoob', doc);
@@ -429,6 +428,13 @@ sink('selecting elements in other documents', function (test, ok) {
     ok(!!Q('#hsoob span', doc)[0], 'found one {span} element');
     ok(!!Q('#hsoob div div', doc)[0], 'found a single div');
     ok(Q('p.odd', doc).length == 1, 'found single br');
+  });
+
+  test('complex selectors', 4, function () {
+    ok(Q('.d ~ .sib', doc).length === 2, 'found one ~ sibling')
+    ok(Q('.a .d + .sib', doc).length === 1, 'found 2 + siblings')
+    ok(Q('#hsoob > div > .h', doc).length === 1, 'found span using child selectors')
+    ok(Q('.a .d ~ .sib[test="f g"]', doc).length === 1, 'found 1 ~ sibling with test attribute')
   });
 
 });
