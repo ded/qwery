@@ -157,8 +157,8 @@
     if (!tokens.length) return r
 
     token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly)) && !(root = _root[byId](m[1])))
-      return r
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = _root[byId](m[1])
+    if (!root) return r
 
     intr = q(token)
     // collect base candidates to filter
