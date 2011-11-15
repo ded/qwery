@@ -29,6 +29,10 @@
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
     , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
+      // check if we can pass a selector to a non-CSS3 compatible qSA.
+      // *not* suitable for validating a selector, it's too lose; it's the users' responsibility to pass valid selectors
+      // this regex must be kept in sync with the one in tests.js
+    , css2 = /^(([\w\-]*[#\.]?[\w\-]+|\*)?(\[[\w\-]+([\~\|]?=['"][ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+["'])?\])?(\:(link|visited|active|hover))?([\s>+~\.,]|(?:$)))+$/
     , walker = {
         ' ': function (node) {
           return node && node !== html && node.parentNode
@@ -299,14 +303,19 @@
         } :
         function(e, a) { return e.getAttribute(a) }
    }()
+    // does native qSA support CSS3 level selectors
   , supportsCSS3 = function () {
-      // does native qSA support CSS3 level selectors
-      try {
-        return doc[byClass] && doc.querySelector && doc[qSA] && doc[qSA]('body:nth-of-type(1)').length
-      } catch (e) { return false }
+      if (doc[byClass] && doc.querySelector && doc[qSA]) {
+        try {
+          var p = doc.createElement('p')
+          p.innerHTML = '<p></p>'
+          return p[qSA](':nth-of-type(1)').length
+        } catch (e) { }
+      }
+      return false
     }()
-  , select = supportsCSS3 ?
-    function (selector, root) {
+    // native support for CSS3 selectors
+  , selectCSS3 = function (selector, root) {
       var result = [], ss, e
       if (root.nodeType === 9 || !splittable.test(selector)) {
         // most work is done right here, defer to qSA
@@ -319,13 +328,27 @@
         else if (e.length) result = result.concat(arrayify(e))
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result
-    } :
-    function (selector, root) {
+    }
+    // native support for CSS2 selectors only
+  , selectCSS2qSA = function (selector, root) {
+      var i, r, l, ss, result = []
+      selector = selector.replace(normalizr, '$1')
+      // safe to pass whole selector to qSA
+      if (!splittable.test(selector) && css2.test(selector)) return arrayify(root[qSA](selector))
+      each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
+        // use native qSA if selector is compatile, otherwise use _qwery()
+        r = css2.test(s) ? ctx[qSA](s) : _qwery(s, ctx)
+        for (i = 0, l = r.length; i < l; i++) {
+          if (ctx.nodeType === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
+        }
+      }))
+      return ss.length > 1 && result.length > 1 ? uniq(result) : result
+    }
+    // no native selector support
+  , selectNonNative = function (selector, root) {
       var result = [], m, i, l, r, ss
       selector = selector.replace(normalizr, '$1')
       if (m = selector.match(tagAndOrClass)) {
-        // simple & common case, safe to use non-CSS3 qSA if present
-        if (root[qSA]) return arrayify(root[qSA](selector))
         r = classRegex(m[2])
         items = root[byTag](m[1] || '*')
         for (i = 0, l = items.length; i < l; i++) {
@@ -335,13 +358,14 @@
       }
       // more complex selector, get `_qwery()` to do the work for us
       each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
-        var i = 0, r = _qwery(s, ctx), l = r.length
-        for (; i < l; i++) {
+        r = _qwery(s, ctx)
+        for (i = 0, l = r.length; i < l; i++) {
           if (ctx.nodeType === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result
     }
+  , select = supportsCSS3 ? selectCSS3 : doc[qSA] ? selectCSS2qSA : selectNonNative
 
   qwery.uniq = uniq
   qwery.is = is
