@@ -308,7 +308,7 @@
       if (doc[byClass] && doc.querySelector && doc[qSA]) {
         try {
           var p = doc.createElement('p')
-          p.innerHTML = '<p></p>'
+          p.innerHTML = '<a/>'
           return p[qSA](':nth-of-type(1)').length
         } catch (e) { }
       }
