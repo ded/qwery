@@ -94,6 +94,82 @@ sink('CSS 2', function (test, ok) {
 
 });
 
+sink('CSS 2 identification', function (test, ok) {
+  // cases that we should be able to pass through to native non-CSS3 qSA where present (IE8)
+  // we get to ignore grouping here since selectors are split up for this case anyway
+  // we also get to work with normalized selectors
+  // this regex must be kept in sync with the one in src/qwery.js for the test to make sense
+  var css2 = /^(([\w\-]*[#\.]?[\w\-]+|\*)?(\[[\w\-]+([\~\|]?=['"][ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+["'])?\])?(\:(link|visited|active|hover))?([\s>+~\.,]|(?:$)))+$/
+    , css2Selectors = [
+          '*',
+        , 'DIV',
+        , 'e1 e2',
+        , 'parent>child'
+        , 'parent+child'
+        , 'parent~child' // CSS3 but IE8 supports ~
+        , '#id'
+        , 'el#id'
+        , 'el #id'
+        , 'el>#id'
+        , '#id>#id2'
+        , '.class'
+        , 'div.class'
+        , '#id.class'
+        , 'element.with.multiple.classes>bam'
+        //, 'el:first-child' -> IE8 buggy, don't do native
+        , 'a:link'
+        , 'a#id:link'
+        , '.class:visited'
+        , '#boo:active'
+        , 'div.class:hover'
+        //, '*:focus' -> IE8 doesn't support, don't do native
+        , 'hoo[foo]'
+        , '#hah[boo="moo"]'
+        , '.claz[attrib~=\'nooooooo!\']'
+        , 'ele[prop|="huh?"]'
+        , '.direct-descend>.direct-descend>.direct-descend'
+        , '.direct-descend>.direct-descend>.direct-descend~.lvl2'
+      ]
+    , nonCSS2Selectors = [
+          'p:empty'
+        , 'hoo:enabled'
+        , 'haa:disabled'
+        , '#bing:checked'
+        , '*:first-of-type'
+        , '*:last-of-type'
+        , '.class:last-child'
+        , 'yes:not'
+        , 'p:nth-child(2n+1)'
+        , 'p:nth-last-child(1n+2)'
+        , 'p:nth-last-of-type(3n+3)'
+        , 'p:nth-of-type(4n+2)'
+        , '*:only-child'
+        , '*:only-of-type'
+        , 'p#id:root'
+        , '#gak::selection'
+        , 'body:target'
+        // CSS2 buggy
+        , 'el:first-child'
+        , '*:focus'
+      ]
+
+  test('CSS2 selectors', css2Selectors.length, function() {
+    for (var i = 0; i < css2Selectors.length; i++) {
+      ok(css2.test(css2Selectors[i]), 'matched ' + css2Selectors[i])
+    }
+  })
+
+  test('CSS2 selectors grouped', 1, function() {
+    ok(css2.test(css2Selectors.join(',')), 'matched grouped CSS2 selectors')
+  })
+
+  test('non-CSS2 selectors', nonCSS2Selectors.length, function() {
+    for (var i = 0; i < nonCSS2Selectors.length; i++) {
+      ok(!css2.test(nonCSS2Selectors[i]), 'did not matche ' + nonCSS2Selectors[i])
+    }
+  })
+});
+
 sink('attribute selectors', function (test, ok, b, a, assert) {
 
   /* CSS 2 SPEC */
@@ -193,6 +269,14 @@ sink('Element-context queries', function(test, ok) {
     ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
   })
 
+  test('unattached elements', 2, function() {
+    // should be able to query on an element that hasn't been inserted into the dom
+    var el = document.createElement('div')
+    el.innerHTML = '<div><p><em></em><em></em></p></div><p><div class="a"><span></span></div></p>'
+    ok(Q('.a span', el).length == 1, 'should find child elements of unattached element')
+    ok(Q('> div p em', el).length == 2, 'should find child elements of unattached element, relationship first')
+  })
+
   test('exclude self in match', 1, function() {
     ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
   });
@@ -271,7 +355,7 @@ sink('pseudo-selectors', function (test, ok) {
     var sixth = document.getElementById('pseudos').getElementsByTagName('div')[4];
 
     ok(Q('#pseudos :nth-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-child(+3n-2)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos :nth-child(3n-2)').length == 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
     ok(Q('#pseudos :nth-child(-n+6)').length == 6, 'found 6 elements');
     ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
@@ -290,7 +374,7 @@ sink('pseudo-selectors', function (test, ok) {
     var third = document.getElementById('pseudos').getElementsByTagName('div')[2];
 
     ok(Q('#pseudos :nth-last-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-last-child(+3n-2)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos :nth-last-child(3n-2)').length == 3, 'found 3 elements');
     ok(Q('#pseudos :nth-last-child(-n+6)').length == 6, 'found 6 elements');
     ok(Q('#pseudos :nth-last-child(-n+5)').length == 5, 'found 5 elements');
     ok(Q('#pseudos :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
@@ -394,6 +478,41 @@ sink('testing is()', function (test, ok) {
     ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]', Q('#list')[0]), 'context');
     ok(!Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]', Q('#boosh')[0]), 'wrong context');
   });
+});
+
+sink('selecting elements in other documents', function (test, ok) {
+  var doc = document.getElementById('frame').contentWindow.document
+  doc.body.innerHTML =
+    '<div id="hsoob">' +
+      '<div class="a b">' +
+        '<div class="d e sib" test="fg" id="booshTest"></div>' +
+        '<em nopass="copyrighters" rel="copyright booshrs" test="f g" class="sib"></em>' +
+        '<span class="h i a sib"></span>' +
+      '</div>' +
+      '<p class="odd"></p>' +
+    '</div>'
+
+  test('get element by id', 1, function () {
+    var result = Q('#hsoob', doc);
+    ok(!!result[0], 'found element with id=hsoob');
+  });
+
+  test('get elements by class', 6, function () {
+    ok(Q('#hsoob .a', doc).length == 2, 'found two elements');
+    ok(!!Q('#hsoob div.a', doc)[0], 'found one element');
+    ok(Q('#hsoob div', doc).length == 2, 'found two {div} elements');
+    ok(!!Q('#hsoob span', doc)[0], 'found one {span} element');
+    ok(!!Q('#hsoob div div', doc)[0], 'found a single div');
+    ok(Q('p.odd', doc).length == 1, 'found single br');
+  });
+
+  test('complex selectors', 4, function () {
+    ok(Q('.d ~ .sib', doc).length === 2, 'found one ~ sibling')
+    ok(Q('.a .d + .sib', doc).length === 1, 'found 2 + siblings')
+    ok(Q('#hsoob > div > .h', doc).length === 1, 'found span using child selectors')
+    ok(Q('.a .d ~ .sib[test="f g"]', doc).length === 1, 'found 1 ~ sibling with test attribute')
+  });
+
 });
 
 start();
