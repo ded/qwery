@@ -1,10 +1,14 @@
 {
     "name": "qwery"
   , "description": "blazing fast CSS3 query selector engine"
-  , "version": "3.1.0"
+  , "version": "3.1.1"
   , "homepage": "https://github.com/ded/qwery"
   , "author": "Dustin Diaz <dustin@dustindiaz.com> (http://dustindiaz.com)"
-  , "contributors": ["Jacob Thornton <> (https://github.com/fat)"]
+  , "contributors": [
+        "Jacob Thornton <> (https://github.com/fat)"
+      , "Rod Vagg <> (https://github.com/rvagg)"
+      , "Andrew McCollum <> (https://github.com/amccollum)"
+    ]
   , "main": "./qwery.js"
   , "keywords": ["ender", "query", "css", "selector engine"]
   , "ender": "./src/ender.js"

@@ -152,3 +152,5 @@ Contributors
 -------
   * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
   * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
+  * [Rod Vagg](https://github.com/ded/qwery/commits/master?author=rvagg)
+  * [Andrew McCollum](https://github.com/ded/qwery/commits/master?author=amccollum)
