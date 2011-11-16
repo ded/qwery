@@ -396,4 +396,33 @@ sink('testing is()', function (test, ok) {
   });
 });
 
+sink('selecting elements in other documents', function (test, ok) {
+  var doc = document.getElementById('frame').contentDocument;
+  doc.write(
+    '<div id="hsoob">' +
+      '<div class="a b">' +
+        '<div class="d e" test="fg" id="booshTest"></div>' +
+        '<em nopass="copyrighters" rel="copyright booshrs" test="f g"></em>' +
+        '<span class="h i a"></span>' +
+      '</div>' +
+      '<p class="odd"></p>' +
+    '</div>'
+  );
+
+  test('get element by id', 1, function () {
+    var result = Q('#hsoob', doc);
+    ok(!!result[0], 'found element with id=hsoob');
+  });
+
+  test('get elements by class', 6, function () {
+    ok(Q('#hsoob .a', doc).length == 2, 'found two elements');
+    ok(!!Q('#hsoob div.a', doc)[0], 'found one element');
+    ok(Q('#hsoob div', doc).length == 2, 'found two {div} elements');
+    ok(!!Q('#hsoob span', doc)[0], 'found one {span} element');
+    ok(!!Q('#hsoob div div', doc)[0], 'found a single div');
+    ok(Q('p.odd', doc).length == 1, 'found single br');
+  });
+
+});
+
 start();
