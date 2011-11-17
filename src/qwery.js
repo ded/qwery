@@ -9,7 +9,6 @@
     , html = doc.documentElement
     , byClass = 'getElementsByClassName'
     , byTag = 'getElementsByTagName'
-    , byId = 'getElementById'
     , qSA = 'querySelectorAll'
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
@@ -161,7 +160,7 @@
     if (!tokens.length) return r
 
     token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = _root[byId](m[1])
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = byId(_root, m[1])
     if (!root) return r
 
     intr = q(token)
@@ -244,6 +243,12 @@
     return root
   }
 
+  function byId(root, id) {
+    if (root.nodeType === 9) return root.getElementById(id)
+    var el = root.ownerDocument ? root.ownerDocument.getElementById(id) : null
+    return el && isAncestor(el, root) ? el : null
+  }
+
   function qwery(selector, _root) {
     var m, el, root = normalizeRoot(_root)
 
@@ -254,7 +259,7 @@
     }
     if (selector && arrayLike(selector)) return flatten(selector)
     if (m = selector.match(easy)) {
-      if (m[1]) return (el = root[byId](m[1])) ? [el] : []
+      if (m[1]) return (el = byId(root, m[1])) ? [el] : []
       if (m[2]) return arrayify(root[byTag](m[2]))
       if (supportsCSS3 && m[3]) return arrayify(root[byClass](m[3]))
     }

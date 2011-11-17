@@ -31,6 +31,14 @@ sink('Contexts', function (test, ok) {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
   });
 
+  test('byId sub-queries within context', 6, function() {
+    ok(Q('#booshTest', Q('#boosh')).length == 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest', Q('#boosh')).length == 1, 'found ".class.class #id"')
+    ok(Q('.a>#booshTest', Q('#boosh')).length == 1, 'found ".class>#id"')
+    ok(Q('>.a>#booshTest', Q('#boosh')).length == 1, 'found ">.class>#id"')
+    ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
+    ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
+  })
 });
 
 sink('CSS 1', function (test, ok) {
@@ -39,6 +47,13 @@ sink('CSS 1', function (test, ok) {
     ok(!!result[0], 'found element with id=boosh');
     ok(!!Q('h1')[0], 'found 1 h1');
   });
+
+  test('byId sub-queries', 4, function() {
+    ok(Q('#boosh #booshTest').length == 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest').length == 1, 'found ".class.class #id"')
+    ok(Q('#boosh>.a>#booshTest').length == 1, 'found "#id>.class>#id"')
+    ok(Q('.a>#booshTest').length == 1, 'found ".class>#id"')
+  })
 
   test('get elements by class', 6, function () {
     ok(Q('#boosh .a').length == 2, 'found two elements');
@@ -485,12 +500,13 @@ sink('selecting elements in other documents', function (test, ok) {
   doc.body.innerHTML =
     '<div id="hsoob">' +
       '<div class="a b">' +
-        '<div class="d e sib" test="fg" id="booshTest"></div>' +
+        '<div class="d e sib" test="fg" id="booshTest"><p><span id="spanny"></span></p></div>' +
         '<em nopass="copyrighters" rel="copyright booshrs" test="f g" class="sib"></em>' +
         '<span class="h i a sib"></span>' +
       '</div>' +
       '<p class="odd"></p>' +
-    '</div>'
+    '</div>' +
+    '<div id="lonelyHsoob"></div>'
 
   test('get element by id', 1, function () {
     var result = Q('#hsoob', doc);
@@ -512,6 +528,22 @@ sink('selecting elements in other documents', function (test, ok) {
     ok(Q('#hsoob > div > .h', doc).length === 1, 'found span using child selectors')
     ok(Q('.a .d ~ .sib[test="f g"]', doc).length === 1, 'found 1 ~ sibling with test attribute')
   });
+
+  test('byId sub-queries', 3, function () {
+    ok(Q('#hsoob #spanny', doc).length == 1, 'found "#id #id" in frame')
+    ok(Q('.a #spanny', doc).length == 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', doc).length == 1, 'found ".class #id #id" in frame')
+    //ok(Q('> #hsoob', doc).length == 1, 'found "> #id" in frame') --> would be good to support this, needs some tweaking though
+  })
+
+  test('byId sub-queries within sub-context', 6, function () {
+    ok(Q('#spanny', Q('#hsoob', doc)).length == 1, 'found "#id #id" in frame')
+    ok(Q('.a #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id #id" in frame')
+    ok(Q('.a > #booshTest', Q('#hsoob', doc)).length == 1, 'found "> .class #id" in frame')
+    ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendent)')
+    ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #boosh within #lonelyHsoob (unrelated)')
+  })
 
 });
 
