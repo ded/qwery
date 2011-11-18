@@ -7,7 +7,8 @@
       body {
         width: 700px;
         margin: 0 auto;
-        font: 300 18px 'helvetica neue', helvetica, arial;
+        font: 300 16px 'helvetica neue', helvetica, arial;
+        text-shadow: 0 2px 2px #CCC;
       }
       ul,li {
         list-style: none;
@@ -15,24 +16,31 @@
         padding: 0;
       }
       li {
-        font-size: 20px;
+        font-size: 16px;
       }
       h1, h2 {
         margin: 0;
-        font-weight: bold;
+        font-weight: normal;
         font-size: 30px;
       }
       h2 {
-        font-size: 23px;
+        font-size: 20px;
       }
       .result {
-        border: solid 1px #ddd;
-        margin-top: 20px;
-        padding: 15px;
+        background-color: lightGreen;
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 5px #ccc;
+      }
+      .result div {
+        padding: 7px;
+        border-radius: 5px;
+        background-color: #BDFCC9;
       }
       .win {
         color: rgb(0, 125, 0);
-        text-decoration: underline;
+        font-weight: bold;
       }
     </style>
     <script src="../vendor/nw.js"></script>
@@ -134,11 +142,11 @@
         var r = document.createElement('div'), html
         r.setAttribute('id', 'result_' + testidx)
         r.className = 'result'
-        html = '<h2>Benchmark: <i>' + tests[testidx].name + '</i> (' + iterations + ' iterations)</h2><ul>'
+        html = '<div><h2>Benchmark: <i>' + tests[testidx].name + '</i> (' + iterations + ' iterations)</h2><ul>'
         for (var i = 0; i < libs.length; i++) {
           html += '<li>' + libs[i].id + ': <span id="result_' + testidx + '_' + i + '"></span></li>'
         }
-        html += '</ul>'
+        html += '</ul></div>'
         r.innerHTML = html
         document.getElementById('results').appendChild(r)
       }
@@ -148,7 +156,9 @@
       }
 
       function win(t, l) {
-        document.getElementById('result_' + t + '_' + l).parentNode.className = 'win'
+        var el = document.getElementById('result_' + t + '_' + l).parentNode
+        el.className = 'win'
+        el.innerHTML = '&raquo; ' + el.innerHTML + ' &laquo;'
       }
 
       function markWinner() {
