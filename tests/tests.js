@@ -284,12 +284,22 @@ sink('Element-context queries', function(test, ok) {
     ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
   })
 
-  test('unattached elements', 2, function() {
-    // should be able to query on an element that hasn't been inserted into the dom
-    var el = document.createElement('div')
-    el.innerHTML = '<div><p><em></em><em></em></p></div><p><div class="a"><span></span></div></p>'
-    ok(Q('.a span', el).length == 1, 'should find child elements of unattached element')
-    ok(Q('> div p em', el).length == 2, 'should find child elements of unattached element, relationship first')
+  // should be able to query on an element that hasn't been inserted into the dom
+  var frag = document.createElement('div')
+  frag.innerHTML = '<div class="d i v"><p id="oooo"><em></em><em id="emem"></em></p></div><p id="sep"><div class="a"><span></span></div></p>'
+
+  test('detached fragments', 2, function() {
+    ok(Q('.a span', frag).length == 1, 'should find child elements of fragment')
+    ok(Q('> div p em', frag).length == 2, 'should find child elements of fragment, relationship first')
+  })
+
+  test('byId sub-queries within detached fragment', 6, function () {
+    ok(Q('#emem', frag).length == 1, 'found "#id" in fragment')
+    ok(Q('.d.i #emem', frag).length == 1, 'found ".class.class #id" in fragment')
+    ok(Q('.d #oooo #emem', frag).length == 1, 'found ".class #id #id" in fragment')
+    ok(Q('> div #oooo', frag).length == 1, 'found "> .class #id" in fragment')
+    ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendent)')
+    ok(!Q('#sep', Q('#emem', frag)).length, 'shouldn\'t find #sep within #emem (unrelated)')
   })
 
   test('exclude self in match', 1, function() {
@@ -537,12 +547,12 @@ sink('selecting elements in other documents', function (test, ok) {
   })
 
   test('byId sub-queries within sub-context', 6, function () {
-    ok(Q('#spanny', Q('#hsoob', doc)).length == 1, 'found "#id #id" in frame')
+    ok(Q('#spanny', Q('#hsoob', doc)).length == 1, 'found "#id -> #id" in frame')
     ok(Q('.a #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id" in frame')
     ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id #id" in frame')
     ok(Q('.a > #booshTest', Q('#hsoob', doc)).length == 1, 'found "> .class #id" in frame')
     ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendent)')
-    ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #boosh within #lonelyHsoob (unrelated)')
+    ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #booshTest within #lonelyHsoob (unrelated)')
   })
 
 });

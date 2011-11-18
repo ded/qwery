@@ -243,10 +243,12 @@
     return root
   }
 
-  function byId(root, id) {
-    if (root.nodeType === 9) return root.getElementById(id)
-    var el = root.ownerDocument ? root.ownerDocument.getElementById(id) : null
-    return el && isAncestor(el, root) ? el : null
+  function byId(root, id, el) {
+    // if doc, query on it, else query the parent doc or if a detached fragment rewrite the query and run on the fragment
+    return (root.nodeType === 9 && root.getElementById(id)) ||
+      (root.ownerDocument &&
+        (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
+          (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0])))
   }
 
   function qwery(selector, _root) {
