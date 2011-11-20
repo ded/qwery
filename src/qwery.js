@@ -22,7 +22,7 @@
     , splitters = /[\s\>\+\~]/
     , splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/
     , specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g
-    , simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
+    , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
     , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
     , pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
@@ -104,7 +104,7 @@
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var i, m, k, o, classes
-    if (tag && this.tagName && this.tagName.toLowerCase() !== tag) return false
+    if (tag && tag !== '*' && this.tagName && this.tagName.toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
@@ -198,6 +198,7 @@
         return true
       }
     }
+    return false
   }
 
   // given elements matching the right-most part of a selector, filter out any that don't match the rest
@@ -324,17 +325,20 @@
     // native support for CSS3 selectors
   , selectCSS3 = function (selector, root) {
       var result = [], ss, e
-      if (root.nodeType === 9 || !splittable.test(selector)) {
-        // most work is done right here, defer to qSA
-        return arrayify(root[qSA](selector))
-      }
-      // special case where we need the services of `collectSelector()`
-      each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
-        e = ctx[qSA](s)
-        if (e.length == 1) result[result.length] = e.item(0)
-        else if (e.length) result = result.concat(arrayify(e))
-      }))
-      return ss.length > 1 && result.length > 1 ? uniq(result) : result
+      try {
+        if (root.nodeType === 9 || !splittable.test(selector)) {
+          // most work is done right here, defer to qSA
+          return arrayify(root[qSA](selector))
+        }
+        // special case where we need the services of `collectSelector()`
+        each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
+          e = ctx[qSA](s)
+          if (e.length == 1) result[result.length] = e.item(0)
+          else if (e.length) result = result.concat(arrayify(e))
+        }))
+        return ss.length > 1 && result.length > 1 ? uniq(result) : result
+      } catch(e) { }
+      return selectNonNative(selector, root)
     }
     // native support for CSS2 selectors only
   , selectCSS2qSA = function (selector, root) {

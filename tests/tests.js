@@ -4,11 +4,14 @@ sink('no conflict', function (test, ok) {
   });
 });
 
+// custom pseudo just for tests
+Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
+
 sink('Contexts', function (test, ok) {
 
   test('should be able to pass optional context', 2, function () {
     ok(Q('.a').length === 3, 'no context found 3 elements (.a)');
-    ok(Q('.a', Q('#boosh')[0]).length === 2, 'context found 2 elements (#boosh .a)');
+    ok(Q('.a', Q('#boosh')).length === 2, 'context found 2 elements (#boosh .a)');
   });
 
   test('should be able to pass string as context', 5, function() {
@@ -266,15 +269,15 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 sink('Element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
-    try { pass = Q('> .direct-descend', Q('#direct-descend')[0]).length == 2 } catch (e) { }
+    try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
     ok(pass, 'found two direct descendents using > first');
 
     pass = false
-    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')[0]).length == 2 } catch (e) { }
+    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')).length == 2 } catch (e) { }
     ok(pass, 'found two siblings with ~ first')
 
     pass = false
-    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')[0]).length == 1 } catch (e) { }
+    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')).length == 1 } catch (e) { }
     ok(pass, 'found one sibling with + first')
 
     pass = false
@@ -349,6 +352,17 @@ sink('order matters', function (test, ok) {
 });
 
 sink('pseudo-selectors', function (test, ok) {
+  test(':contains', 4, function() {
+    ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
+    ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
+    // * is an important case, can cause weird errors
+    ok(Q('*:contains(humans)').length == 5, 'found by "*:contains(text)", including all ancestors')
+    ok(Q('ol:contains(humans)').length == 1, 'found by "ancestor:contains(text)"')
+  })
+
+  test(':not', 1, function() {
+    ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
+  })
 
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
@@ -448,6 +462,11 @@ sink('pseudo-selectors', function (test, ok) {
     location.hash = '';
   });
 
+  test('custom pseudos', 1, function() {
+    // :humanoid implemented just for testing purposes
+    ok(Q(':humanoid').length == 2, 'selected using custom pseudo')
+  });
+
 });
 
 sink('argument types', function (test, ok) {
@@ -499,6 +518,13 @@ sink('testing is()', function (test, ok) {
     ok(Q.is(el, 'ol ol li#attr-child-boosh[attr=boosh]'), 'tag tag tag#id[attr=val]');
     ok(Q.is(Q('#token-four')[0], 'div#fixtures>div a'), 'tag#id>tag tag where ambiguous middle tag requires backtracking');
   });
+  test('pseudos', 4, function() {
+    //TODO: more tests!
+    ok(Q.is(el, 'li:contains(hello)'), 'matching :contains(text)')
+    ok(!Q.is(el, 'li:contains(human)'), 'non-matching :contains(text)')
+    ok(Q.is(Q('#list>li')[2], ':humanoid'), 'matching custom pseudo')
+    ok(!Q.is(Q('#list>li')[1], ':humanoid'), 'non-matching custom pseudo')
+  })
   test('context', 2, function () {
     ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]', Q('#list')[0]), 'context');
     ok(!Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]', Q('#boosh')[0]), 'wrong context');
