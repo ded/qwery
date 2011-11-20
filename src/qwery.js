@@ -337,7 +337,7 @@
           else if (e.length) result = result.concat(arrayify(e))
         }))
         return ss.length > 1 && result.length > 1 ? uniq(result) : result
-      } catch(e) { }
+      } catch(ex) { }
       return selectNonNative(selector, root)
     }
     // native support for CSS2 selectors only
