@@ -1,5 +1,5 @@
 !function (doc, $) {
-  var q = require('qwery'), b
+  var q = require('qwery')
 
   $.pseudos = q.pseudos
 
@@ -8,10 +8,15 @@
     // rather than load-time since technically it's not a dependency and
     // can be loaded in any order
     // hence the lazy function re-definition
-    $._select = !(b = require('bonzo')) ? q : function (s, r) {
-      return /^\s*</.test(s) ? b.create(s, r) : q(s, r)
-    }
-    return b && /^\s*</.test(s) ? b.create(s, r) : q(s, r)
+    return ($._select = (function(b) {
+      try {
+        b = require('bonzo')
+        return function (s, r) {
+          return /^\s*</.test(s) ? b.create(s, r) : q(s, r)
+        }
+      } catch (e) { }
+      return q
+    })())(s, r)
   }
 
   $.ender({
