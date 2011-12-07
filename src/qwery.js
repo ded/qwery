@@ -357,7 +357,7 @@
     }
     // no native selector support
   , selectNonNative = function (selector, root) {
-      var result = [], m, i, l, r, ss
+      var result = [], items, m, i, l, r, ss
       selector = selector.replace(normalizr, '$1')
       if (m = selector.match(tagAndOrClass)) {
         r = classRegex(m[2])
