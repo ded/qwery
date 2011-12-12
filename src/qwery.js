@@ -52,12 +52,12 @@
     this.c = {}
   }
   cache.prototype = {
-      g: function (k) {
-        return this.c[k] || undefined
-      }
-    , s: function (k, v) {
-        return (this.c[k] = v)
-      }
+    g: function (k) {
+      return this.c[k] || undefined
+    }
+  , s: function (k, v) {
+      return (this.c[k] = v)
+    }
   }
 
   var classCache = new cache()
@@ -76,11 +76,7 @@
   }
 
   function flatten(ar) {
-    var r = []
-    each(ar, function(a) {
-      if (arrayLike(a)) r = r.concat(a)
-      else r[r.length] = a
-    });
+    for (var r = [], i = 0, l = ar.length; i < l; ++i) arrayLike(ar[i]) ? (r = r.concat(ar[i])) : (r[r.length] = ar[i])
     return r
   }
 
