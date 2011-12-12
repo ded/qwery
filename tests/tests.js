@@ -4,11 +4,14 @@ sink('no conflict', function (test, ok) {
   });
 });
 
+// custom pseudo just for tests
+Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
+
 sink('Contexts', function (test, ok) {
 
   test('should be able to pass optional context', 2, function () {
     ok(Q('.a').length === 3, 'no context found 3 elements (.a)');
-    ok(Q('.a', Q('#boosh')[0]).length === 2, 'context found 2 elements (#boosh .a)');
+    ok(Q('.a', Q('#boosh')).length === 2, 'context found 2 elements (#boosh .a)');
   });
 
   test('should be able to pass string as context', 5, function() {
@@ -31,6 +34,14 @@ sink('Contexts', function (test, ok) {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
   });
 
+  test('byId sub-queries within context', 6, function() {
+    ok(Q('#booshTest', Q('#boosh')).length == 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest', Q('#boosh')).length == 1, 'found ".class.class #id"')
+    ok(Q('.a>#booshTest', Q('#boosh')).length == 1, 'found ".class>#id"')
+    ok(Q('>.a>#booshTest', Q('#boosh')).length == 1, 'found ">.class>#id"')
+    ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
+    ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
+  })
 });
 
 sink('CSS 1', function (test, ok) {
@@ -39,6 +50,13 @@ sink('CSS 1', function (test, ok) {
     ok(!!result[0], 'found element with id=boosh');
     ok(!!Q('h1')[0], 'found 1 h1');
   });
+
+  test('byId sub-queries', 4, function() {
+    ok(Q('#boosh #booshTest').length == 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest').length == 1, 'found ".class.class #id"')
+    ok(Q('#boosh>.a>#booshTest').length == 1, 'found "#id>.class>#id"')
+    ok(Q('.a>#booshTest').length == 1, 'found ".class>#id"')
+  })
 
   test('get elements by class', 6, function () {
     ok(Q('#boosh .a').length == 2, 'found two elements');
@@ -55,6 +73,10 @@ sink('CSS 1', function (test, ok) {
 
   test('class with dashes', 1, function() {
     ok(Q('.class-with-dashes').length == 1, 'found something');
+  });
+
+  test('should ignore comment nodes', 1, function() {
+    ok(Q('#boosh *').length === 4, 'found only 4 elements under #boosh')
   });
 
   test('deep messy relationships', 6, function() {
@@ -248,18 +270,18 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
-sink('Element-context queries', function(test, ok) {
+sink('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
-    try { pass = Q('> .direct-descend', Q('#direct-descend')[0]).length == 2 } catch (e) { }
+    try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
     ok(pass, 'found two direct descendents using > first');
 
     pass = false
-    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')[0]).length == 2 } catch (e) { }
+    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')).length == 2 } catch (e) { }
     ok(pass, 'found two siblings with ~ first')
 
     pass = false
-    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')[0]).length == 1 } catch (e) { }
+    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')).length == 1 } catch (e) { }
     ok(pass, 'found one sibling with + first')
 
     pass = false
@@ -269,12 +291,22 @@ sink('Element-context queries', function(test, ok) {
     ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
   })
 
-  test('unattached elements', 2, function() {
-    // should be able to query on an element that hasn't been inserted into the dom
-    var el = document.createElement('div')
-    el.innerHTML = '<div><p><em></em><em></em></p></div><p><div class="a"><span></span></div></p>'
-    ok(Q('.a span', el).length == 1, 'should find child elements of unattached element')
-    ok(Q('> div p em', el).length == 2, 'should find child elements of unattached element, relationship first')
+  // should be able to query on an element that hasn't been inserted into the dom
+  var frag = document.createElement('div')
+  frag.innerHTML = '<div class="d i v"><p id="oooo"><em></em><em id="emem"></em></p></div><p id="sep"><div class="a"><span></span></div></p>'
+
+  test('detached fragments', 2, function() {
+    ok(Q('.a span', frag).length == 1, 'should find child elements of fragment')
+    ok(Q('> div p em', frag).length == 2, 'should find child elements of fragment, relationship first')
+  })
+
+  test('byId sub-queries within detached fragment', 6, function () {
+    ok(Q('#emem', frag).length == 1, 'found "#id" in fragment')
+    ok(Q('.d.i #emem', frag).length == 1, 'found ".class.class #id" in fragment')
+    ok(Q('.d #oooo #emem', frag).length == 1, 'found ".class #id #id" in fragment')
+    ok(Q('> div #oooo', frag).length == 1, 'found "> .class #id" in fragment')
+    ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendent)')
+    ok(!Q('#sep', Q('#emem', frag)).length, 'shouldn\'t find #sep within #emem (unrelated)')
   })
 
   test('exclude self in match', 1, function() {
@@ -324,6 +356,17 @@ sink('order matters', function (test, ok) {
 });
 
 sink('pseudo-selectors', function (test, ok) {
+  test(':contains', 4, function() {
+    ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
+    ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
+    // * is an important case, can cause weird errors
+    ok(Q('*:contains(humans)').length == 5, 'found by "*:contains(text)", including all ancestors')
+    ok(Q('ol:contains(humans)').length == 1, 'found by "ancestor:contains(text)"')
+  })
+
+  test(':not', 1, function() {
+    ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
+  })
 
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
@@ -423,6 +466,11 @@ sink('pseudo-selectors', function (test, ok) {
     location.hash = '';
   });
 
+  test('custom pseudos', 1, function() {
+    // :humanoid implemented just for testing purposes
+    ok(Q(':humanoid').length == 2, 'selected using custom pseudo')
+  });
+
 });
 
 sink('argument types', function (test, ok) {
@@ -448,7 +496,7 @@ sink('argument types', function (test, ok) {
 
 });
 
-sink('testing is()', function (test, ok) {
+sink('is()', function (test, ok) {
   var el = document.getElementById('attr-child-boosh');
   test('simple selectors', 9, function () {
     ok(Q.is(el, 'li'), 'tag');
@@ -474,6 +522,13 @@ sink('testing is()', function (test, ok) {
     ok(Q.is(el, 'ol ol li#attr-child-boosh[attr=boosh]'), 'tag tag tag#id[attr=val]');
     ok(Q.is(Q('#token-four')[0], 'div#fixtures>div a'), 'tag#id>tag tag where ambiguous middle tag requires backtracking');
   });
+  test('pseudos', 4, function() {
+    //TODO: more tests!
+    ok(Q.is(el, 'li:contains(hello)'), 'matching :contains(text)')
+    ok(!Q.is(el, 'li:contains(human)'), 'non-matching :contains(text)')
+    ok(Q.is(Q('#list>li')[2], ':humanoid'), 'matching custom pseudo')
+    ok(!Q.is(Q('#list>li')[1], ':humanoid'), 'non-matching custom pseudo')
+  })
   test('context', 2, function () {
     ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]', Q('#list')[0]), 'context');
     ok(!Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]', Q('#boosh')[0]), 'wrong context');
@@ -485,12 +540,13 @@ sink('selecting elements in other documents', function (test, ok) {
   doc.body.innerHTML =
     '<div id="hsoob">' +
       '<div class="a b">' +
-        '<div class="d e sib" test="fg" id="booshTest"></div>' +
+        '<div class="d e sib" test="fg" id="booshTest"><p><span id="spanny"></span></p></div>' +
         '<em nopass="copyrighters" rel="copyright booshrs" test="f g" class="sib"></em>' +
         '<span class="h i a sib"></span>' +
       '</div>' +
       '<p class="odd"></p>' +
-    '</div>'
+    '</div>' +
+    '<div id="lonelyHsoob"></div>'
 
   test('get element by id', 1, function () {
     var result = Q('#hsoob', doc);
@@ -512,6 +568,22 @@ sink('selecting elements in other documents', function (test, ok) {
     ok(Q('#hsoob > div > .h', doc).length === 1, 'found span using child selectors')
     ok(Q('.a .d ~ .sib[test="f g"]', doc).length === 1, 'found 1 ~ sibling with test attribute')
   });
+
+  test('byId sub-queries', 3, function () {
+    ok(Q('#hsoob #spanny', doc).length == 1, 'found "#id #id" in frame')
+    ok(Q('.a #spanny', doc).length == 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', doc).length == 1, 'found ".class #id #id" in frame')
+    //ok(Q('> #hsoob', doc).length == 1, 'found "> #id" in frame') --> would be good to support this, needs some tweaking though
+  })
+
+  test('byId sub-queries within sub-context', 6, function () {
+    ok(Q('#spanny', Q('#hsoob', doc)).length == 1, 'found "#id -> #id" in frame')
+    ok(Q('.a #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id #id" in frame')
+    ok(Q('.a > #booshTest', Q('#hsoob', doc)).length == 1, 'found "> .class #id" in frame')
+    ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendent)')
+    ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #booshTest within #lonelyHsoob (unrelated)')
+  })
 
 });
 

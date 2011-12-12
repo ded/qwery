@@ -1,5 +1,5 @@
 !function () {
-  var pseudos = qwery.pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/
+  var q = qwery, pseudos = q.pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/
 
   function children(node, ofType) {
     nodes = node.childNodes, r = []
@@ -27,6 +27,20 @@
 
     return false
   }
+
+  function text(el, s) {
+    if (el.nodeType === 3 || el.nodeType === 4) return el.nodeValue;
+    if (el.nodeType !== 1 && el.nodeType !== 9) return '';
+    for (s = '', el = el.firstChild; el; el = el.nextSibling) {
+      if (el.nodeType !== 8) s += el.textContent || el.innerText || text(el)
+    }
+    return s
+  }
+
+  // *was* going to be in CSS3, didn't quite make it
+  pseudos.contains = function(el, val) { return text(el).indexOf(val) != -1 }
+
+  pseudos.not = function(el, val) { return !q.is(el, val) }
 
   pseudos['nth-child'] = function (el, val) {
     if (!val || !(p = el.parentNode)) return false
@@ -59,7 +73,7 @@
 
   pseudos['only-of-type'] = function (el) {
     return (p = el.parentNode) && (nodes = children(p, el.nodeName)) && (nodes.length == 1) && (el == nodes[0])
-  };
+  }
 
   pseudos.target = function (el) {
     return (el.getAttribute('id') == location.hash.substr(1))

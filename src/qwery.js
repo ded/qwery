@@ -9,7 +9,6 @@
     , html = doc.documentElement
     , byClass = 'getElementsByClassName'
     , byTag = 'getElementsByTagName'
-    , byId = 'getElementById'
     , qSA = 'querySelectorAll'
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
@@ -23,7 +22,7 @@
     , splitters = /[\s\>\+\~]/
     , splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/
     , specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g
-    , simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
+    , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
     , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
     , pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
@@ -105,7 +104,8 @@
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var i, m, k, o, classes
-    if (tag && this.tagName && this.tagName.toLowerCase() !== tag) return false
+    if (this.nodeType !== 1) return false
+    if (tag && tag !== '*' && this.tagName && this.tagName.toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) {
@@ -161,7 +161,7 @@
     if (!tokens.length) return r
 
     token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = _root[byId](m[1])
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = byId(_root, m[1])
     if (!root) return r
 
     intr = q(token)
@@ -199,6 +199,7 @@
         return true
       }
     }
+    return false
   }
 
   // given elements matching the right-most part of a selector, filter out any that don't match the rest
@@ -244,6 +245,14 @@
     return root
   }
 
+  function byId(root, id, el) {
+    // if doc, query on it, else query the parent doc or if a detached fragment rewrite the query and run on the fragment
+    return root.nodeType === 9 ? root.getElementById(id) :
+      root.ownerDocument &&
+        (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
+          (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0]))
+  }
+
   function qwery(selector, _root) {
     var m, el, root = normalizeRoot(_root)
 
@@ -254,7 +263,7 @@
     }
     if (selector && arrayLike(selector)) return flatten(selector)
     if (m = selector.match(easy)) {
-      if (m[1]) return (el = root[byId](m[1])) ? [el] : []
+      if (m[1]) return (el = byId(root, m[1])) ? [el] : []
       if (m[2]) return arrayify(root[byTag](m[2]))
       if (supportsCSS3 && m[3]) return arrayify(root[byClass](m[3]))
     }
@@ -317,17 +326,20 @@
     // native support for CSS3 selectors
   , selectCSS3 = function (selector, root) {
       var result = [], ss, e
-      if (root.nodeType === 9 || !splittable.test(selector)) {
-        // most work is done right here, defer to qSA
-        return arrayify(root[qSA](selector))
-      }
-      // special case where we need the services of `collectSelector()`
-      each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
-        e = ctx[qSA](s)
-        if (e.length == 1) result[result.length] = e.item(0)
-        else if (e.length) result = result.concat(arrayify(e))
-      }))
-      return ss.length > 1 && result.length > 1 ? uniq(result) : result
+      try {
+        if (root.nodeType === 9 || !splittable.test(selector)) {
+          // most work is done right here, defer to qSA
+          return arrayify(root[qSA](selector))
+        }
+        // special case where we need the services of `collectSelector()`
+        each(ss = selector.split(','), collectSelector(root, function(ctx, s) {
+          e = ctx[qSA](s)
+          if (e.length == 1) result[result.length] = e.item(0)
+          else if (e.length) result = result.concat(arrayify(e))
+        }))
+        return ss.length > 1 && result.length > 1 ? uniq(result) : result
+      } catch(ex) { }
+      return selectNonNative(selector, root)
     }
     // native support for CSS2 selectors only
   , selectCSS2qSA = function (selector, root) {
@@ -346,7 +358,7 @@
     }
     // no native selector support
   , selectNonNative = function (selector, root) {
-      var result = [], m, i, l, r, ss
+      var result = [], items, m, i, l, r, ss
       selector = selector.replace(normalizr, '$1')
       if (m = selector.match(tagAndOrClass)) {
         r = classRegex(m[2])
