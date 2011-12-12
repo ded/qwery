@@ -75,6 +75,10 @@ sink('CSS 1', function (test, ok) {
     ok(Q('.class-with-dashes').length == 1, 'found something');
   });
 
+  test('should ignore comment nodes', 1, function() {
+    ok(Q('#boosh *').length === 4, 'found only 4 elements under #boosh')
+  });
+
   test('deep messy relationships', 6, function() {
     // these are mostly characterised by a combination of tight relationships and loose relationships
     // on the right side of the query it's easy to find matches but they tighten up quickly as you
@@ -266,7 +270,7 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
-sink('Element-context queries', function(test, ok) {
+sink('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
     try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
@@ -492,7 +496,7 @@ sink('argument types', function (test, ok) {
 
 });
 
-sink('testing is()', function (test, ok) {
+sink('is()', function (test, ok) {
   var el = document.getElementById('attr-child-boosh');
   test('simple selectors', 9, function () {
     ok(Q.is(el, 'li'), 'tag');
