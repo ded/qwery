@@ -30,8 +30,9 @@ sink('Contexts', function (test, ok) {
     ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
 
-  test('should not return duplicates from combinators', 1, function () {
+  test('should not return duplicates from combinators', 2, function () {
     ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
+    ok(Q('#boosh,.apples,#boosh').length == 1, 'two booshes and an apple dont make a thing go right');
   });
 
   test('byId sub-queries within context', 6, function() {
@@ -269,6 +270,13 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
   });
 
 });
+
+sink('Uniq', function (test, ok) {
+  test('duplicates arent found in arrays', 2, function () {
+    ok(Q.uniq(['a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e']).length == 5, 'result should be a, b, c, d, e')
+    ok(Q.uniq(['a', 'b', 'c', 'c', 'c']).length == 3, 'result should be a, b, c')
+  })
+})
 
 sink('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
