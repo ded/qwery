@@ -214,22 +214,21 @@
     return (cand = crawl(el, tokens.length - 1, el)) && (!root || isAncestor(cand, root))
   }
 
-  function isNode(el) {
-    return el && typeof el === 'object' && el.nodeType && (el.nodeType == 1 || el.nodeType == 9)
+  function isNode(el, t) {
+    return el && typeof el === 'object' && (t = el.nodeType) && (t == 1 || t == 9)
   }
 
   function uniq(ar) {
-    var r = [], i = 0, j = 0, k, item, inIt
-    for (; item = ar[i]; ++i) {
-      inIt = false
-      for (k = 0; k < r.length; ++k) {
-        if (r[k] === item) {
-          inIt = true; break
+    var a = [], i, j
+    o: for (i = 0; i < ar.length; ++i) {
+      for (j = 0; j < a.length; ++j) {
+        if (a[j] == ar[i]) {
+          continue o
         }
       }
-      if (!inIt) r[j++] = item
+      a[a.length] = ar[i]
     }
-    return r
+    return a
   }
 
   function arrayLike(o) {
