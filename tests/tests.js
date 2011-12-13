@@ -278,6 +278,7 @@ sink('Uniq', function (test, ok) {
   })
 })
 
+
 sink('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
@@ -320,6 +321,11 @@ sink('element-context queries', function(test, ok) {
   test('exclude self in match', 1, function() {
     ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
   });
+
+  // because form's have .length
+  test('forms can be used as contexts', 1, function() {
+    ok(Q('*', Q('form')[0]).length === 3, 'found 3 elements under &lt;form&gt;')
+  })
 })
 
 sink('tokenizer', function (test, ok) {

@@ -239,7 +239,7 @@
   function normalizeRoot(root) {
     if (!root) return doc
     if (typeof root == 'string') return qwery(root)[0]
-    if (arrayLike(root)) return root[0]
+    if (!root.nodeType && arrayLike(root)) return root[0]
     return root
   }
 
