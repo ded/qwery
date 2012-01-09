@@ -1,8 +1,3 @@
-sink('no conflict', function (test, ok) {
-  test('should return old qwery back to context', 1, function () {
-    ok(qwery() == 'success', 'old qwery called');
-  });
-});
 
 // custom pseudo just for tests
 Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }

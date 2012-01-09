@@ -68,6 +68,13 @@ qwery.pseudos.foo = function (el, val) {
 }
 ```
 
+### Enabling the psuedos selector API
+Since qwery uses querySelectorAll by default (when supported) you need to enable non-standard pseudos by setting the `nonStandardEngine` flag on qwery.
+
+``` js
+qwery.nonStandardEngine = true
+```
+
 Browser Support
 ---------------
 Qwery attempts to stay up to date with Yahoo's [Grade A Browser Support](http://developer.yahoo.com/yui/articles/gbs) in addition to future browser candidates.

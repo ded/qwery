@@ -3,20 +3,19 @@
   else if (typeof define == 'function' && typeof define.amd == 'object') define(definition)
   else this[name] = definition()
 }('qwery', function () {
-  var context = this
-    , doc = document
-    , old = context.qwery
+  var doc = document
     , html = doc.documentElement
     , byClass = 'getElementsByClassName'
     , byTag = 'getElementsByTagName'
     , qSA = 'querySelectorAll'
+
+    // OOOOOOOOOOOOH HERE COME THE ESSSXXSSPRESSSIONSSSSSSSS!!!!!
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
     , idOnly = /^#([\w\-]+)$/
     , classOnly = /^\.([\w\-]+)$/
     , tagOnly = /^([\w\-]+)$/
     , tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/
-    , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
     , splittable = /(^|,)\s*[>~+]/
     , normalizr = /^\s+|\s*([,\s\+\~>]|$)\s*/g
     , splitters = /[\s\>\+\~]/
@@ -25,13 +24,14 @@
     , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
     , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
     , pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/
-    , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
-    , tokenizr = new RegExp(splitters.source + splittersMore.source)
-    , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
       // check if we can pass a selector to a non-CSS3 compatible qSA.
       // *not* suitable for validating a selector, it's too lose; it's the users' responsibility to pass valid selectors
       // this regex must be kept in sync with the one in tests.js
     , css2 = /^(([\w\-]*[#\.]?[\w\-]+|\*)?(\[[\w\-]+([\~\|]?=['"][ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+["'])?\])?(\:(link|visited|active|hover))?([\s>+~\.,]|(?:$)))+$/
+    , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
+    , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
+    , tokenizr = new RegExp(splitters.source + splittersMore.source)
+    , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
     , walker = {
         ' ': function (node) {
           return node && node !== html && node.parentNode
@@ -66,7 +66,7 @@
     , tokenCache = new cache()
 
   function classRegex(c) {
-    return classCache.g(c) || classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'));
+    return classCache.g(c) || classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'))
   }
 
   // not quite as fast as inline loops in older browsers so don't use liberally
@@ -374,16 +374,15 @@
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result
     }
-  , select = supportsCSS3 ? selectCSS3 : doc[qSA] ? selectCSS2qSA : selectNonNative
+  , select = function () {
+      var q = qwery.nonStandardEngine ? selectNonNative : supportsCSS3 ? selectCSS3 : doc[qSA] ? selectCSS2qSA : selectNonNative
+      return q.apply(q, arguments)
+    }
 
   qwery.uniq = uniq
   qwery.is = is
   qwery.pseudos = {}
-
-  qwery.noConflict = function () {
-    context.qwery = old
-    return this
-  }
+  qwery.nonStandardEngine = false
 
   return qwery
 })
