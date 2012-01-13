@@ -62,7 +62,8 @@
     g: function (k) {
       return this.c[k] || undefined
     }
-  , s: function (k, v) {
+  , s: function (k, v, r) {
+      v = r ? new RegExp(v) : v
       return (this.c[k] = v)
     }
   }
@@ -73,7 +74,7 @@
     , tokenCache = new cache()
 
   function classRegex(c) {
-    return classCache.g(c) || classCache.s(c, new RegExp('(^|\\s+)' + c + '(\\s+|$)'))
+    return classCache.g(c) || classCache.s(c, '(^|\\s+)' + c + '(\\s+|$)', 1)
   }
 
   // not quite as fast as inline loops in older browsers so don't use liberally
@@ -142,15 +143,15 @@
     case '=':
       return actual == val
     case '^=':
-      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))))
+      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, '^' + clean(val), 1))
     case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$')))
+      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, clean(val) + '$', 1))
     case '*=':
-      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))))
+      return actual.match(attrCache.g(val) || attrCache.s(val, clean(val), 1))
     case '~=':
-      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')))
+      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, '(?:^|\\s+)' + clean(val) + '(?:\\s+|$)', 1))
     case '|=':
-      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')))
+      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, '^' + clean(val) + '(-|$)', 1))
     }
     return 0
   }
@@ -228,11 +229,7 @@
   function uniq(ar) {
     var a = [], i, j
     o: for (i = 0; i < ar.length; ++i) {
-      for (j = 0; j < a.length; ++j) {
-        if (a[j] == ar[i]) {
-          continue o
-        }
-      }
+      for (j = 0; j < a.length; ++j) if (a[j] == ar[i]) continue o
       a[a.length] = ar[i]
     }
     return a
