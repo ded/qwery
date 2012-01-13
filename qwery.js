@@ -211,7 +211,7 @@
     // recursively work backwards through the tokens and up the dom, covering all options
     function crawl(e, i, p) {
       while (p = walker[dividedTokens[i]](p, e)) {
-        if (isNode(p) && (found = interpret.apply(p, q(tokens[i])))) {
+        if (isNode(p) && (interpret.apply(p, q(tokens[i])))) {
           if (i) {
             if (cand = crawl(p, i - 1, p)) return cand
           } else return p
