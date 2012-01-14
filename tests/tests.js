@@ -1,17 +1,16 @@
-
-// custom pseudo just for tests
+// silly custom pseudo just for tests
 Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
-
-function sinkSuite(label, suite) {
-  sink(label + ' [qSA]', function () {
-    Q.configure({ 'NATIVE_QSA': true })
-    suite.apply(null, arguments)
-  })
-  sink(label + ' [non-QSA]', function () {
-    Q.configure({ 'NATIVE_QSA': false })
-    suite.apply(null, arguments)
-  })
-}
+var hasQSA = !!document.querySelectorAll
+  , sinkSuite = function (label, suite) {
+      sink(label + (hasQSA ? ' [qSA]' : ''), function () {
+        hasQSA && Q.configure({ 'NATIVE_QSA': true })
+        suite.apply(null, arguments)
+      })
+      hasQSA && sink(label + ' [non-QSA]', function () {
+        Q.configure({ 'NATIVE_QSA': false })
+        suite.apply(null, arguments)
+      })
+    }
 
 sinkSuite('Contexts', function (test, ok) {
 
