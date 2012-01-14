@@ -47,6 +47,8 @@
           return (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
         }
       }
+    , NATIVE_QSA = 'NATIVE_QSA'
+    , select // main select() method, assign later
 
   function cache() {
     this.c = {}
@@ -371,15 +373,20 @@
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result
     }
-  , select = function () {
-      var q = qwery.nonStandardEngine ? selectNonNative : supportsCSS3 ? selectCSS3 : doc[qSA] ? selectCSS2qSA : selectNonNative
-      return q.apply(q, arguments)
+
+  ;(qwery.configure = function (options) {
+    // NATIVE_QSA: use fully-internal selector or native qSA where present
+    if (typeof options[NATIVE_QSA] !== 'undefined') {
+      select = !options[NATIVE_QSA] ?
+        selectNonNative : supportsCSS3 ?
+          selectCSS3 : doc[qSA] ? // IE8 has CSS2 qSA, use it if we can
+            selectCSS2qSA : selectNonNative
     }
+  }({ NATIVE_QSA: false }))
 
   qwery.uniq = uniq
   qwery.is = is
   qwery.pseudos = {}
-  qwery.nonStandardEngine = false
 
   return qwery
 })

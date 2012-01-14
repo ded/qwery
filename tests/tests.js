@@ -2,7 +2,18 @@
 // custom pseudo just for tests
 Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
 
-sink('Contexts', function (test, ok) {
+function sinkSuite(label, suite) {
+  sink(label + ' [qSA]', function () {
+    Q.configure({ 'NATIVE_QSA': true })
+    suite.apply(null, arguments)
+  })
+  sink(label + ' [non-QSA]', function () {
+    Q.configure({ 'NATIVE_QSA': false })
+    suite.apply(null, arguments)
+  })
+}
+
+sinkSuite('Contexts', function (test, ok) {
 
   test('should be able to pass optional context', 2, function () {
     ok(Q('.a').length === 3, 'no context found 3 elements (.a)');
@@ -38,9 +49,9 @@ sink('Contexts', function (test, ok) {
     ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
     ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
   })
-});
+})
 
-sink('CSS 1', function (test, ok) {
+sinkSuite('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = Q('#boosh');
     ok(!!result[0], 'found element with id=boosh');
@@ -90,7 +101,7 @@ sink('CSS 1', function (test, ok) {
   });
 });
 
-sink('CSS 2', function (test, ok) {
+sinkSuite('CSS 2', function (test, ok) {
 
   test('get elements by attribute', 4, function () {
     var wanted = Q('#boosh div[test]')[0];
@@ -112,7 +123,7 @@ sink('CSS 2', function (test, ok) {
 
 });
 
-sink('CSS 2 identification', function (test, ok) {
+sinkSuite('CSS 2 identification', function (test, ok) {
   // cases that we should be able to pass through to native non-CSS3 qSA where present (IE8)
   // we get to ignore grouping here since selectors are split up for this case anyway
   // we also get to work with normalized selectors
@@ -188,7 +199,7 @@ sink('CSS 2 identification', function (test, ok) {
   })
 });
 
-sink('attribute selectors', function (test, ok, b, a, assert) {
+sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
 
   /* CSS 2 SPEC */
 
@@ -266,7 +277,7 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
-sink('Uniq', function (test, ok) {
+sinkSuite('Uniq', function (test, ok) {
   test('duplicates arent found in arrays', 2, function () {
     ok(Q.uniq(['a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e']).length == 5, 'result should be a, b, c, d, e')
     ok(Q.uniq(['a', 'b', 'c', 'c', 'c']).length == 3, 'result should be a, b, c')
@@ -274,7 +285,7 @@ sink('Uniq', function (test, ok) {
 })
 
 
-sink('element-context queries', function(test, ok) {
+sinkSuite('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
     try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
@@ -323,7 +334,7 @@ sink('element-context queries', function(test, ok) {
   })
 })
 
-sink('tokenizer', function (test, ok) {
+sinkSuite('tokenizer', function (test, ok) {
 
   test('should not get weird tokens', 5, function () {
     ok(Q('div .tokens[title="one"]')[0] == document.getElementById('token-one'), 'found div .tokens[title="one"]');
@@ -335,13 +346,13 @@ sink('tokenizer', function (test, ok) {
 
 });
 
-sink('interesting syntaxes', function (test, ok) {
+sinkSuite('interesting syntaxes', function (test, ok) {
   test('should parse bad selectors', 1, function () {
     ok(Q('#spaced-tokens    p    em    a').length, 'found element with funny tokens')
   });
 });
 
-sink('order matters', function (test, ok) {
+sinkSuite('order matters', function (test, ok) {
 
   function tag(el) {
     return el.tagName.toLowerCase();
@@ -364,7 +375,7 @@ sink('order matters', function (test, ok) {
 
 });
 
-sink('pseudo-selectors', function (test, ok) {
+sinkSuite('pseudo-selectors', function (test, ok) {
   test(':contains', 4, function() {
     ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
     ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
@@ -482,7 +493,7 @@ sink('pseudo-selectors', function (test, ok) {
 
 });
 
-sink('argument types', function (test, ok) {
+sinkSuite('argument types', function (test, ok) {
 
   test('should be able to pass in nodes as arguments', 5, function () {
     var el = document.getElementById('boosh');
@@ -505,7 +516,7 @@ sink('argument types', function (test, ok) {
 
 });
 
-sink('is()', function (test, ok) {
+sinkSuite('is()', function (test, ok) {
   var el = document.getElementById('attr-child-boosh');
   test('simple selectors', 9, function () {
     ok(Q.is(el, 'li'), 'tag');
@@ -544,7 +555,7 @@ sink('is()', function (test, ok) {
   });
 });
 
-sink('selecting elements in other documents', function (test, ok) {
+sinkSuite('selecting elements in other documents', function (test, ok) {
   var doc = document.getElementById('frame').contentWindow.document
   doc.body.innerHTML =
     '<div id="hsoob">' +
