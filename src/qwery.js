@@ -383,7 +383,7 @@
       }
     }
 
-  configure({ NATIVE_QSA: false })
+  configure({ NATIVE_QSA: true })
 
   qwery.configure = configure
   qwery.uniq = uniq
