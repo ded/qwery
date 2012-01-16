@@ -71,11 +71,11 @@ qwery.pseudos.foo = function (el, val) {
 Configuring Qwery
 -----------------
 
-The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currenly only the `NATIVE_QSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
+The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currenly only the `useNativeQSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
 
 ``` js
 qwery.configure({
-  NATIVE_QSA: false
+  useNativeQSA: false
 })
 ```
 
