@@ -3,11 +3,11 @@ Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.
 var hasQSA = !!document.querySelectorAll
   , sinkSuite = function (label, suite) {
       sink(label + (hasQSA ? ' [qSA]' : ''), function () {
-        hasQSA && Q.configure({ 'NATIVE_QSA': true })
+        hasQSA && Q.configure({ useNativeQSA: true })
         suite.apply(null, arguments)
       })
       hasQSA && sink(label + ' [non-QSA]', function () {
-        Q.configure({ 'NATIVE_QSA': false })
+        Q.configure({ useNativeQSA: false })
         suite.apply(null, arguments)
       })
     }
