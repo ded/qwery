@@ -23,7 +23,7 @@
     , specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g
     , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
     , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
-    , pseudo = /:([\w\-]+)(\(['"]?([\s\w\+\-]+)['"]?\))?/
+    , pseudo = /:([\w\-]+)(\(['"]?([^()]+)['"]?\))?/
       // check if we can pass a selector to a non-CSS3 compatible qSA.
       // *not* suitable for validating a selector, it's too lose; it's the users' responsibility to pass valid selectors
       // this regex must be kept in sync with the one in tests.js
