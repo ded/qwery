@@ -24,10 +24,6 @@
     , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
     , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
     , pseudo = /:([\w\-]+)(\(['"]?([^()]+)['"]?\))?/
-      // check if we can pass a selector to a non-CSS3 compatible qSA.
-      // *not* suitable for validating a selector, it's too lose; it's the users' responsibility to pass valid selectors
-      // this regex must be kept in sync with the one in tests.js
-    , css2 = /^(([\w\-]*[#\.]?[\w\-]+|\*)?(\[[\w\-]+([\~\|]?=['"][ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+["'])?\])?(\:(link|visited|active|hover))?([\s>+~\.,]|(?:$)))+$/
     , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
@@ -261,7 +257,7 @@
     if (m = selector.match(easy)) {
       if (m[1]) return (el = byId(root, m[1])) ? [el] : []
       if (m[2]) return arrayify(root[byTag](m[2]))
-      if (supportsCSS3 && m[3]) return arrayify(root[byClass](m[3]))
+      if (hasByClass && m[3]) return arrayify(root[byClass](m[3]))
     }
 
     return select(selector, root)
@@ -308,19 +304,11 @@
         } :
         function(e, a) { return e.getAttribute(a) }
    }()
-    // does native qSA support CSS3 level selectors
-  , supportsCSS3 = function () {
-      if (doc[byClass] && doc.querySelector && doc[qSA]) {
-        try {
-          var p = doc.createElement('p')
-          p.innerHTML = '<a/>'
-          return p[qSA](':nth-of-type(1)').length
-        } catch (e) { }
-      }
-      return false
-    }()
-    // native support for CSS3 selectors
-  , selectCSS3 = function (selector, root) {
+  , hasByClass = !!doc[byClass]
+    // has native qSA support
+  , hasQSA = doc.querySelector && doc[qSA]
+    // use native qSA
+  , selectQSA = function (selector, root) {
       var result = [], ss, e
       try {
         if (root.nodeType === 9 || !splittable.test(selector)) {
@@ -336,21 +324,6 @@
         return ss.length > 1 && result.length > 1 ? uniq(result) : result
       } catch(ex) { }
       return selectNonNative(selector, root)
-    }
-    // native support for CSS2 selectors only
-  , selectCSS2qSA = function (selector, root) {
-      var i, r, l, ss, result = []
-      selector = selector.replace(normalizr, '$1')
-      // safe to pass whole selector to qSA
-      if (!splittable.test(selector) && css2.test(selector)) return arrayify(root[qSA](selector))
-      each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
-        // use native qSA if selector is compatile, otherwise use _qwery()
-        r = css2.test(s) ? ctx[qSA](s) : _qwery(s, ctx)
-        for (i = 0, l = r.length; i < l; i++) {
-          if (ctx.nodeType === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
-        }
-      }))
-      return ss.length > 1 && result.length > 1 ? uniq(result) : result
     }
     // no native selector support
   , selectNonNative = function (selector, root) {
@@ -375,12 +348,8 @@
     }
   , configure = function (options) {
       // configNativeQSA: use fully-internal selector or native qSA where present
-      if (typeof options[useNativeQSA] !== 'undefined') {
-        select = !options[useNativeQSA] ?
-          selectNonNative : supportsCSS3 ?
-            selectCSS3 : doc[qSA] ? // IE8 has CSS2 qSA, use it if we can
-              selectCSS2qSA : selectNonNative
-      }
+      if (typeof options[useNativeQSA] !== 'undefined')
+        select = !options[useNativeQSA] ? selectNonNative : hasQSA ? selectQSA : selectNonNative
     }
 
   configure({ useNativeQSA: true })

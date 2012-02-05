@@ -46,6 +46,13 @@
     <script src="../vendor/nw.js"></script>
     <script src="../vendor/sizzle.js"></script>
     <script src="../src/qwery.js"></script>
+    <script type="text/javascript">
+      var qwerynew = qwery
+    </script>
+    <script src="../qwery.js"></script>
+    <script type="text/javascript">
+      var qweryold = qwery
+    </script>
   </head>
   <body>
     <h1>Selector Benchmarks</h1>
@@ -118,7 +125,8 @@
        var libs = [
               { fn: Sizzle, id: 'Sizzle' }
             , { fn: NW.Dom.select, id: 'NW' }
-            , { fn: qwery, id: 'Qwery' }
+            , { fn: qwerynew, id: 'Qwery (new)' }
+            , { fn: qweryold, id: 'Qwery (old)' }
           ]
 
       var libidx = 0, testidx = 0, iterations
