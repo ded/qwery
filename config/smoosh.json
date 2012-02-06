@@ -5,9 +5,13 @@
         "./src/copyright.js"
       , "./src/qwery.js"
     ]
-    , "qwery-mobile": [
+    , "mobile/qwery-mobile": [
         "./src/copyright.js"
-      , "./mobile/qwery-mobile.js"
+      , "./mobile/src/mobile.js"
+    ]
+    , "pseudos/qwery-pseudos": [
+        "./src/copyright.js"
+      , "./pseudos/src/pseudos.js"
     ]
   }
   , "JSHINT_OPTS": {
@@ -27,5 +31,6 @@
     , "laxbreak": true
     , "eqeqeq": false
     , "eqnull": true
+    , "laxcomma": true
   }
 }

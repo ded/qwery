@@ -68,11 +68,15 @@ qwery.pseudos.foo = function (el, val) {
 }
 ```
 
-### Enabling the psuedos selector API
-Since qwery uses querySelectorAll by default (when supported) you need to enable non-standard pseudos by setting the `nonStandardEngine` flag on qwery.
+Configuring Qwery
+-----------------
+
+The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currenly only the `useNativeQSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
 
 ``` js
-qwery.nonStandardEngine = true
+qwery.configure({
+  useNativeQSA: false
+})
 ```
 
 Browser Support
