@@ -8,6 +8,10 @@
     , byClass = 'getElementsByClassName'
     , byTag = 'getElementsByTagName'
     , qSA = 'querySelectorAll'
+    , useNativeQSA = 'useNativeQSA'
+    , tagName = 'tagName'
+    , nodeType = 'nodeType'
+    , select // main select() method, assign later
 
     // OOOOOOOOOOOOH HERE COME THE ESSSXXSSPRESSSIONSSSSSSSS!!!!!
     , id = /#([\w\-]+)/
@@ -43,8 +47,6 @@
           return (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
         }
       }
-    , useNativeQSA = 'useNativeQSA'
-    , select // main select() method, assign later
 
   function cache() {
     this.c = {}
@@ -71,7 +73,7 @@
   // not quite as fast as inline loops in older browsers so don't use liberally
   function each(a, fn) {
     var i = 0, l = a.length
-    for (; i < l; i++) fn.call(null, a[i])
+    for (; i < l; i++) fn(a[i])
   }
 
   function flatten(ar) {
@@ -86,7 +88,7 @@
   }
 
   function previous(n) {
-    while (n = n.previousSibling) if (n.nodeType == 1) break;
+    while (n = n.previousSibling) if (n[nodeType] == 1) break;
     return n
   }
 
@@ -99,17 +101,13 @@
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
   function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
     var i, m, k, o, classes
-    if (this.nodeType !== 1) return false
-    if (tag && tag !== '*' && this.tagName && this.tagName.toLowerCase() !== tag) return false
+    if (this[nodeType] !== 1) return false
+    if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
-      for (i = classes.length; i--;) {
-        if (!classRegex(classes[i].slice(1)).test(this.className)) return false
-      }
+      for (i = classes.length; i--;) if (!classRegex(classes[i].slice(1)).test(this.className)) return false
     }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) {
-      return false
-    }
+    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) return false
     if (wholeAttribute && !value) { // select is just for existance of attrib
       o = this.attributes
       for (k in o) {
@@ -161,10 +159,10 @@
 
     intr = q(token)
     // collect base candidates to filter
-    els = root !== _root && root.nodeType !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
+    els = root !== _root && root[nodeType] !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
       function (r) {
         while (root = root.nextSibling) {
-          root.nodeType == 1 && (intr[1] ? intr[1] == root.tagName.toLowerCase() : 1) && (r[r.length] = root)
+          root[nodeType] == 1 && (intr[1] ? intr[1] == root[tagName].toLowerCase() : 1) && (r[r.length] = root)
         }
         return r
       }([]) :
@@ -214,7 +212,7 @@
   }
 
   function isNode(el, t) {
-    return el && typeof el === 'object' && (t = el.nodeType) && (t == 1 || t == 9)
+    return el && typeof el === 'object' && (t = el[nodeType]) && (t == 1 || t == 9)
   }
 
   function uniq(ar) {
@@ -233,13 +231,13 @@
   function normalizeRoot(root) {
     if (!root) return doc
     if (typeof root == 'string') return qwery(root)[0]
-    if (!root.nodeType && arrayLike(root)) return root[0]
+    if (!root[nodeType] && arrayLike(root)) return root[0]
     return root
   }
 
   function byId(root, id, el) {
     // if doc, query on it, else query the parent doc or if a detached fragment rewrite the query and run on the fragment
-    return root.nodeType === 9 ? root.getElementById(id) :
+    return root[nodeType] === 9 ? root.getElementById(id) :
       root.ownerDocument &&
         (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
           (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0]))
@@ -269,7 +267,7 @@
     return function(s) {
       var oid, nid
       if (splittable.test(s)) {
-        if (root.nodeType !== 9) {
+        if (root[nodeType] !== 9) {
          // make sure the el has an id, rewrite the query, set root to doc and run it
          if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
          s = '[id="' + nid + '"]' + s // avoid byId and allow us to match context element
@@ -287,7 +285,7 @@
       return (container.compareDocumentPosition(element) & 16) == 16
     } : 'contains' in html ?
     function (element, container) {
-      container = container.nodeType === 9 || container == window ? html : container
+      container = container[nodeType] === 9 || container == window ? html : container
       return container !== element && container.contains(element)
     } :
     function (element, container) {
@@ -311,7 +309,7 @@
   , selectQSA = function (selector, root) {
       var result = [], ss, e
       try {
-        if (root.nodeType === 9 || !splittable.test(selector)) {
+        if (root[nodeType] === 9 || !splittable.test(selector)) {
           // most work is done right here, defer to qSA
           return arrayify(root[qSA](selector))
         }
@@ -341,7 +339,7 @@
       each(ss = selector.split(','), collectSelector(root, function(ctx, s, rewrite) {
         r = _qwery(s, ctx)
         for (i = 0, l = r.length; i < l; i++) {
-          if (ctx.nodeType === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
+          if (ctx[nodeType] === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
       return ss.length > 1 && result.length > 1 ? uniq(result) : result

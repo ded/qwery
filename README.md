@@ -71,7 +71,7 @@ qwery.pseudos.foo = function (el, val) {
 Configuring Qwery
 -----------------
 
-The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currenly only the `useNativeQSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
+The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currently only the `useNativeQSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
 
 ``` js
 qwery.configure({
@@ -83,16 +83,16 @@ Browser Support
 ---------------
 Qwery attempts to stay up to date with Yahoo's [Grade A Browser Support](http://developer.yahoo.com/yui/articles/gbs) in addition to future browser candidates.
 
-  - IE6, IE7, IE8, IE9
-  - Chrome 1 - 12
-  - Safari 3, 4, 5
-  - Firefox 2, 3, 4, 5, Aurora
+  - IE6+
+  - Chrome 1+
+  - Safari 3+
+  - Firefox 2+
   - Opera
 
 Dev Env & Testing
 -----
 
-    $ npm install --dev
+    $ npm install smoosh sink-test
     $ make
     $ open tests/index.html
 
@@ -162,6 +162,6 @@ If you're building a Webkit (iPhone / Android / Chrome OS) application, you may 
 Contributors
 -------
   * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
-  * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
   * [Rod Vagg](https://github.com/ded/qwery/commits/master?author=rvagg)
+  * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
   * [Andrew McCollum](https://github.com/ded/qwery/commits/master?author=amccollum)
