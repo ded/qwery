@@ -17,6 +17,10 @@
       , "url": "https://github.com/ded/qwery.git"
     }
   , "devDependencies": {
-      "sink-test": ">= 1.0.1"
+        "sink-test": ">= 1.0.1"
+      , "serve": "*"
+    }
+  , "scripts": {
+      "test": "phantomjs tests/phantom.js"
     }
 }
