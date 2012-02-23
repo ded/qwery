@@ -458,12 +458,12 @@ sinkSuite('is()', function (test, ok) {
   });
   test('selector sequences combinators', 7, function () {
     ok(Q.is(el, 'ol li'), 'tag tag');
-    ok(Q.is(el, 'ol>li'), 'tag>tag');
-    ok(Q.is(el, 'ol>li+li'), 'tab>tag+tag');
+    ok(Q.is(el, 'ol > li'), 'tag > tag');
+    ok(Q.is(el, 'ol > li + li'), 'tab > tag + tag');
     ok(Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]'), 'tag#id tag#id[attr=val]');
-    ok(!Q.is(el, 'ol#list>li#attr-child-boosh[attr=boosh]'), 'wrong tag#id>tag#id[attr=val]');
+    ok(!Q.is(el, 'ol#list > li#attr-child-boosh[attr=boosh]'), 'wrong tag#id > tag#id[attr=val]');
     ok(Q.is(el, 'ol ol li#attr-child-boosh[attr=boosh]'), 'tag tag tag#id[attr=val]');
-    ok(Q.is(Q('#token-four')[0], 'div#fixtures>div a'), 'tag#id>tag tag where ambiguous middle tag requires backtracking');
+    ok(Q.is(Q('#token-four')[0], 'div#fixtures > div a'), 'tag#id > tag tag where ambiguous middle tag requires backtracking');
   });
   test('pseudos', 4, function() {
     //TODO: more tests!
