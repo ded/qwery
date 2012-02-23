@@ -183,6 +183,7 @@
     if (isNode(selector)) return el == selector
     if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
 
+    selector = selector.replace(normalizr, '$1')
     var selectors = selector.split(','), tokens, dividedTokens
     while (selector = selectors.pop()) {
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
