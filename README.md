@@ -1,6 +1,6 @@
 Qwery - The Tiny Selector Engine
 -----
-Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3 queries
+Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3|4 queries
 
 ##Acceptable selectors
 
@@ -34,6 +34,9 @@ variations
 #foo.bar.baz {}
 div#baz.thunk a[-data-info*="hello world"] span + strong {}
 #thunk[title$='huzza'] {}
+
+CSS 4 selector subjects
+div! > .foo
 ```
 
 Contexts

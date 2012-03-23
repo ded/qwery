@@ -122,6 +122,39 @@ sinkSuite('CSS 2', function (test, ok) {
 
 });
 
+// based on current draft @ http://dev.w3.org/csswg/selectors4/ 28 February 2012
+sinkSuite('CSS 4', function (test, ok, before, after, assert) {
+
+  test('selector subject simple', function (complete) {
+    // should match the form
+    var result = Q('form! input')
+    assert.equal(result.length, 1, 'matched 1 element for "form! input"')
+    ok(result[0] === document.forms[0], 'matched form element for "form! input"')
+    complete()
+  })
+
+  test('selector subject complex', function (complete) {
+    // should match the #direct-descend div which is a direct child of #fixtures
+    var result = Q('#fixtures > div! > div span ~ div .lvl2')
+    assert.equal(result.length, 1, 'matched 1 element for "#fixtures > div! > div span ~ div .lvl2"')
+    ok(result[0] === document.getElementById('direct-descend'), 'matched correct element for "#fixtures > div! > div span ~ div .lvl2"')
+    complete()
+  })
+
+  test('selector subject multiple groups', function (complete) {
+    // should match the form twice, #direct-descend, the first span inside #direct-descend and #lonelyBoosh (for good luck)
+    var sel = 'form! input, form! button, #fixtures > div! > div span ~ div .lvl2, #fixtures > div > div span! ~ div .lvl2, #lonelyBoosh'
+      , result = Q(sel)
+    assert.equal(result.length, 4, 'matched 4 elements for "' + sel + '"')
+    ok(result[0] === document.forms[0], 'matched form element for 1st in "' + sel + '"')
+    ok(result[1] === document.getElementById('direct-descend'), 'matched #direct-descend for 2nd in "' + sel + '"')
+    ok(result[2] === Q('#direct-descend span')[0], 'matched first span in #direct-descend for 3rd in "' + sel + '"')
+    ok(result[3] === document.getElementById('lonelyBoosh'), 'matched #lonelyBoosh for 4rd in "' + sel + '"')
+    complete()
+  })
+
+})
+
 sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
 
   /* CSS 2 SPEC */

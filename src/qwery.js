@@ -31,7 +31,7 @@
     , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
-    , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
+    , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?(!)?')
     , walker = {
         ' ': function (node) {
           return node && node !== html && node.parentNode
@@ -97,9 +97,9 @@
   }
 
   // called using `this` as element and arguments from regex group results.
-  // given => div.hello[title="world"]:foo('bar')
-  // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
-  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
+  // given => div.hello[title="world"]:foo('bar')!
+  // div.hello[title="world"]:foo('bar')!, div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar, !]
+  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal, subject) {
     var i, m, k, o, classes
     if (this[nodeType] !== 1) return false
     if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag) return false
@@ -174,7 +174,7 @@
     if (!tokens.length) return r
 
     // filter further according to the rest of the selector (the left side)
-    each(r, function(e) { if (ancestorMatch(e, tokens, dividedTokens)) ret[ret.length] = e })
+    each(r, function(e) { if (e = ancestorMatch(e, tokens, dividedTokens)) ret[ret.length] = e })
     return ret
   }
 
@@ -197,18 +197,20 @@
 
   // given elements matching the right-most part of a selector, filter out any that don't match the rest
   function ancestorMatch(el, tokens, dividedTokens, root) {
-    var cand
+    var cand, intr
     // recursively work backwards through the tokens and up the dom, covering all options
     function crawl(e, i, p) {
       while (p = walker[dividedTokens[i]](p, e)) {
-        if (isNode(p) && (interpret.apply(p, q(tokens[i])))) {
+        if (isNode(p) && (interpret.apply(p, intr = q(tokens[i])))) {
+          if (intr[11]) // subject selector: '!', change subject 'el' to current element
+            el = p
           if (i) {
             if (cand = crawl(p, i - 1, p)) return cand
           } else return p
         }
       }
     }
-    return (cand = crawl(el, tokens.length - 1, el)) && (!root || isAncestor(cand, root))
+    return (cand = crawl(el, tokens.length - 1, el)) && (!root || isAncestor(cand, root)) ? el : 0
   }
 
   function isNode(el, t) {
@@ -342,7 +344,7 @@
           if (ctx[nodeType] === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
         }
       }))
-      return ss.length > 1 && result.length > 1 ? uniq(result) : result
+      return result.length > 1 ? uniq(result) : result
     }
   , configure = function (options) {
       // configNativeQSA: use fully-internal selector or native qSA where present
