@@ -11,6 +11,14 @@ var hasQSA = !!document.querySelectorAll
         suite.apply(null, arguments)
       })
     }
+  , arraysMatch = function (a1, a2) {
+      if (a1.length != a2.length)
+        return false
+      for (var i = 0; i < a1.length; i++)
+        if (a1[i] !== a2[i])
+          return false
+      return true
+    }
 
 sinkSuite('Contexts', function (test, ok) {
 
@@ -331,7 +339,7 @@ sinkSuite('order matters', function (test, ok) {
 
 });
 
-sinkSuite('pseudo-selectors', function (test, ok) {
+sinkSuite('pseudo-selectors', function (test, ok, before, after, assert) {
   test(':contains', 4, function() {
     ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
     ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
@@ -342,6 +350,10 @@ sinkSuite('pseudo-selectors', function (test, ok) {
 
   test(':not', 1, function() {
     ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
+  })
+
+  test(':matches (CSS 4)', 1, function() {
+    ok(Q('#pseudos > div:matches(.pseudos)').length == 2, 'found 2 "#pseudos > div:matches(.pseudos)"')
   })
 
   test(':first-child', 2, function () {
@@ -363,76 +375,164 @@ sinkSuite('pseudo-selectors', function (test, ok) {
 
   test(':nth-child(odd|even|x)', 4, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
-    ok(Q('#pseudos :nth-child(odd)').length == 4, 'found 4 odd elements');
-    ok(Q('#pseudos div:nth-child(odd)').length == 3, 'found 3 odd elements with div tag');
-    ok(Q('#pseudos div:nth-child(even)').length == 3, 'found 3 even elements with div tag');
-    ok(Q('#pseudos div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
+    ok(Q('#pseudos > :nth-child(odd)').length == 4, 'found 4 odd elements');
+    ok(Q('#pseudos > div:nth-child(odd)').length == 3, 'found 3 odd elements with div tag');
+    ok(Q('#pseudos > div:nth-child(even)').length == 3, 'found 3 even elements with div tag');
+    ok(Q('#pseudos > div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
   });
 
   test(':nth-child(expr)', 6, function () {
     var fifth = document.getElementById('pseudos').getElementsByTagName('a')[0];
     var sixth = document.getElementById('pseudos').getElementsByTagName('div')[4];
 
-    ok(Q('#pseudos :nth-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-child(3n-2)').length == 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
-    ok(Q('#pseudos :nth-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
-    ok(Q('#pseudos :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
-    ok(Q('#pseudos :nth-child(3n)')[1] == sixth, 'second :nth-child(3n) is the sixth child');
+    ok(Q('#pseudos > :nth-child(3n+1)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-child(3n-2)').length == 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
+    ok(Q('#pseudos > :nth-child(-n+6)').length == 6, 'found 6 elements');
+    ok(Q('#pseudos > :nth-child(-n+5)').length == 5, 'found 5 elements');
+    ok(Q('#pseudos > :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
+    ok(Q('#pseudos > :nth-child(3n)')[1] == sixth, 'second :nth-child(3n) is the sixth child');
   });
 
   test(':nth-last-child(odd|even|x)', 4, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
-    ok(Q('#pseudos :nth-last-child(odd)').length == 4, 'found 4 odd elements');
-    ok(Q('#pseudos div:nth-last-child(odd)').length == 3, 'found 3 odd elements with div tag');
-    ok(Q('#pseudos div:nth-last-child(even)').length == 3, 'found 3 even elements with div tag');
-    ok(Q('#pseudos div:nth-last-child(6)')[0] == second, '6th nth-last-child should be 2nd of 7 elements');
+    ok(Q('#pseudos > :nth-last-child(odd)').length == 4, 'found 4 odd elements');
+    ok(Q('#pseudos > div:nth-last-child(odd)').length == 3, 'found 3 odd elements with div tag');
+    ok(Q('#pseudos > div:nth-last-child(even)').length == 3, 'found 3 even elements with div tag');
+    ok(Q('#pseudos > div:nth-last-child(6)')[0] == second, '6th nth-last-child should be 2nd of 7 elements');
   });
 
   test(':nth-last-child(expr)', 5, function () {
     var third = document.getElementById('pseudos').getElementsByTagName('div')[2];
 
-    ok(Q('#pseudos :nth-last-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-last-child(3n-2)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-last-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-last-child(-n+5)').length == 5, 'found 5 elements');
-    ok(Q('#pseudos :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
+    ok(Q('#pseudos > :nth-last-child(3n+1)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-last-child(3n-2)').length == 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-last-child(-n+6)').length == 6, 'found 6 elements');
+    ok(Q('#pseudos > :nth-last-child(-n+5)').length == 5, 'found 5 elements');
+    ok(Q('#pseudos > :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
   });
 
   test(':nth-of-type(expr)', 6, function () {
     var a = document.getElementById('pseudos').getElementsByTagName('a')[0];
 
-    ok(Q('#pseudos div:nth-of-type(3n+1)').length == 2, 'found 2 div elements');
-    ok(Q('#pseudos a:nth-of-type(3n+1)').length == 1, 'found 1 a element');
-    ok(Q('#pseudos a:nth-of-type(3n+1)')[0] == a, 'found the right a element');
-    ok(Q('#pseudos a:nth-of-type(3n)').length == 0, 'no matches for every third a');
-    ok(Q('#pseudos a:nth-of-type(odd)').length == 1, 'found the odd a');
-    ok(Q('#pseudos a:nth-of-type(1)').length == 1, 'found the first a');
+    ok(Q('#pseudos > div:nth-of-type(3n+1)').length == 2, 'found 2 div elements');
+    ok(Q('#pseudos > a:nth-of-type(3n+1)').length == 1, 'found 1 a element');
+    ok(Q('#pseudos > a:nth-of-type(3n+1)')[0] == a, 'found the right a element');
+    ok(Q('#pseudos > a:nth-of-type(3n)').length == 0, 'no matches for every third a');
+    ok(Q('#pseudos > a:nth-of-type(odd)').length == 1, 'found the odd a');
+    ok(Q('#pseudos > a:nth-of-type(1)').length == 1, 'found the first a');
   });
 
   test(':nth-last-of-type(expr)', 3, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
 
-    ok(Q('#pseudos div:nth-last-of-type(3n+1)').length == 2, 'found 2 div elements');
-    ok(Q('#pseudos a:nth-last-of-type(3n+1)').length == 1, 'found 1 a element');
-    ok(Q('#pseudos div:nth-last-of-type(5)')[0] == second, '5th nth-last-of-type should be 2nd of 7 elements');
+    ok(Q('#pseudos > div:nth-last-of-type(3n+1)').length == 2, 'found 2 div elements');
+    ok(Q('#pseudos > a:nth-last-of-type(3n+1)').length == 1, 'found 1 a element');
+    ok(Q('#pseudos > div:nth-last-of-type(5)')[0] == second, '5th nth-last-of-type should be 2nd of 7 elements');
   });
 
   test(':first-of-type', 2, function () {
-    ok(Q('#pseudos a:first-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found first a element')
-    ok(Q('#pseudos a:first-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > a:first-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found first a element')
+    ok(Q('#pseudos > a:first-of-type').length == 1, 'found only 1')
   });
 
   test(':last-of-type', 2, function () {
     var all = document.getElementById('pseudos').getElementsByTagName('div');
-    ok(Q('#pseudos div:last-of-type')[0] == all[all.length - 1], 'found last div element')
-    ok(Q('#pseudos div:last-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > div:last-of-type')[0] == all[all.length - 1], 'found last div element')
+    ok(Q('#pseudos > div:last-of-type').length == 1, 'found only 1')
   });
 
   test(':only-of-type', 2, function () {
-    ok(Q('#pseudos a:only-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found the only a element')
-    ok(Q('#pseudos a:first-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > a:only-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found the only a element')
+    ok(Q('#pseudos > a:first-of-type').length == 1, 'found only 1')
   });
+
+  test(':nth-match(odd|even|x of selector)', function (complete) {
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(odd of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(even of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 even .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2 of .odd)')
+        , Q('#pseudos > :nth-child(3)'))
+      , 'found correct 2nd .odd elements')
+    complete()
+  })
+
+  test(':nth-match(expr of selector)', function (complete) {
+    // going to assume that since :nth-child etc. gets these right that nth-match will too
+    // cause it uses the same code, so don't over-test
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n+1 of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 even .odd elements')
+    complete()
+  })
+
+  test(':nth-match(expr of complex-selector)', function (complete) {
+    // well, not really 'complex', just not trivial
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2 of .odd.ofmatch)')
+        , Q('#pseudos > :nth-child(5)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    // attrib within a pseudo
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n+3 of div.ofmatch[class~=even])')
+        , Q('#pseudos > :nth-child(6)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    complete()
+  })
+
+  test(':nth-last-match(odd|even|x of selector)', function (complete) {
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(odd of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(even of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 even .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2 of .odd)')
+        , Q('#pseudos > :nth-child(5)'))
+      , 'found correct 2nd .odd elements')
+    complete()
+  })
+
+  test(':nth-last-match(expr of selector)', function (complete) {
+    // going to assume that since :nth-last-child etc. gets these right that nth-last-match will too
+    // cause it uses the same code, so don't over-test
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n+1 of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 even .odd elements')
+    complete()
+  })
+
+  test(':nth-last-match(expr of complex-selector)', function (complete) {
+    // well, not really 'complex', just not trivial
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2 of .odd.ofmatch)')
+        , Q('#pseudos > :nth-child(3)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    // attrib within a pseudo
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n+3 of div.ofmatch[class~=even])')
+        , Q('#pseudos > :nth-child(2)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    complete()
+  })
 
   test(':target', 2, function () {
     location.hash = '';

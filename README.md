@@ -22,6 +22,7 @@ attributes
 descendants
 #foo a {} all descendants
 ul#list > li {} direct children
+> div.foo {} relationship-first, direct child of context
 
 siblings
 span ~ strong {} all adjacent
@@ -36,7 +37,7 @@ div#baz.thunk a[-data-info*="hello world"] span + strong {}
 #thunk[title$='huzza'] {}
 
 CSS 4 selector subjects
-div! > .foo
+div! > .foo {} select the div
 ```
 
 Contexts
@@ -48,10 +49,37 @@ qwery('div', node); // existing DOM node or...
 qwery('div', '#foo'); // another query
 ```
 
-pseudo selector API
+Pseudo selectors
 -------------------
+Optionally, Qwery provides a [pseudo selector interface](https://github.com/ded/qwery/blob/master/pseudos/qwery-pseudos.js) allowing you to extend into advanced CSS 3 & 4 matchers.
 
-Optionally, Qwery provides a [pseudo selector interface](https://github.com/ded/qwery/blob/master/src/pseudos.js) allowing you to extend into advanced CSS3 matchers. It looks like this:
+Currently implemented pseudo selectors:
+
+```
+:contains(str) {} textual child content contains str
+:matches(sel) {} matches given sub-selector
+:not(sel) {} does not match given sub-selector
+:nth-child(n) {} n-th child of its parent
+:nth-last-child(n) {} n-th child of its parent, counting from the last one 
+:nth-of-type(n) {} n-th sibling of its type
+:nth-last-of-type(n) {} n-th sibling of its type, counting from the last one
+:nth-match(n of sel) {} n-th match of given sub-selector
+:nth-match(n of sel) {} n-th match of given sub-selector, counting from the last one
+:first-child
+:last-child
+:first-of-type
+:last-of-type
+:only-child
+:only-of-type
+:checked {} element is 'checked'
+:enabled {} element is not 'disabled'
+:disabled {} element is 'disabled'
+:empty {} element has no children, not even text
+:target {} element is the target of the current URI
+
+##Pseudo selector API
+
+Implementing custom pseudo selectors is easy:
 
 ``` js
 qwery.pseudos['first-child'] = function (el, val) {
@@ -69,7 +97,11 @@ qwery.pseudos.foo = function (el, val) {
   // val == 'bar'
   return el.getAttribute(val)
 }
-```
+
+qwery.pseudos.humanoid = function (el, val) {
+  return qwery.is(el, 'li:contains(human)') || qwery.is(el, 'ol:contains(human)')
+}
+``
 
 Configuring Qwery
 -----------------
@@ -111,11 +143,17 @@ Qwery is the recommended selector engine for [Ender](http://ender.no.de). If you
 
 To include Query in a custom build of Ender you can include it as such:
 
-    $ ender build qwery[,mod2,mod3,...]
+    $ ender build qwery [module2 [module3 ...]]
 
 Or add it to an existing Ender installation
 
     $ ender add qwery
+
+## Pseudo selectors in Ender
+
+Use *qwery-pseudos* to include the pseudo selectors module in an Ender build:
+
+    $ ender build qwery qwery-pseudos [module3 [module4 ...]]
 
 Ender bridge additions
 ---------

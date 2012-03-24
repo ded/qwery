@@ -1,5 +1,8 @@
 !function () {
-  var q, pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/
+  var q, pseudos, i, l, r, nodes, m
+    , nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/
+    , nthMatchPattern = /^(.+?)\s+of\s+(.+)$/
+
   if (typeof module != 'undefined' && typeof 'require' != 'undefined')
     q = require('qwery')
   else if (typeof qwery != 'undefined')
@@ -26,61 +29,89 @@
   }
 
   function checkNth(el, nodes, val) {
-    if (isFinite(val)) return nodes[val - 1] == el
-    else if (val == 'odd') return checkNthExpr(el, nodes, 2, 1)
-    else if (val == 'even') return checkNthExpr(el, nodes, 2, 0)
-    else if (m = nthPattern.exec(val))
-      return checkNthExpr(el, nodes,
-                          (m[2] ? parseInt(m[1], 10) : parseInt(m[1] + '1', 10)),  // Check case where coefficient is omitted
-                          (m[3] ? parseInt(m[3].replace(/\s*/, ''), 10) : 0)) // Check case where constant is omitted
-
+    if (!nodes.length)
+      return false
+    else if (isFinite(val))
+      return nodes[val - 1] == el
+    else if (val == 'odd')
+      return checkNthExpr(el, nodes, 2, 1)
+    else if (val == 'even')
+      return checkNthExpr(el, nodes, 2, 0)
+    else if (m = nthPattern.exec(val)) {
+      return checkNthExpr(
+          el
+        , nodes
+        , (m[2] ? parseInt(m[1], 10) : parseInt(m[1] + '1', 10)) // Check case where coefficient is omitted
+        , (m[3] ? parseInt(m[3].replace(/\s*/, ''), 10) : 0)     // Check case where constant is omitted
+      )
+    }
     return false
   }
 
+  function checkNthMatch(el, nodes, val) {
+    var i = 0, l = nodes.length, nn = [], m = nthMatchPattern.exec(val)
+    if (!m)
+      return false
+    for (; i < l; i++)
+      q.is(nodes[i], m[2]) && nn.push(nodes[i])
+    return checkNth(el, nn, m[1])
+  }
+
   function text(el, s) {
-    if (el.nodeType === 3 || el.nodeType === 4) return el.nodeValue;
-    if (el.nodeType !== 1 && el.nodeType !== 9) return '';
+    if (el.nodeType === 3 || el.nodeType === 4) return el.nodeValue
+    if (el.nodeType !== 1 && el.nodeType !== 9) return ''
     for (s = '', el = el.firstChild; el; el = el.nextSibling) {
       if (el.nodeType !== 8) s += el.textContent || el.innerText || text(el)
     }
     return s
   }
 
-  // *was* going to be in CSS3, didn't quite make it
   pseudos.contains = function(el, val) { return text(el).indexOf(val) != -1 }
 
   pseudos.not = function(el, val) { return !q.is(el, val) }
 
-  pseudos['nth-child'] = function (el, val) {
-    if (!val || !(p = el.parentNode)) return false
+  pseudos.matches = function(el, val) { return q.is(el, val) }
+
+  function nthWrap (fn) {
+    return function (el, val, p) {
+      return val && (p = el.parentNode) && fn.call(null, p, el, val)
+    }
+  }
+
+  pseudos['nth-match'] = nthWrap(function (p, el, val) {
+    return checkNthMatch(el, children(p), val)
+  })
+
+  pseudos['nth-last-match'] = nthWrap(function (p, el, val) {
+    return checkNthMatch(el, children(p).reverse(), val)
+  })
+
+  pseudos['nth-child'] = nthWrap(function (p, el, val) {
     return checkNth(el, children(p), val)
-  }
+  })
 
-  pseudos['nth-last-child'] = function (el, val) {
-    if (!val || !(p = el.parentNode)) return false
+  pseudos['nth-last-child'] = nthWrap(function (p, el, val) {
     return checkNth(el, children(p).reverse(), val)
-  }
+  })
 
-  pseudos['nth-of-type'] = function (el, val) {
-    if (!val || !(p = el.parentNode)) return false
+  pseudos['nth-of-type'] = nthWrap(function (p, el, val) {
     return checkNth(el, children(p, el.nodeName), val)
-  }
+  })
 
-  pseudos['nth-last-of-type'] = function (el, val) {
-    if (!val || !(p = el.parentNode)) return false
+  pseudos['nth-last-of-type'] = nthWrap(function (p, el, val) {
     return checkNth(el, children(p, el.nodeName).reverse(), val)
-  }
+  })
 
   pseudos['first-child'] = function (el) { return pseudos['nth-child'](el, 1) }
   pseudos['last-child'] = function (el) { return pseudos['nth-last-child'](el, 1) }
   pseudos['first-of-type'] = function (el) { return pseudos['nth-of-type'](el, 1) }
   pseudos['last-of-type'] = function (el) { return pseudos['nth-last-of-type'](el, 1) }
 
-  pseudos['only-child'] = function (el) {
+  pseudos['only-child'] = function (el, p) {
     return (p = el.parentNode) && (nodes = children(p)) && (nodes.length == 1) && (el == nodes[0])
-  };
+  }
 
-  pseudos['only-of-type'] = function (el) {
+  pseudos['only-of-type'] = function (el, p) {
     return (p = el.parentNode) && (nodes = children(p, el.nodeName)) && (nodes.length == 1) && (el == nodes[0])
   }
 
