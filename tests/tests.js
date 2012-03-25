@@ -1,13 +1,19 @@
 // silly custom pseudo just for tests
 Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
-var hasQSA = !!document.querySelectorAll
+var html = document.documentElement
+    hasQSA = !!document.querySelectorAll
+  , hasMS = html.matchesSelector || html.msMatchesSelector || html.webkitMatchesSelector || html.mozMatchesSelector || html.oMatchesSelector
   , sinkSuite = function (label, suite) {
-      sink(label + (hasQSA ? ' [qSA]' : ''), function () {
+      sink(label + (hasQSA ? ' [qSA &amp; MS]' : ''), function () {
         hasQSA && Q.configure({ useNativeQSA: true })
+        hasMS && Q.configure({ useNativeMS: true })
         suite.apply(null, arguments)
       })
-      hasQSA && sink(label + ' [non-QSA]', function () {
-        Q.configure({ useNativeQSA: false })
+      hasQSA && sink(label + ' [non-QSA &amp; non-MS]', function () {
+        Q.configure({
+            useNativeQSA: false
+          , useNativeMS: false
+        })
         suite.apply(null, arguments)
       })
     }
@@ -18,6 +24,14 @@ var hasQSA = !!document.querySelectorAll
         if (a1[i] !== a2[i])
           return false
       return true
+    }
+  , contains = Array.prototype.indexOf ? function (arr, e) {
+      return arr.indexOf(e) > -1
+    } : function (arr, e) {
+      for (var i = 0; i < arr.length; i++)
+        if (arr[i] === e)
+          return true
+      return false
     }
 
 sinkSuite('Contexts', function (test, ok) {
@@ -106,7 +120,39 @@ sinkSuite('CSS 1', function (test, ok) {
     ok(Q('div#fixtures div ~ a div').length == 0, 'found no results for odd query')
     ok(Q('.direct-descend > .direct-descend > .direct-descend ~ .lvl2').length == 0, 'found no results for another odd query')
   });
-});
+})
+
+sinkSuite('Grouped selectors', function (test, ok, before, after, assert) {
+  test('simple groups', 5, function () {
+    // this kludge is because qSA will return the results in document order but
+    // _qwery() will do it in group order so both passes through this test will yield
+    // a result array in a different order.
+    var result = Q('#boosh, h1, a.odd, .foobardoobarhoohaa')
+    assert.equal(result.length, 4, 'returned 4 elements')
+    ok(contains(result, document.getElementById('boosh')), 'result includes #boosh')
+    ok(contains(result, document.getElementsByTagName('h1')[0]), 'result includes first h1')
+    ok(contains(result, document.getElementsByTagName('h1')[1]), 'result includes second h1')
+    ok(contains(result, Q('a.odd')[0]), 'result includes a.odd')
+  })
+
+  test('groups within pseudos within groups', 1, function () {
+    // test our group splitting skillz
+    ok(arraysMatch(
+          Q('#pseudos :matches(a, span, [class~=pseudo-1]), h1, a.odd')
+        , [
+              Q('#pseudos > .pseudo-1')[0]
+            , Q('#pseudos span')[0]
+            , Q('#pseudos span')[1]
+            , Q('#pseudos > a')[0]
+            , Q('#pseudos span')[2]
+            , Q('#pseudos span')[3]
+            , document.getElementsByTagName('h1')[0]
+            , document.getElementsByTagName('h1')[1]
+          ])
+      , 'selected correct elements for #pseudos :matches(a, span, [class~=pseudo-1]), h1, a.odd'
+    )
+  })
+})
 
 sinkSuite('CSS 2', function (test, ok) {
 
@@ -243,8 +289,16 @@ sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
 
 sinkSuite('Uniq', function (test, ok) {
   test('duplicates arent found in arrays', 2, function () {
-    ok(Q.uniq(['a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e']).length == 5, 'result should be a, b, c, d, e')
-    ok(Q.uniq(['a', 'b', 'c', 'c', 'c']).length == 3, 'result should be a, b, c')
+    ok(arraysMatch(
+          Q.uniq([ 'a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e' ])
+        , [ 'a', 'b', 'c', 'd', 'e' ])
+      , 'turned [a, b, c, d, e, a, b, c, d, e] into [a, b, c, d, e]'
+    )
+    ok(arraysMatch(
+          Q.uniq([ 'a', 'b', 'c', 'c', 'c' ])
+        , [ 'a', 'b', 'c' ])
+      , 'turned [a, b, c, c, c] into [a, b, c]'
+    )
   })
 })
 
@@ -348,12 +402,19 @@ sinkSuite('pseudo-selectors', function (test, ok, before, after, assert) {
     ok(Q('ol:contains(humans)').length == 1, 'found by "ancestor:contains(text)"')
   })
 
-  test(':not', 1, function() {
-    ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
+  test(':not', function(complete) {
+    ok(Q('.odd:not(div)').length == 1, 'found one .odd :not a div')
+    ok(arraysMatch(
+        Q('.odd:not(.ofmatch,.pseudos)')
+      , Q('#pseudos > :nth-child(7)'))
+      , 'found one .odd :not .ofmatch or .pseudos')
+    complete()
   })
 
-  test(':matches (CSS 4)', 1, function() {
+  test(':matches (CSS 4)', function(complete) {
     ok(Q('#pseudos > div:matches(.pseudos)').length == 2, 'found 2 "#pseudos > div:matches(.pseudos)"')
+    ok(Q('#pseudos *:matches(div.pseudos,span)').length == 6, 'found 6 "#pseudos *:matches(div.pseudos,span)"')
+    complete()
   })
 
   test(':first-child', 2, function () {
@@ -585,6 +646,12 @@ sinkSuite('is()', function (test, ok) {
     ok(!Q.is(el, '[foo]'), 'wrong [attr]');
     ok(!Q.is(el, '[attr=foo]'), 'wrong [attr=val]');
   });
+  test('grouped selectors', function (complete) {
+    ok(Q.is(el, 'li,a,div'), 'li,a,div')
+    ok(Q.is(el, '.foo,[attr=boosh],.bar'), '.foo,[attr=boosh],.bar')
+    ok(Q.is(el, 'li#attr-child-boosh[attr=boosh],li'), '[attr],[attr=boosh],li')
+    complete()
+  })
   test('selector sequences', 2, function () {
     ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]'), 'tag#id[attr=val]');
     ok(!Q.is(el, 'div#attr-child-boosh[attr=boosh]'), 'wrong tag#id[attr=val]');

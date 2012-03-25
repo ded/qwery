@@ -9,9 +9,29 @@
     , byTag = 'getElementsByTagName'
     , qSA = 'querySelectorAll'
     , useNativeQSA = 'useNativeQSA'
+    , useNativeMS = 'useNativeMS'
     , tagName = 'tagName'
     , nodeType = 'nodeType'
     , select // main select() method, assign later
+    , matches // main matches() method, assign later
+      // feature test for 'matchesSelector' function name
+    , matchesSelector = (function (el, pfx, name, i, ms) {
+        while (i < pfx.length) {
+          if (el[ms = pfx[i++] + name]) {
+            try {
+              // we need a matchesSelector implementation that throws if it receives garbage
+              // which some do not (looking at you Firefox<4)
+              el[ms](':qwery()')
+              return null
+            } catch (e) {
+              return ms
+            }
+          }
+        }
+      }(html, [ 'msM', 'webkitM', 'mozM', 'oM', 'm' ], 'atchesSelector', 0))
+    , hasByClass = !!doc[byClass]
+      // has native qSA support
+    , hasQSA = doc.querySelector && doc[qSA]
 
     // OOOOOOOOOOOOH HERE COME THE ESSSXXSSPRESSSIONSSSSSSSS!!!!!
     , id = /#([\w\-]+)/
@@ -95,6 +115,11 @@
     return n
   }
 
+  // instead of using regexes to split our selectors, do it manually, taking into
+  // account nested (), [], '', "" sets.
+  // prevents us from splitting groups (,) at the wrong place, so we can have groups
+  // within :not(), :matches(), etc. and allows more complex content within other
+  // pseudos and attribute descriptors more generally
   function splittr (selector, splitRegex) {
     var c, s = '', tokens = [], dividers = [], i = 0, l = selector.length, subs = 0
     for (; i < l; i++) {
@@ -196,27 +221,6 @@
     return ret
   }
 
-  // compare element to a selector
-  function is (el, selector, root) {
-    if (isNode(selector))
-      return el == selector
-    if (arrayLike(selector))
-      return flatten(selector).indexOf(el) > -1 // if selector is an array, is el a member?
-
-    var selectors = (groupCache.g(selector) || groupCache.s(selector, splittr(selector, /,/)[0]))
-      , i = 0, l = selectors.length, split, tokens, dividedTokens
-
-    for (; i < l; i++) {
-      split = splittrCache.g(selectors[i]) || splittrCache.s(selectors[i], splittr(selectors[i], splitters))
-      tokens = split[0].slice(0) // copy
-      dividedTokens = split[1]
-      if (interpret.apply(el, tokens.pop().match(chunker)) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
-        return true
-      }
-    }
-    return false
-  }
-
   // given elements matching the right-most part of a selector, filter out any that don't match the rest
   function ancestorMatch (el, tokens, dividedTokens, root) {
     var cand, intr
@@ -227,8 +231,10 @@
           if (intr[11]) // subject selector: '!', change subject 'el' to current element
             el = p
           if (i) {
-            if (cand = crawl(p, i - 1, p)) return cand
-          } else return p
+            if (cand = crawl(p, i - 1, p))
+              return cand
+          } else
+            return p
         }
       }
     }
@@ -236,20 +242,21 @@
   }
 
   function isNode (el, t) {
-    return el && typeof el === 'object' && (t = el[nodeType]) && (t == 1 || t == 9)
+    return el && typeof el == 'object' && (t = el[nodeType]) && (t == 1 || t == 9)
   }
 
   function uniq (ar) {
     var a = [], i, j
     o: for (i = 0; i < ar.length; ++i) {
-      for (j = 0; j < a.length; ++j) if (a[j] == ar[i]) continue o
+      for (j = 0; j < a.length; ++j)
+        if (a[j] == ar[i]) continue o
       a[a.length] = ar[i]
     }
     return a
   }
 
   function arrayLike (o) {
-    return (typeof o === 'object' && isFinite(o.length))
+    return (typeof o == 'object' && isFinite(o.length))
   }
 
   function normalizeRoot (root) {
@@ -326,9 +333,38 @@
         } :
         function(e, a) { return e.getAttribute(a) }
    }()
-  , hasByClass = !!doc[byClass]
-    // has native qSA support
-  , hasQSA = doc.querySelector && doc[qSA]
+
+  , matchesMS = function (el, selector, root) {
+      try {
+        return el[matchesSelector](selector) && (!root || isAncestor(el, root))
+      } catch (e) {
+        // fallback for selectors not supported by browser, such as custom pseudos
+        return matchesNonNative(el, selector, root)
+      }
+    }
+  , matchesNonNative = function (el, selector, root) {
+      var selectors = (groupCache.g(selector) || groupCache.s(selector, splittr(selector, /,/)[0]))
+        , i = 0, l = selectors.length, split, tokens, dividedTokens
+
+      for (; i < l; i++) {
+        split = splittrCache.g(selectors[i]) || splittrCache.s(selectors[i], splittr(selectors[i], splitters))
+        tokens = split[0].slice(0) // copy
+        dividedTokens = split[1]
+        if (interpret.apply(el, tokens.pop().match(chunker)) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
+          return true
+        }
+      }
+      return false
+    }
+    // compare element to a selector
+  , is = function (el, selector, root) {
+      if (isNode(selector))
+        return el == selector
+      if (arrayLike(selector))
+        return flatten(selector).indexOf(el) > -1 // if selector is an array, is el a member?
+      return matches(el, selector, root)
+    }
+
     // use native qSA
   , selectQSA = function (selector, root) {
       var result = [], e
@@ -376,12 +412,16 @@
       return result.length > 1 ? uniq(result) : result
     }
   , configure = function (options) {
-      // configNativeQSA: use fully-internal selector or native qSA where present
       if (typeof options[useNativeQSA] !== 'undefined')
         select = !options[useNativeQSA] ? selectNonNative : hasQSA ? selectQSA : selectNonNative
+      if (typeof options[useNativeMS] !== 'undefined')
+        matches = !options[useNativeMS] ? matchesNonNative : matchesSelector ? matchesMS : matchesNonNative
     }
 
-  configure({ useNativeQSA: true })
+  configure({
+      useNativeQSA: true
+    , useNativeMS: true
+  })
 
   qwery.configure = configure
   qwery.uniq = uniq

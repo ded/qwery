@@ -64,7 +64,7 @@ Currently implemented pseudo selectors:
 :nth-of-type(n) {} n-th sibling of its type
 :nth-last-of-type(n) {} n-th sibling of its type, counting from the last one
 :nth-match(n of sel) {} n-th match of given sub-selector
-:nth-match(n of sel) {} n-th match of given sub-selector, counting from the last one
+:nth-last-match(n of sel) {} n-th match of given sub-selector, counting from the last one
 :first-child
 :last-child
 :first-of-type
@@ -106,11 +106,14 @@ qwery.pseudos.humanoid = function (el, val) {
 Configuring Qwery
 -----------------
 
-The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally. Currently only the `useNativeQSA` option is available to turn on and off the use of native `querySelectorAll()` where available.
+The `configure()` method takes an options object allowing you to adjust the way that Qwery works internally.
+Use the `useNativeQSA` option to turn on and off the use of native `querySelectorAll()` where available.
+Use the `useNativeMS` option to turn on and off the use of native `matchesSelector()` where available.
 
 ``` js
 qwery.configure({
-  useNativeQSA: false
+    useNativeQSA: false
+  , useNativeMS: false
 })
 ```
 
