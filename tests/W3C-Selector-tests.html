@@ -231,13 +231,12 @@
     //document.querySelector = document.querySelectorAll = null;
   </script>
   <script type="text/javascript" src="../src/qwery.js"></script>
-  <script type="text/javascript" src="../src/pseudos.js"></script>
+  <script type="text/javascript" src="../pseudos/src/pseudos.js"></script>
   <script>
 	window.onload = function(){
 
 		window.$ = qwery;
-    //$.configure({ NATIVE_QSA: false });
-    $.nonStandardEngine = true;
+        $.configure({ useNativeQSA: false, useNativeMS: false });
 
 		document.getElementById("toggle").onclick = function(){
 			document.documentElement.className = this.checked ? "unitTest nopass" : "unitTest";
