@@ -62,8 +62,7 @@
           return node && node.previousSibling
         }
       , '+': function (node, contestant, p1, p2) {
-          if (!node) return false
-          return (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
+          return node && (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
         }
       }
 
@@ -136,7 +135,7 @@
       splittrClosersRe.test(c) && subs--
     }
     s && tokens.push(s)
-    return [ tokens, dividers ]
+    return !subs ? [ tokens, dividers ] : [[],[]]
   }
 
   // called using `this` as element and arguments from regex group results.
@@ -144,13 +143,20 @@
   // div.hello[title="world"]:foo('bar')!, div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar, !]
   function interpret (whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal, subject) {
     var i, m, k, o, classes
-    if (this[nodeType] !== 1) return false
-    if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag) return false
-    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
+
+    if (this[nodeType] !== 1)
+      return false
+    if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag)
+      return false
+    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id)
+      return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
-      for (i = classes.length; i--;) if (!classRegex(classes[i].slice(1)).test(this.className)) return false
+      for (i = classes.length; i--;)
+        if (!classRegex(classes[i].slice(1)).test(this.className))
+          return false
     }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) return false
+    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal))
+      return false
     if (wholeAttribute && !value) { // select is just for existance of attrib
       o = this.attributes
       for (k in o) {
@@ -194,30 +200,43 @@
       , split = splittrCache.g(selector) || splittrCache.s(selector, splittr(selector, splitters))
       , tokens = split[0], dividedTokens = split[1]
 
-    if (!tokens.length) return r
+    if (!tokens.length)
+      return r
 
     token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = byId(_root, m[1])
-    if (!root) return r
+    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly)))
+      root = byId(_root, m[1])
+    if (!root)
+      return r
 
     intr = token.match(chunker)
+
     // collect base candidates to filter
-    els = root !== _root && root[nodeType] !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
-      function (r) {
-        while (root = root.nextSibling) {
-          root[nodeType] == 1 && (intr[1] ? intr[1] == root[tagName].toLowerCase() : 1) && (r[r.length] = root)
-        }
-        return r
-      }([]) :
-      root[byTag](intr[1] || '*')
+    if (root !== _root && root[nodeType] !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1])) {
+      // collect siblings
+      els = []
+      while (root = root.nextSibling) {
+        if (root[nodeType] == 1 && (!intr[1] || intr[1] == root[tagName].toLowerCase()))
+          els[els.length] = root
+      }
+    } else
+      els = root[byTag](intr[1] || '*')
+
     // filter elements according to the right-most part of the selector
     for (i = 0, l = els.length; i < l; i++) {
-      if (item = interpret.apply(els[i], intr)) r[r.length] = item
+      if (item = interpret.apply(els[i], intr))
+        r[r.length] = item
     }
-    if (!tokens.length) return r
+
+    if (!tokens.length)
+      return r
 
     // filter further according to the rest of the selector (the left side)
-    each(r, function(e) { if (e = ancestorMatch(e, tokens, dividedTokens)) ret[ret.length] = e })
+    each(r, function(e) {
+      if (e = ancestorMatch(e, tokens, dividedTokens))
+        ret[ret.length] = e
+    })
+
     return ret
   }
 
@@ -260,9 +279,12 @@
   }
 
   function normalizeRoot (root) {
-    if (!root) return doc
-    if (typeof root == 'string') return qwery(root)[0]
-    if (!root[nodeType] && arrayLike(root)) return root[0]
+    if (!root)
+      return doc
+    if (typeof root == 'string')
+      return qwery(root)[0]
+    if (!root[nodeType] && arrayLike(root))
+      return root[0]
     return root
   }
 
@@ -278,15 +300,20 @@
     var m, el, root = normalizeRoot(_root)
 
     // easy, fast cases that we can dispatch with simple DOM calls
-    if (!root || !selector) return []
+    if (!root || !selector)
+      return []
     if (selector === window || isNode(selector)) {
       return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : []
     }
-    if (selector && arrayLike(selector)) return flatten(selector)
+    if (selector && arrayLike(selector))
+      return flatten(selector)
     if (m = selector.match(easy)) {
-      if (m[1]) return (el = byId(root, m[1])) ? [el] : []
-      if (m[2]) return arrayify(root[byTag](m[2]))
-      if (hasByClass && m[3]) return arrayify(root[byClass](m[3]))
+      if (m[1])
+        return (el = byId(root, m[1])) ? [el] : []
+      if (m[2])
+        return arrayify(root[byTag](m[2]))
+      if (hasByClass && m[3])
+        return arrayify(root[byClass](m[3]))
     }
 
     return select(selector, root)
@@ -300,12 +327,13 @@
       if (splittable.test(s)) {
         if (root[nodeType] !== 9) {
          // make sure the el has an id, rewrite the query, set root to doc and run it
-         if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
+         if (!(nid = oid = root.getAttribute('id')))
+          root.setAttribute('id', nid = '__qwerymeupscotty')
          s = '[id="' + nid + '"]' + s // avoid byId and allow us to match context element
          collector(root.parentNode || root, s, true)
          oid || root.removeAttribute('id')
         }
-        return;
+        return
       }
       s.length && collector(root, s, false)
     }
@@ -379,7 +407,8 @@
               e = ctx[qSA](s)
               if (e.length == 1)
                 result[result.length] = e.item(0)
-              else if (e.length) result = result.concat(arrayify(e))
+              else if (e.length)
+                result = result.concat(arrayify(e))
             })
         )
         return result.length > 1 ? uniq(result) : result
