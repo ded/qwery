@@ -34,19 +34,19 @@
     , hasQSA = doc.querySelector && doc[qSA]
 
     // OOOOOOOOOOOOH HERE COME THE ESSSXXSSPRESSSIONSSSSSSSS!!!!!
-    , id = /#([\w\-]+)/
-    , clas = /\.[\w\-]+/g
-    , idOnly = /^#([\w\-]+)$/
-    , classOnly = /^\.([\w\-]+)$/
+    , id = /#([\w\u00c0-\uFFFF\-]+)/
+    , clas = /\.[\w\u00c0-\uFFFF\-]+/g
+    , idOnly = /^#([\w\u00c0-\uFFFF\-]+)$/
+    , classOnly = /^\.([\w\u00c0-\uFFFF\-]+)$/
     , tagOnly = /^([\w\-]+)$/
-    , tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/
+    , tagAndOrClass = /^([\w]+)?\.([\w\u00c0-\uFFFF\-]+)$/
     , splittable = /(^|,)\s*[>~+]/
     , normalizr = /^\s+|\s*([,\s\+\~>]|$)\s*/g
     , splitters = /[\s\>\+\~]/
     , specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g
-    , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
-    , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([^\]'"]+)['"]?)?\]/
-    , pseudo = /:([\w\-]+)(\(['"]?([^'")]+)['"]?\))?/
+    , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\u00c0-\uFFFF\-\.#]+)?)/
+    , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([^\]'"]*)['"]?)?\]/
+    , pseudo = /:([\w\-]+)(\(['"]?([^)]*?)['"]?\))?/
     , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
     , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?(!)?')
     , splittrOpenersRe = /[\(\["']/
@@ -135,7 +135,7 @@
       splittrClosersRe.test(c) && subs--
     }
     s && tokens.push(s)
-    return !subs ? [ tokens, dividers ] : [[],[]]
+    return [ tokens, dividers ]
   }
 
   // called using `this` as element and arguments from regex group results.
@@ -155,9 +155,9 @@
         if (!classRegex(classes[i].slice(1)).test(this.className))
           return false
     }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal))
+    if (pseudo && (!qwery.pseudos[pseudo] || !qwery.pseudos[pseudo](this, pseudoVal)))
       return false
-    if (wholeAttribute && !value) { // select is just for existance of attrib
+    if (wholeAttribute && !value && !/\=/.test(wholeAttribute)) { // select is just for existance of attrib
       o = this.attributes
       for (k in o) {
         if (Object.prototype.hasOwnProperty.call(o, k) && (o[k].name || k) == attribute) {
@@ -177,6 +177,8 @@
   }
 
   function checkAttr (qualify, actual, val) {
+    if (qualify != '=' && !val) // spec says if these matchers are empty they should fail
+      return false
     switch (qualify) {
     case '=':
       return actual == val
@@ -291,9 +293,10 @@
   function byId (root, id, el) {
     // if doc, query on it, else query the parent doc or if a detached fragment rewrite the query and run on the fragment
     return root[nodeType] === 9 ? root.getElementById(id) :
-      root.ownerDocument &&
-        (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
-          (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0]))
+      root.id == id ? root : // itself
+        root.ownerDocument &&
+          (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
+            (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0]))
   }
 
   function qwery (selector, _root) {
