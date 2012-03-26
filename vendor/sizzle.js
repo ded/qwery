@@ -7,11 +7,13 @@
 (function(){
 
 var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^\[\]]*\]|['"][^'"]*['"]|[^\[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?((?:.|\r|\n)*)/g,
+	expando = "sizcache" + (Math.random() + '').replace('.', ''),
 	done = 0,
 	toString = Object.prototype.toString,
 	hasDuplicate = false,
 	baseHasDuplicate = true,
 	rBackslash = /\\/g,
+	rReturn = /\r\n/g,
 	rNonWord = /\W/;
 
 // Here we check if the JavaScript engine is using some sort of
@@ -63,7 +65,7 @@ var Sizzle = function( selector, context, results, seed ) {
 	if ( parts.length > 1 && origPOS.exec( selector ) ) {
 
 		if ( parts.length === 2 && Expr.relative[ parts[0] ] ) {
-			set = posProcess( parts[0] + parts[1], context );
+			set = posProcess( parts[0] + parts[1], context, seed );
 
 		} else {
 			set = Expr.relative[ parts[0] ] ?
@@ -77,7 +79,7 @@ var Sizzle = function( selector, context, results, seed ) {
 					selector += parts.shift();
 				}
 
-				set = posProcess( selector, set );
+				set = posProcess( selector, set, seed );
 			}
 		}
 
@@ -196,18 +198,17 @@ Sizzle.matchesSelector = function( node, expr ) {
 };
 
 Sizzle.find = function( expr, context, isXML ) {
-	var set;
+	var set, i, len, match, type, left;
 
 	if ( !expr ) {
 		return [];
 	}
 
-	for ( var i = 0, l = Expr.order.length; i < l; i++ ) {
-		var match,
-			type = Expr.order[i];
+	for ( i = 0, len = Expr.order.length; i < len; i++ ) {
+		type = Expr.order[i];
 
 		if ( (match = Expr.leftMatch[ type ].exec( expr )) ) {
-			var left = match[1];
+			left = match[1];
 			match.splice( 1, 1 );
 
 			if ( left.substr( left.length - 1 ) !== "\\" ) {
@@ -233,17 +234,18 @@ Sizzle.find = function( expr, context, isXML ) {
 
 Sizzle.filter = function( expr, set, inplace, not ) {
 	var match, anyFound,
+		type, found, item, filter, left,
+		i, pass,
 		old = expr,
 		result = [],
 		curLoop = set,
 		isXMLFilter = set && set[0] && Sizzle.isXML( set[0] );
 
 	while ( expr && set.length ) {
-		for ( var type in Expr.filter ) {
+		for ( type in Expr.filter ) {
 			if ( (match = Expr.leftMatch[ type ].exec( expr )) != null && match[2] ) {
-				var found, item,
-					filter = Expr.filter[ type ],
-					left = match[1];
+				filter = Expr.filter[ type ];
+				left = match[1];
 
 				anyFound = false;
 
@@ -269,10 +271,10 @@ Sizzle.filter = function( expr, set, inplace, not ) {
 				}
 
 				if ( match ) {
-					for ( var i = 0; (item = curLoop[i]) != null; i++ ) {
+					for ( i = 0; (item = curLoop[i]) != null; i++ ) {
 						if ( item ) {
 							found = filter( item, match, i, curLoop );
-							var pass = not ^ !!found;
+							pass = not ^ found;
 
 							if ( inplace && found != null ) {
 								if ( pass ) {
@@ -323,7 +325,46 @@ Sizzle.filter = function( expr, set, inplace, not ) {
 };
 
 Sizzle.error = function( msg ) {
-	throw "Syntax error, unrecognized expression: " + msg;
+	throw new Error( "Syntax error, unrecognized expression: " + msg );
+};
+
+/**
+ * Utility function for retreiving the text value of an array of DOM nodes
+ * @param {Array|Element} elem
+ */
+var getText = Sizzle.getText = function( elem ) {
+    var i, node,
+		nodeType = elem.nodeType,
+		ret = "";
+
+	if ( nodeType ) {
+		if ( nodeType === 1 || nodeType === 9 || nodeType === 11 ) {
+			// Use textContent || innerText for elements
+			if ( typeof elem.textContent === 'string' ) {
+				return elem.textContent;
+			} else if ( typeof elem.innerText === 'string' ) {
+				// Replace IE's carriage returns
+				return elem.innerText.replace( rReturn, '' );
+			} else {
+				// Traverse it's children
+				for ( elem = elem.firstChild; elem; elem = elem.nextSibling) {
+					ret += getText( elem );
+				}
+			}
+		} else if ( nodeType === 3 || nodeType === 4 ) {
+			return elem.nodeValue;
+		}
+	} else {
+
+		// If no nodeType, this is expected to be an array
+		for ( i = 0; (node = elem[i]); i++ ) {
+			// Do not traverse comment nodes
+			if ( node.nodeType !== 8 ) {
+				ret += getText( node );
+			}
+		}
+	}
+	return ret;
 };
 
 var Expr = Sizzle.selectors = {
@@ -625,42 +666,50 @@ var Expr = Sizzle.selectors = {
 			var attr = elem.getAttribute( "type" ), type = elem.type;
 			// IE6 and 7 will map elem.type to 'text' for new HTML5 types (search, etc)
 			// use getAttribute instead to test this case
-			return "text" === type && ( attr === type || attr === null );
+			return elem.nodeName.toLowerCase() === "input" && "text" === type && ( attr === type || attr === null );
 		},
 
 		radio: function( elem ) {
-			return "radio" === elem.type;
+			return elem.nodeName.toLowerCase() === "input" && "radio" === elem.type;
 		},
 
 		checkbox: function( elem ) {
-			return "checkbox" === elem.type;
+			return elem.nodeName.toLowerCase() === "input" && "checkbox" === elem.type;
 		},
 
 		file: function( elem ) {
-			return "file" === elem.type;
+			return elem.nodeName.toLowerCase() === "input" && "file" === elem.type;
 		},
+
 		password: function( elem ) {
-			return "password" === elem.type;
+			return elem.nodeName.toLowerCase() === "input" && "password" === elem.type;
 		},
 
 		submit: function( elem ) {
-			return "submit" === elem.type;
+			var name = elem.nodeName.toLowerCase();
+			return (name === "input" || name === "button") && "submit" === elem.type;
 		},
 
 		image: function( elem ) {
-			return "image" === elem.type;
+			return elem.nodeName.toLowerCase() === "input" && "image" === elem.type;
 		},
 
 		reset: function( elem ) {
-			return "reset" === elem.type;
+			var name = elem.nodeName.toLowerCase();
+			return (name === "input" || name === "button") && "reset" === elem.type;
 		},
 
 		button: function( elem ) {
-			return "button" === elem.type || elem.nodeName.toLowerCase() === "button";
+			var name = elem.nodeName.toLowerCase();
+			return name === "input" && "button" === elem.type || name === "button";
 		},
 
 		input: function( elem ) {
 			return (/input|select|textarea|button/i).test( elem.nodeName );
+		},
+
+		focus: function( elem ) {
+			return elem === elem.ownerDocument.activeElement;
 		}
 	},
 	setFilters: {
@@ -705,7 +754,7 @@ var Expr = Sizzle.selectors = {
 				return filter( elem, i, match, array );
 
 			} else if ( name === "contains" ) {
-				return (elem.textContent || elem.innerText || Sizzle.getText([ elem ]) || "").indexOf(match[3]) >= 0;
+				return (elem.textContent || elem.innerText || getText([ elem ]) || "").indexOf(match[3]) >= 0;
 
 			} else if ( name === "not" ) {
 				var not = match[3];
@@ -724,13 +773,16 @@ var Expr = Sizzle.selectors = {
 		},
 
 		CHILD: function( elem, match ) {
-			var type = match[1],
+			var first, last,
+				doneName, parent, cache,
+				count, diff,
+				type = match[1],
 				node = elem;
 
 			switch ( type ) {
 				case "only":
 				case "first":
-					while ( (node = node.previousSibling) )	 {
+					while ( (node = node.previousSibling) ) {
 						if ( node.nodeType === 1 ) {
 							return false;
 						}
@@ -742,8 +794,9 @@ var Expr = Sizzle.selectors = {
 
 					node = elem;
 
+					/* falls through */
 				case "last":
-					while ( (node = node.nextSibling) )	 {
+					while ( (node = node.nextSibling) ) {
 						if ( node.nodeType === 1 ) {
 							return false;
 						}
@@ -752,18 +805,18 @@ var Expr = Sizzle.selectors = {
 					return true;
 
 				case "nth":
-					var first = match[2],
-						last = match[3];
+					first = match[2];
+					last = match[3];
 
 					if ( first === 1 && last === 0 ) {
 						return true;
 					}
 
-					var doneName = match[0],
-						parent = elem.parentNode;
+					doneName = match[0];
+					parent = elem.parentNode;
 
-					if ( parent && (parent.sizcache !== doneName || !elem.nodeIndex) ) {
-						var count = 0;
+					if ( parent && (parent[ expando ] !== doneName || !elem.nodeIndex) ) {
+						count = 0;
 
 						for ( node = parent.firstChild; node; node = node.nextSibling ) {
 							if ( node.nodeType === 1 ) {
@@ -771,10 +824,10 @@ var Expr = Sizzle.selectors = {
 							}
 						}
 
-						parent.sizcache = doneName;
+						parent[ expando ] = doneName;
 					}
 
-					var diff = elem.nodeIndex - last;
+					diff = elem.nodeIndex - last;
 
 					if ( first === 0 ) {
 						return diff === 0;
@@ -790,7 +843,7 @@ var Expr = Sizzle.selectors = {
 		},
 
 		TAG: function( elem, match ) {
-			return (match === "*" && elem.nodeType === 1) || elem.nodeName.toLowerCase() === match;
+			return (match === "*" && elem.nodeType === 1) || !!elem.nodeName && elem.nodeName.toLowerCase() === match;
 		},
 
 		CLASS: function( elem, match ) {
@@ -800,7 +853,9 @@ var Expr = Sizzle.selectors = {
 
 		ATTR: function( elem, match ) {
 			var name = match[1],
-				result = Expr.attrHandle[ name ] ?
+				result = Sizzle.attr ?
+					Sizzle.attr( elem, name ) :
+					Expr.attrHandle[ name ] ?
 					Expr.attrHandle[ name ]( elem ) :
 					elem[ name ] != null ?
 						elem[ name ] :
@@ -811,6 +866,8 @@ var Expr = Sizzle.selectors = {
 
 			return result == null ?
 				type === "!=" :
+				!type && Sizzle.attr ?
+				result != null :
 				type === "=" ?
 				value === check :
 				type === "*=" ?
@@ -850,6 +907,9 @@ for ( var type in Expr.match ) {
 	Expr.match[ type ] = new RegExp( Expr.match[ type ].source + (/(?![^\[]*\])(?![^\(]*\))/.source) );
 	Expr.leftMatch[ type ] = new RegExp( /(^(?:.|\r|\n)*?)/.source + Expr.match[ type ].source.replace(/\\(\d+)/g, fescape) );
 }
+// Expose origPOS
+// "global" as in regardless of relation to brackets/parens
+Expr.match.globalPOS = origPOS;
 
 var makeArray = function( array, results ) {
 	array = Array.prototype.slice.call( array, 0 );
@@ -913,6 +973,16 @@ if ( document.documentElement.compareDocumentPosition ) {
 
 } else {
 	sortOrder = function( a, b ) {
+		// The nodes are identical, we can exit early
+		if ( a === b ) {
+			hasDuplicate = true;
+			return 0;
+
+		// Fallback to using sourceIndex (in IE) if it's available on both nodes
+		} else if ( a.sourceIndex && b.sourceIndex ) {
+			return a.sourceIndex - b.sourceIndex;
+		}
+
 		var al, bl,
 			ap = [],
 			bp = [],
@@ -920,13 +990,8 @@ if ( document.documentElement.compareDocumentPosition ) {
 			bup = b.parentNode,
 			cur = aup;
 
-		// The nodes are identical, we can exit early
-		if ( a === b ) {
-			hasDuplicate = true;
-			return 0;
-
 		// If the nodes are siblings (or identical) we can do a quick check
-		} else if ( aup === bup ) {
+		if ( aup === bup ) {
 			return siblingCheck( a, b );
 
 		// If no parents were found then the nodes are disconnected
@@ -985,26 +1050,6 @@ if ( document.documentElement.compareDocumentPosition ) {
 		return 1;
 	};
 }
-
-// Utility function for retreiving the text value of an array of DOM nodes
-Sizzle.getText = function( elems ) {
-	var ret = "", elem;
-
-	for ( var i = 0; elems[i]; i++ ) {
-		elem = elems[i];
-
-		// Get the text from text nodes and CDATA nodes
-		if ( elem.nodeType === 3 || elem.nodeType === 4 ) {
-			ret += elem.nodeValue;
-
-		// Traverse everything else, except comment nodes
-		} else if ( elem.nodeType !== 8 ) {
-			ret += Sizzle.getText( elem.childNodes );
-		}
-	}
-
-	return ret;
-};
 
 // Check to see if the browser returns elements by name when
 // querying by getElementById (and provide a workaround)
@@ -1283,13 +1328,13 @@ function dirNodeCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 			elem = elem[dir];
 
 			while ( elem ) {
-				if ( elem.sizcache === doneName ) {
+				if ( elem[ expando ] === doneName ) {
 					match = checkSet[elem.sizset];
 					break;
 				}
 
 				if ( elem.nodeType === 1 && !isXML ){
-					elem.sizcache = doneName;
+					elem[ expando ] = doneName;
 					elem.sizset = i;
 				}
 
@@ -1316,14 +1361,14 @@ function dirCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
 			elem = elem[dir];
 
 			while ( elem ) {
-				if ( elem.sizcache === doneName ) {
+				if ( elem[ expando ] === doneName ) {
 					match = checkSet[elem.sizset];
 					break;
 				}
 
 				if ( elem.nodeType === 1 ) {
 					if ( !isXML ) {
-						elem.sizcache = doneName;
+						elem[ expando ] = doneName;
 						elem.sizset = i;
 					}
 
@@ -1371,7 +1416,7 @@ Sizzle.isXML = function( elem ) {
 	return documentElement ? documentElement.nodeName !== "HTML" : false;
 };
 
-var posProcess = function( selector, context ) {
+var posProcess = function( selector, context, seed ) {
 	var match,
 		tmpSet = [],
 		later = "",
@@ -1387,7 +1432,7 @@ var posProcess = function( selector, context ) {
 	selector = Expr.relative[selector] ? selector + "*" : selector;
 
 	for ( var i = 0, l = root.length; i < l; i++ ) {
-		Sizzle( selector, root[i], tmpSet );
+		Sizzle( selector, root[i], tmpSet, seed );
 	}
 
 	return Sizzle.filter( later, tmpSet );
