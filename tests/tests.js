@@ -1,16 +1,41 @@
-// silly custom pseudo just for tests
-Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
-var hasQSA = !!document.querySelectorAll
+/*global Q:true, sink:true, start: true*/
+
+var html = document.documentElement
+  , hasQSA = !!document.querySelectorAll
+  , hasMS = html.matchesSelector || html.msMatchesSelector || html.webkitMatchesSelector || html.mozMatchesSelector || html.oMatchesSelector
   , sinkSuite = function (label, suite) {
-      sink(label + (hasQSA ? ' [qSA]' : ''), function () {
+      sink(label + (hasQSA ? ' [qSA &amp; MS]' : ''), function () {
         hasQSA && Q.configure({ useNativeQSA: true })
+        hasMS && Q.configure({ useNativeMS: true })
         suite.apply(null, arguments)
       })
-      hasQSA && sink(label + ' [non-QSA]', function () {
-        Q.configure({ useNativeQSA: false })
+      hasQSA && sink(label + ' [non-QSA &amp; non-MS]', function () {
+        Q.configure({
+            useNativeQSA: false
+          , useNativeMS: false
+        })
         suite.apply(null, arguments)
       })
     }
+  , arraysMatch = function (a1, a2) {
+      if (a1.length != a2.length)
+        return false
+      for (var i = 0; i < a1.length; i++)
+        if (a1[i] !== a2[i])
+          return false
+      return true
+    }
+  , contains = Array.prototype.indexOf ? function (arr, e) {
+      return arr.indexOf(e) > -1
+    } : function (arr, e) {
+      for (var i = 0; i < arr.length; i++)
+        if (arr[i] === e)
+          return true
+      return false
+    }
+
+// silly custom pseudo just for tests
+Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
 
 sinkSuite('Contexts', function (test, ok) {
 
@@ -20,31 +45,31 @@ sinkSuite('Contexts', function (test, ok) {
   });
 
   test('should be able to pass string as context', 5, function() {
-    ok(Q('.a', '#boosh').length == 2, 'context found 2 elements(.a, #boosh)');
-    ok(Q('.a', '.a').length == 0, 'context found 0 elements(.a, .a)');
-    ok(Q('.a', '.b').length == 1, 'context found 1 elements(.a, .b)');
-    ok(Q('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
-    ok(Q('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
+    ok(Q('.a', '#boosh').length === 2, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', '.a').length === 0, 'context found 0 elements(.a, .a)');
+    ok(Q('.a', '.b').length === 1, 'context found 1 elements(.a, .b)');
+    ok(Q('.a', '#boosh .b').length === 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.b', '#boosh .b').length === 0, 'context found 0 elements(.b, #boosh .b)');
   });
 
   test('should be able to pass qwery result as context', 5, function() {
-    ok(Q('.a', Q('#boosh')).length == 2, 'context found 2 elements(.a, #boosh)');
-    ok(Q('.a', Q('.a')).length == 0, 'context found 0 elements(.a, .a)');
-    ok(Q('.a', Q('.b')).length == 1, 'context found 1 elements(.a, .b)');
-    ok(Q('.a', Q('#boosh .b')).length == 1, 'context found 1 elements(.a, #boosh .b)');
-    ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
+    ok(Q('.a', Q('#boosh')).length === 2, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', Q('.a')).length === 0, 'context found 0 elements(.a, .a)');
+    ok(Q('.a', Q('.b')).length === 1, 'context found 1 elements(.a, .b)');
+    ok(Q('.a', Q('#boosh .b')).length === 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.b', Q('#boosh .b')).length === 0, 'context found 0 elements(.b, #boosh .b)');
   });
 
   test('should not return duplicates from combinators', 2, function () {
-    ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
-    ok(Q('#boosh,.apples,#boosh').length == 1, 'two booshes and an apple dont make a thing go right');
+    ok(Q('#boosh,#boosh').length === 1, 'two booshes dont make a thing go right');
+    ok(Q('#boosh,.apples,#boosh').length === 1, 'two booshes and an apple dont make a thing go right');
   });
 
   test('byId sub-queries within context', 6, function() {
-    ok(Q('#booshTest', Q('#boosh')).length == 1, 'found "#id #id"')
-    ok(Q('.a.b #booshTest', Q('#boosh')).length == 1, 'found ".class.class #id"')
-    ok(Q('.a>#booshTest', Q('#boosh')).length == 1, 'found ".class>#id"')
-    ok(Q('>.a>#booshTest', Q('#boosh')).length == 1, 'found ">.class>#id"')
+    ok(Q('#booshTest', Q('#boosh')).length === 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest', Q('#boosh')).length === 1, 'found ".class.class #id"')
+    ok(Q('.a>#booshTest', Q('#boosh')).length === 1, 'found ".class>#id"')
+    ok(Q('>.a>#booshTest', Q('#boosh')).length === 1, 'found ">.class>#id"')
     ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
     ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
   })
@@ -58,27 +83,27 @@ sinkSuite('CSS 1', function (test, ok) {
   });
 
   test('byId sub-queries', 4, function() {
-    ok(Q('#boosh #booshTest').length == 1, 'found "#id #id"')
-    ok(Q('.a.b #booshTest').length == 1, 'found ".class.class #id"')
-    ok(Q('#boosh>.a>#booshTest').length == 1, 'found "#id>.class>#id"')
-    ok(Q('.a>#booshTest').length == 1, 'found ".class>#id"')
+    ok(Q('#boosh #booshTest').length === 1, 'found "#id #id"')
+    ok(Q('.a.b #booshTest').length === 1, 'found ".class.class #id"')
+    ok(Q('#boosh>.a>#booshTest').length === 1, 'found "#id>.class>#id"')
+    ok(Q('.a>#booshTest').length === 1, 'found ".class>#id"')
   })
 
   test('get elements by class', 6, function () {
-    ok(Q('#boosh .a').length == 2, 'found two elements');
+    ok(Q('#boosh .a').length === 2, 'found two elements');
     ok(!!Q('#boosh div.a')[0], 'found one element');
-    ok(Q('#boosh div').length == 2, 'found two {div} elements');
+    ok(Q('#boosh div').length === 2, 'found two {div} elements');
     ok(!!Q('#boosh span')[0], 'found one {span} element');
     ok(!!Q('#boosh div div')[0], 'found a single div');
-    ok(Q('a.odd').length == 1, 'found single a');
+    ok(Q('a.odd').length === 1, 'found single a');
   });
 
   test('combos', 1, function () {
-    ok(Q('#boosh div,#boosh span').length == 3, 'found 2 divs and 1 span');
+    ok(Q('#boosh div,#boosh span').length === 3, 'found 2 divs and 1 span');
   });
 
   test('class with dashes', 1, function() {
-    ok(Q('.class-with-dashes').length == 1, 'found something');
+    ok(Q('.class-with-dashes').length === 1, 'found something');
   });
 
   test('should ignore comment nodes', 1, function() {
@@ -91,14 +116,46 @@ sinkSuite('CSS 1', function (test, ok) {
     // go to the left
     // they are useful for making sure the dom crawler doesn't stop short or over-extend as it works
     // up the tree the crawl needs to be comprehensive
-    ok(Q('div#fixtures > div a').length == 5, 'found four results for "div#fixtures > div a"')
-    ok(Q('.direct-descend > .direct-descend .lvl2').length == 1, 'found one result for ".direct-descend > .direct-descend .lvl2"')
-    ok(Q('.direct-descend > .direct-descend div').length == 1, 'found one result for ".direct-descend > .direct-descend div"')
-    ok(Q('.direct-descend > .direct-descend div').length == 1, 'found one result for ".direct-descend > .direct-descend div"')
-    ok(Q('div#fixtures div ~ a div').length == 0, 'found no results for odd query')
-    ok(Q('.direct-descend > .direct-descend > .direct-descend ~ .lvl2').length == 0, 'found no results for another odd query')
+    ok(Q('div#fixtures > div a').length === 5, 'found four results for "div#fixtures > div a"')
+    ok(Q('.direct-descend > .direct-descend .lvl2').length === 1, 'found one result for ".direct-descend > .direct-descend .lvl2"')
+    ok(Q('.direct-descend > .direct-descend div').length === 1, 'found one result for ".direct-descend > .direct-descend div"')
+    ok(Q('.direct-descend > .direct-descend div').length === 1, 'found one result for ".direct-descend > .direct-descend div"')
+    ok(Q('div#fixtures div ~ a div').length === 0, 'found no results for odd query')
+    ok(Q('.direct-descend > .direct-descend > .direct-descend ~ .lvl2').length === 0, 'found no results for another odd query')
   });
-});
+})
+
+sinkSuite('Grouped selectors', function (test, ok, before, after, assert) {
+  test('simple groups', 5, function () {
+    // this kludge is because qSA will return the results in document order but
+    // _qwery() will do it in group order so both passes through this test will yield
+    // a result array in a different order.
+    var result = Q('#boosh, h1, a.odd, .foobardoobarhoohaa')
+    assert.equal(result.length, 4, 'returned 4 elements')
+    ok(contains(result, document.getElementById('boosh')), 'result includes #boosh')
+    ok(contains(result, document.getElementsByTagName('h1')[0]), 'result includes first h1')
+    ok(contains(result, document.getElementsByTagName('h1')[1]), 'result includes second h1')
+    ok(contains(result, Q('a.odd')[0]), 'result includes a.odd')
+  })
+
+  test('groups within pseudos within groups', 1, function () {
+    // test our group splitting skillz
+    ok(arraysMatch(
+          Q('#pseudos :matches(a, span, [class~=pseudo-1]), h1, a.odd')
+        , [
+              Q('#pseudos > .pseudo-1')[0]
+            , Q('#pseudos span')[0]
+            , Q('#pseudos span')[1]
+            , Q('#pseudos > a')[0]
+            , Q('#pseudos span')[2]
+            , Q('#pseudos span')[3]
+            , document.getElementsByTagName('h1')[0]
+            , document.getElementsByTagName('h1')[1]
+          ])
+      , 'selected correct elements for #pseudos :matches(a, span, [class~=pseudo-1]), h1, a.odd'
+    )
+  })
+})
 
 sinkSuite('CSS 2', function (test, ok) {
 
@@ -107,8 +164,8 @@ sinkSuite('CSS 2', function (test, ok) {
     var expected = document.getElementById('booshTest');
     ok(wanted == expected, 'found attribute');
     ok(Q('#boosh div[test=fg]')[0] == expected, 'found attribute with value');
-    ok(Q('em[rel~="copyright"]').length == 1, 'found em[rel~="copyright"]');
-    ok(Q('em[nopass~="copyright"]').length == 0, 'found em[nopass~="copyright"]');
+    ok(Q('em[rel~="copyright"]').length === 1, 'found em[rel~="copyright"]');
+    ok(Q('em[nopass~="copyright"]').length === 0, 'found em[nopass~="copyright"]');
   });
 
   test('should not throw error by attribute selector', 1, function () {
@@ -121,6 +178,39 @@ sinkSuite('CSS 2', function (test, ok) {
   });
 
 });
+
+// based on current draft @ http://dev.w3.org/csswg/selectors4/ 28 February 2012
+sinkSuite('CSS 4', function (test, ok, before, after, assert) {
+
+  test('selector subject simple', function (complete) {
+    // should match the form
+    var result = Q('form! input')
+    assert.equal(result.length, 1, 'matched 1 element for "form! input"')
+    ok(result[0] === document.forms[0], 'matched form element for "form! input"')
+    complete()
+  })
+
+  test('selector subject complex', function (complete) {
+    // should match the #direct-descend div which is a direct child of #fixtures
+    var result = Q('#fixtures > div! > div span ~ div .lvl2')
+    assert.equal(result.length, 1, 'matched 1 element for "#fixtures > div! > div span ~ div .lvl2"')
+    ok(result[0] === document.getElementById('direct-descend'), 'matched correct element for "#fixtures > div! > div span ~ div .lvl2"')
+    complete()
+  })
+
+  test('selector subject multiple groups', function (complete) {
+    // should match the form twice, #direct-descend, the first span inside #direct-descend and #lonelyBoosh (for good luck)
+    var sel = 'form! input, form! button, #fixtures > div! > div span ~ div .lvl2, #fixtures > div > div span! ~ div .lvl2, #lonelyBoosh'
+      , result = Q(sel)
+    assert.equal(result.length, 4, 'matched 4 elements for "' + sel + '"')
+    ok(result[0] === document.forms[0], 'matched form element for 1st in "' + sel + '"')
+    ok(result[1] === document.getElementById('direct-descend'), 'matched #direct-descend for 2nd in "' + sel + '"')
+    ok(result[2] === Q('#direct-descend span')[0], 'matched first span in #direct-descend for 3rd in "' + sel + '"')
+    ok(result[3] === document.getElementById('lonelyBoosh'), 'matched #lonelyBoosh for 4rd in "' + sel + '"')
+    complete()
+  })
+
+})
 
 sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
 
@@ -169,11 +259,26 @@ sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
   test('[attr*=val]', 1, function () {
     var expected = document.getElementById('attr-test-3');
     ok(Q('#attributes div[test*=hree]')[0] == expected, 'found attribute with *=');
-  });
+  })
+
+  test('empty attribute values', 10, function () {
+    // http://www.w3.org/TR/selectors/#attribute-selectors
+    // empty attribute substring matches should not match anything
+    ok(Q('#attributes div[test~=]').length === 0, 'found no elemenets with ~=""');
+    ok(Q('#attributes div[test~=""]').length === 0, 'found no elemenets with ~=');
+    ok(Q('#attributes div[test|=]').length === 0, 'found no elemenets with |=""');
+    ok(Q('#attributes div[test|=""]').length === 0, 'found no elemenets with |=');
+    ok(Q('#attributes div[test^=]').length === 0, 'found no elemenets with ^=""');
+    ok(Q('#attributes div[test^=""]').length === 0, 'found no elemenets with ^=');
+    ok(Q('#attributes div[test$=]').length === 0, 'found no elemenets with $=""');
+    ok(Q('#attributes div[test$=""]').length === 0, 'found no elemenets with $=');
+    ok(Q('#attributes div[test*=]').length === 0, 'found no elemenets with *=""');
+    ok(Q('#attributes div[test*=""]').length === 0, 'found no elemenets with *=');
+  })
 
   test('direct descendants', 2, function () {
-    ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
-    ok(Q('#direct-descend > .direct-descend > .lvl2').length == 3, 'found three second-level direct descendents');
+    ok(Q('#direct-descend > .direct-descend').length === 2, 'found two direct descendents');
+    ok(Q('#direct-descend > .direct-descend > .lvl2').length === 3, 'found three second-level direct descendents');
   });
 
   test('sibling elements', 17, function () {
@@ -197,36 +302,62 @@ sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
     assert(Q('.parent .middle + h2').length, 0, 'didn\'t find an older sibling')
     assert(Q('.parent .youngest + .sibling').length, 0, 'found no younger siblings')
   });
-
 });
 
-sinkSuite('Uniq', function (test, ok) {
-  test('duplicates arent found in arrays', 2, function () {
-    ok(Q.uniq(['a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e']).length == 5, 'result should be a, b, c, d, e')
-    ok(Q.uniq(['a', 'b', 'c', 'c', 'c']).length == 3, 'result should be a, b, c')
+sinkSuite('UTF8', function (test, ok) {
+  test('test basic utf8 id and class matches', 4, function () {
+    ok(Q('#台北')[0].id == '台北', 'fetched by utf8 id')
+    ok(Q('[id=台北]')[0].id == '台北', 'fetched by utf8 [id=] attrib')
+    ok(Q('.台北')[0].id == 'utf8class', 'fetched by utf8 class')
+    ok(Q('span.台北')[0].id == 'utf8class', 'fetched by tag and utf8 class')
   })
 })
 
+sinkSuite('Uniq', function (test, ok) {
+  test('duplicates arent found in arrays', 2, function () {
+    ok(arraysMatch(
+          Q.uniq([ 'a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e' ])
+        , [ 'a', 'b', 'c', 'd', 'e' ])
+      , 'turned [a, b, c, d, e, a, b, c, d, e] into [a, b, c, d, e]'
+    )
+    ok(arraysMatch(
+          Q.uniq([ 'a', 'b', 'c', 'c', 'c' ])
+        , [ 'a', 'b', 'c' ])
+      , 'turned [a, b, c, c, c] into [a, b, c]'
+    )
+  })
+})
 
 sinkSuite('element-context queries', function(test, ok) {
   test('relationship-first queries', 5, function() {
     var pass = false
-    try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
+    try { pass = Q('> .direct-descend', Q('#direct-descend')).length === 2 } catch (e) { }
     ok(pass, 'found two direct descendents using > first');
 
     pass = false
-    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')).length == 2 } catch (e) { }
+    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')).length === 2 } catch (e) { }
     ok(pass, 'found two siblings with ~ first')
 
     pass = false
-    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')).length == 1 } catch (e) { }
+    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')).length === 1 } catch (e) { }
     ok(pass, 'found one sibling with + first')
 
     pass = false
     var ctx = Q('.idless')[0]
-    try { pass = Q('> .tokens a', ctx).length == 1 } catch (e) { }
+    try { pass = Q('> .tokens a', ctx).length === 1 } catch (e) { }
     ok(pass, 'found one sibling from a root with no id')
     ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
+  })
+
+  test('context element id-first', 2, function (complete) {
+    ok(
+        Q('#direct-descend', Q('#direct-descend')[0])[0] === Q('#direct-descend')[0]
+      , 'found context element by id within context element'
+    )
+    ok(
+        Q('#direct-descend > .direct-descend', Q('#direct-descend')[0]).length === 2
+      , 'found two direct descendents using #id > .class'
+    )
   })
 
   // should be able to query on an element that hasn't been inserted into the dom
@@ -234,21 +365,21 @@ sinkSuite('element-context queries', function(test, ok) {
   frag.innerHTML = '<div class="d i v"><p id="oooo"><em></em><em id="emem"></em></p></div><p id="sep"><div class="a"><span></span></div></p>'
 
   test('detached fragments', 2, function() {
-    ok(Q('.a span', frag).length == 1, 'should find child elements of fragment')
-    ok(Q('> div p em', frag).length == 2, 'should find child elements of fragment, relationship first')
+    ok(Q('.a span', frag).length === 1, 'should find child elements of fragment')
+    ok(Q('> div p em', frag).length === 2, 'should find child elements of fragment, relationship first')
   })
 
   test('byId sub-queries within detached fragment', 6, function () {
-    ok(Q('#emem', frag).length == 1, 'found "#id" in fragment')
-    ok(Q('.d.i #emem', frag).length == 1, 'found ".class.class #id" in fragment')
-    ok(Q('.d #oooo #emem', frag).length == 1, 'found ".class #id #id" in fragment')
-    ok(Q('> div #oooo', frag).length == 1, 'found "> .class #id" in fragment')
+    ok(Q('#emem', frag).length === 1, 'found "#id" in fragment')
+    ok(Q('.d.i #emem', frag).length === 1, 'found ".class.class #id" in fragment')
+    ok(Q('.d #oooo #emem', frag).length === 1, 'found ".class #id #id" in fragment')
+    ok(Q('> div #oooo', frag).length === 1, 'found "> .class #id" in fragment')
     ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendent)')
     ok(!Q('#sep', Q('#emem', frag)).length, 'shouldn\'t find #sep within #emem (unrelated)')
   })
 
   test('exclude self in match', 1, function() {
-    ok(Q('.order-matters', Q('#order-matters')).length == 4, 'should not include self in element-context queries')
+    ok(Q('.order-matters', Q('#order-matters')).length === 4, 'should not include self in element-context queries')
   });
 
   // because form's have .length
@@ -298,123 +429,229 @@ sinkSuite('order matters', function (test, ok) {
 
 });
 
-sinkSuite('pseudo-selectors', function (test, ok) {
+sinkSuite('pseudo-selectors', function (test, ok, before, after, assert) {
   test(':contains', 4, function() {
-    ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
-    ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
+    ok(Q('li:contains(humans)').length === 1, 'found by "element:contains(text)"')
+    ok(Q(':contains(humans)').length === 5, 'found by ":contains(text)", including all ancestors')
     // * is an important case, can cause weird errors
-    ok(Q('*:contains(humans)').length == 5, 'found by "*:contains(text)", including all ancestors')
-    ok(Q('ol:contains(humans)').length == 1, 'found by "ancestor:contains(text)"')
+    ok(Q('*:contains(humans)').length === 5, 'found by "*:contains(text)", including all ancestors')
+    ok(Q('ol:contains(humans)').length === 1, 'found by "ancestor:contains(text)"')
   })
 
-  test(':not', 1, function() {
-    ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
+  test(':not', function(complete) {
+    ok(Q('.odd:not(div)').length === 1, 'found one .odd :not a div')
+    ok(arraysMatch(
+        Q('.odd:not(.ofmatch,.pseudos)')
+      , Q('#pseudos > :nth-child(7)'))
+      , 'found one .odd :not .ofmatch or .pseudos')
+    complete()
+  })
+
+  test(':matches (CSS 4)', function(complete) {
+    ok(Q('#pseudos > div:matches(.pseudos)').length === 2, 'found 2 "#pseudos > div:matches(.pseudos)"')
+    ok(Q('#pseudos *:matches(div.pseudos,span)').length === 6, 'found 6 "#pseudos *:matches(div.pseudos,span)"')
+    complete()
   })
 
   test(':first-child', 2, function () {
     ok(Q('#pseudos div:first-child')[0] == document.getElementById('pseudos').getElementsByTagName('*')[0], 'found first child')
-    ok(Q('#pseudos div:first-child').length == 1, 'found only 1')
+    ok(Q('#pseudos div:first-child').length === 1, 'found only 1')
   });
 
   test(':last-child', 2, function () {
     var all = document.getElementById('pseudos').getElementsByTagName('div');
     ok(Q('#pseudos div:last-child')[0] == all[all.length - 1], 'found last child')
-    ok(Q('#pseudos div:last-child').length == 1, 'found only 1')
+    ok(Q('#pseudos div:last-child').length === 1, 'found only 1')
   });
 
   test('ol > li[attr="boosh"]:last-child', 2, function () {
     var expected = document.getElementById('attr-child-boosh');
-    ok(Q('ol > li[attr="boosh"]:last-child').length == 1, 'only 1 element found');
+    ok(Q('ol > li[attr="boosh"]:last-child').length === 1, 'only 1 element found');
     ok(Q('ol > li[attr="boosh"]:last-child')[0] == expected, 'found correct element');
   });
 
   test(':nth-child(odd|even|x)', 4, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
-    ok(Q('#pseudos :nth-child(odd)').length == 4, 'found 4 odd elements');
-    ok(Q('#pseudos div:nth-child(odd)').length == 3, 'found 3 odd elements with div tag');
-    ok(Q('#pseudos div:nth-child(even)').length == 3, 'found 3 even elements with div tag');
-    ok(Q('#pseudos div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
+    ok(Q('#pseudos > :nth-child(odd)').length === 4, 'found 4 odd elements');
+    ok(Q('#pseudos > div:nth-child(odd)').length === 3, 'found 3 odd elements with div tag');
+    ok(Q('#pseudos > div:nth-child(even)').length === 3, 'found 3 even elements with div tag');
+    ok(Q('#pseudos > div:nth-child(2)')[0] == second, 'found 2nd nth-child of pseudos');
   });
 
   test(':nth-child(expr)', 6, function () {
     var fifth = document.getElementById('pseudos').getElementsByTagName('a')[0];
     var sixth = document.getElementById('pseudos').getElementsByTagName('div')[4];
 
-    ok(Q('#pseudos :nth-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-child(3n-2)').length == 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
-    ok(Q('#pseudos :nth-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-child(-n+5)').length == 5, 'found 5 elements');
-    ok(Q('#pseudos :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
-    ok(Q('#pseudos :nth-child(3n)')[1] == sixth, 'second :nth-child(3n) is the sixth child');
+    ok(Q('#pseudos > :nth-child(3n+1)').length === 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-child(3n-2)').length === 3, 'found 3 elements'); // was +3n-2 but older safari no likey +
+    ok(Q('#pseudos > :nth-child(-n+6)').length === 6, 'found 6 elements');
+    ok(Q('#pseudos > :nth-child(-n+5)').length === 5, 'found 5 elements');
+    ok(Q('#pseudos > :nth-child(3n+2)')[1] == fifth, 'second :nth-child(3n+2) is the fifth child');
+    ok(Q('#pseudos > :nth-child(3n)')[1] == sixth, 'second :nth-child(3n) is the sixth child');
   });
 
   test(':nth-last-child(odd|even|x)', 4, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
-    ok(Q('#pseudos :nth-last-child(odd)').length == 4, 'found 4 odd elements');
-    ok(Q('#pseudos div:nth-last-child(odd)').length == 3, 'found 3 odd elements with div tag');
-    ok(Q('#pseudos div:nth-last-child(even)').length == 3, 'found 3 even elements with div tag');
-    ok(Q('#pseudos div:nth-last-child(6)')[0] == second, '6th nth-last-child should be 2nd of 7 elements');
+    ok(Q('#pseudos > :nth-last-child(odd)').length === 4, 'found 4 odd elements');
+    ok(Q('#pseudos > div:nth-last-child(odd)').length === 3, 'found 3 odd elements with div tag');
+    ok(Q('#pseudos > div:nth-last-child(even)').length === 3, 'found 3 even elements with div tag');
+    ok(Q('#pseudos > div:nth-last-child(6)')[0] == second, '6th nth-last-child should be 2nd of 7 elements');
   });
 
   test(':nth-last-child(expr)', 5, function () {
     var third = document.getElementById('pseudos').getElementsByTagName('div')[2];
 
-    ok(Q('#pseudos :nth-last-child(3n+1)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-last-child(3n-2)').length == 3, 'found 3 elements');
-    ok(Q('#pseudos :nth-last-child(-n+6)').length == 6, 'found 6 elements');
-    ok(Q('#pseudos :nth-last-child(-n+5)').length == 5, 'found 5 elements');
-    ok(Q('#pseudos :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
+    ok(Q('#pseudos > :nth-last-child(3n+1)').length === 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-last-child(3n-2)').length === 3, 'found 3 elements');
+    ok(Q('#pseudos > :nth-last-child(-n+6)').length === 6, 'found 6 elements');
+    ok(Q('#pseudos > :nth-last-child(-n+5)').length === 5, 'found 5 elements');
+    ok(Q('#pseudos > :nth-last-child(3n+2)')[0] == third, 'first :nth-last-child(3n+2) is the third child');
   });
 
   test(':nth-of-type(expr)', 6, function () {
     var a = document.getElementById('pseudos').getElementsByTagName('a')[0];
 
-    ok(Q('#pseudos div:nth-of-type(3n+1)').length == 2, 'found 2 div elements');
-    ok(Q('#pseudos a:nth-of-type(3n+1)').length == 1, 'found 1 a element');
-    ok(Q('#pseudos a:nth-of-type(3n+1)')[0] == a, 'found the right a element');
-    ok(Q('#pseudos a:nth-of-type(3n)').length == 0, 'no matches for every third a');
-    ok(Q('#pseudos a:nth-of-type(odd)').length == 1, 'found the odd a');
-    ok(Q('#pseudos a:nth-of-type(1)').length == 1, 'found the first a');
+    ok(Q('#pseudos > div:nth-of-type(3n+1)').length === 2, 'found 2 div elements');
+    ok(Q('#pseudos > a:nth-of-type(3n+1)').length === 1, 'found 1 a element');
+    ok(Q('#pseudos > a:nth-of-type(3n+1)')[0] == a, 'found the right a element');
+    ok(Q('#pseudos > a:nth-of-type(3n)').length === 0, 'no matches for every third a');
+    ok(Q('#pseudos > a:nth-of-type(odd)').length === 1, 'found the odd a');
+    ok(Q('#pseudos > a:nth-of-type(1)').length === 1, 'found the first a');
   });
 
   test(':nth-last-of-type(expr)', 3, function () {
     var second = document.getElementById('pseudos').getElementsByTagName('div')[1];
 
-    ok(Q('#pseudos div:nth-last-of-type(3n+1)').length == 2, 'found 2 div elements');
-    ok(Q('#pseudos a:nth-last-of-type(3n+1)').length == 1, 'found 1 a element');
-    ok(Q('#pseudos div:nth-last-of-type(5)')[0] == second, '5th nth-last-of-type should be 2nd of 7 elements');
+    ok(Q('#pseudos > div:nth-last-of-type(3n+1)').length === 2, 'found 2 div elements');
+    ok(Q('#pseudos > a:nth-last-of-type(3n+1)').length === 1, 'found 1 a element');
+    ok(Q('#pseudos > div:nth-last-of-type(5)')[0] == second, '5th nth-last-of-type should be 2nd of 7 elements');
   });
 
   test(':first-of-type', 2, function () {
-    ok(Q('#pseudos a:first-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found first a element')
-    ok(Q('#pseudos a:first-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > a:first-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found first a element')
+    ok(Q('#pseudos > a:first-of-type').length === 1, 'found only 1')
   });
 
   test(':last-of-type', 2, function () {
     var all = document.getElementById('pseudos').getElementsByTagName('div');
-    ok(Q('#pseudos div:last-of-type')[0] == all[all.length - 1], 'found last div element')
-    ok(Q('#pseudos div:last-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > div:last-of-type')[0] == all[all.length - 1], 'found last div element')
+    ok(Q('#pseudos > div:last-of-type').length === 1, 'found only 1')
   });
 
   test(':only-of-type', 2, function () {
-    ok(Q('#pseudos a:only-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found the only a element')
-    ok(Q('#pseudos a:first-of-type').length == 1, 'found only 1')
+    ok(Q('#pseudos > a:only-of-type')[0] == document.getElementById('pseudos').getElementsByTagName('a')[0], 'found the only a element')
+    ok(Q('#pseudos > a:first-of-type').length === 1, 'found only 1')
   });
+
+  test(':nth-match(odd|even|x of selector)', function (complete) {
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(odd of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(even of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 even .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2 of .odd)')
+        , Q('#pseudos > :nth-child(3)'))
+      , 'found correct 2nd .odd elements')
+    complete()
+  })
+
+  test(':nth-match(expr of selector)', function (complete) {
+    // going to assume that since :nth-child etc. gets these right that nth-match will too
+    // cause it uses the same code, so don't over-test
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n+1 of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 even .odd elements')
+    complete()
+  })
+
+  test(':nth-match(expr of complex-selector)', function (complete) {
+    // well, not really 'complex', just not trivial
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2 of .odd.ofmatch)')
+        , Q('#pseudos > :nth-child(5)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    // attrib within a pseudo
+    ok(arraysMatch(
+          Q('#pseudos > :nth-match(2n+3 of div.ofmatch[class~=even])')
+        , Q('#pseudos > :nth-child(6)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    complete()
+  })
+
+  test(':nth-last-match(odd|even|x of selector)', function (complete) {
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(odd of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(even of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 even .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2 of .odd)')
+        , Q('#pseudos > :nth-child(5)'))
+      , 'found correct 2nd .odd elements')
+    complete()
+  })
+
+  test(':nth-last-match(expr of selector)', function (complete) {
+    // going to assume that since :nth-last-child etc. gets these right that nth-last-match will too
+    // cause it uses the same code, so don't over-test
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n+1 of .odd)')
+        , Q('#pseudos > :nth-child(3), #pseudos > :nth-child(7)'))
+      , 'found correct 2 odd .odd elements')
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n of .odd)')
+        , Q('#pseudos > :nth-child(1), #pseudos > :nth-child(5)'))
+      , 'found correct 2 even .odd elements')
+    complete()
+  })
+
+  test(':nth-last-match(expr of complex-selector)', function (complete) {
+    // well, not really 'complex', just not trivial
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2 of .odd.ofmatch)')
+        , Q('#pseudos > :nth-child(3)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    // attrib within a pseudo
+    ok(arraysMatch(
+          Q('#pseudos > :nth-last-match(2n+3 of div.ofmatch[class~=even])')
+        , Q('#pseudos > :nth-child(2)'))
+      , 'found correct 2nd .odd.ofmatch elements')
+    complete()
+  })
 
   test(':target', 2, function () {
     location.hash = '';
-    ok(Q('#pseudos:target').length == 0, '#pseudos is not the target');
+    ok(Q('#pseudos:target').length === 0, '#pseudos is not the target');
     location.hash = '#pseudos';
-    ok(Q('#pseudos:target').length == 1, 'now #pseudos is the target');
+    ok(Q('#pseudos:target').length === 1, 'now #pseudos is the target');
     location.hash = '';
   });
 
   test('custom pseudos', 1, function() {
     // :humanoid implemented just for testing purposes
-    ok(Q(':humanoid').length == 2, 'selected using custom pseudo')
-  });
+    ok(Q(':humanoid').length === 2, 'selected using custom pseudo')
+  })
 
-});
+  test('bogus pseudos', 3, function() {
+    // invalid / unknown pseudo should match nothing rather than everything
+    ok(Q(':foobar').length === 0, 'select using bogus pseudo returns nothing')
+    ok(Q(':foobar()').length === 0, 'select using bogus pseudo returns nothing')
+    ok(Q('#pseudos :foobar()').length === 0, 'select using bogus pseudo returns nothing')
+  })
+
+})
 
 sinkSuite('argument types', function (test, ok) {
 
@@ -430,11 +667,11 @@ sinkSuite('argument types', function (test, ok) {
   test('should be able to pass in an array of results as arguments', 5, function () {
     var el = document.getElementById('boosh');
     var result = Q([Q('#boosh'), Q(document), Q(window)]);
-    ok(result.length == 3, '3 elements in the combined set');
+    ok(result.length === 3, '3 elements in the combined set');
     ok(result[0] == el, "result[0] == el");
     ok(result[1] == document, "result[0] == document");
     ok(result[2] == window, 'result[0] == window');
-    ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length == 6, 'found all the odd and even divs');
+    ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length === 6, 'found all the odd and even divs');
   });
 
 });
@@ -452,6 +689,12 @@ sinkSuite('is()', function (test, ok) {
     ok(!Q.is(el, '[foo]'), 'wrong [attr]');
     ok(!Q.is(el, '[attr=foo]'), 'wrong [attr=val]');
   });
+  test('grouped selectors', function (complete) {
+    ok(Q.is(el, 'li,a,div'), 'li,a,div')
+    ok(Q.is(el, '.foo,[attr=boosh],.bar'), '.foo,[attr=boosh],.bar')
+    ok(Q.is(el, 'li#attr-child-boosh[attr=boosh],li'), '[attr],[attr=boosh],li')
+    complete()
+  })
   test('selector sequences', 2, function () {
     ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]'), 'tag#id[attr=val]');
     ok(!Q.is(el, 'div#attr-child-boosh[attr=boosh]'), 'wrong tag#id[attr=val]');
@@ -497,12 +740,12 @@ sinkSuite('selecting elements in other documents', function (test, ok) {
   });
 
   test('get elements by class', 6, function () {
-    ok(Q('#hsoob .a', doc).length == 2, 'found two elements');
+    ok(Q('#hsoob .a', doc).length === 2, 'found two elements');
     ok(!!Q('#hsoob div.a', doc)[0], 'found one element');
-    ok(Q('#hsoob div', doc).length == 2, 'found two {div} elements');
+    ok(Q('#hsoob div', doc).length === 2, 'found two {div} elements');
     ok(!!Q('#hsoob span', doc)[0], 'found one {span} element');
     ok(!!Q('#hsoob div div', doc)[0], 'found a single div');
-    ok(Q('p.odd', doc).length == 1, 'found single br');
+    ok(Q('p.odd', doc).length === 1, 'found single br');
   });
 
   test('complex selectors', 4, function () {
@@ -513,17 +756,17 @@ sinkSuite('selecting elements in other documents', function (test, ok) {
   });
 
   test('byId sub-queries', 3, function () {
-    ok(Q('#hsoob #spanny', doc).length == 1, 'found "#id #id" in frame')
-    ok(Q('.a #spanny', doc).length == 1, 'found ".class #id" in frame')
-    ok(Q('.a #booshTest #spanny', doc).length == 1, 'found ".class #id #id" in frame')
-    //ok(Q('> #hsoob', doc).length == 1, 'found "> #id" in frame') --> would be good to support this, needs some tweaking though
+    ok(Q('#hsoob #spanny', doc).length === 1, 'found "#id #id" in frame')
+    ok(Q('.a #spanny', doc).length === 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', doc).length === 1, 'found ".class #id #id" in frame')
+    //ok(Q('> #hsoob', doc).length === 1, 'found "> #id" in frame') --> would be good to support this, needs some tweaking though
   })
 
   test('byId sub-queries within sub-context', 6, function () {
-    ok(Q('#spanny', Q('#hsoob', doc)).length == 1, 'found "#id -> #id" in frame')
-    ok(Q('.a #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id" in frame')
-    ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id #id" in frame')
-    ok(Q('.a > #booshTest', Q('#hsoob', doc)).length == 1, 'found "> .class #id" in frame')
+    ok(Q('#spanny', Q('#hsoob', doc)).length === 1, 'found "#id -> #id" in frame')
+    ok(Q('.a #spanny', Q('#hsoob', doc)).length === 1, 'found ".class #id" in frame')
+    ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length === 1, 'found ".class #id #id" in frame')
+    ok(Q('.a > #booshTest', Q('#hsoob', doc)).length === 1, 'found "> .class #id" in frame')
     ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendent)')
     ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #booshTest within #lonelyHsoob (unrelated)')
   })

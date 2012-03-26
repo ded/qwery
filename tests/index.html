@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="../node_modules/sink-test/src/sink.css" type="text/css">
     <script src="../node_modules/sink-test/src/sink.js"></script>
     <script src="../src/qwery.js"></script>
-    <script src="../pseudos/qwery-pseudos.js"></script>
+    <script src="../pseudos/src/pseudos.js"></script>
     <script type="text/javascript">
       var Q = qwery
     </script>
@@ -34,13 +34,13 @@
         <p></p>
       </div>
       <div id="pseudos">
-        <div class="odd pseudos pseudo-1"></div>
-        <div class="even pseudos pseudo-2"></div>
-        <div class="odd"></div>
-        <div class="even"></div>
-        <a class="odd"></a>
-        <div class="even"></div>
-        <div class="odd"></div>
+        <div class="odd pseudos pseudo-1">1</div>
+        <div class="even pseudos pseudo-2 ofmatch"><span>2</span></div>
+        <div class="odd ofmatch"><span>3</span></div>
+        <div class="even ofmatch">4</div>
+        <a class="odd ofmatch"><span>5</span></a>
+        <div class="even ofmatch"><span>6</span></div>
+        <div class="odd">7</div>
       </div>
       <div foo="bar"></div>
       <div class="a"></div>
@@ -88,7 +88,7 @@
           <div class="direct-descend">
             <div class="lvl2" id="toodeep"><span></span></div>
           </div>
-	  <div class="direct-descend"><span></span></div>
+          <div class="direct-descend"><span></span></div>
           <div class="lvl2" id="l2">
             <span></span>
             <div class="direct-descend"><span></span></div>
@@ -124,6 +124,8 @@
         <input type="text">
         <input type="hidden">
       </form>
+      <span id="台北"></span>
+      <span id="utf8class" class="台北"></span>
     </div>
      <ol id="tests"></ol>
      <iframe id="frame" style="width: 0; height: 0; margin-left: -1000px;"></iframe>
