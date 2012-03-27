@@ -1,4 +1,4 @@
-!function (doc, $) {
+(function (doc, $) {
   var q = require('qwery')
 
   $.pseudos = q.pseudos
@@ -8,7 +8,7 @@
     // rather than load-time since technically it's not a dependency and
     // can be loaded in any order
     // hence the lazy function re-definition
-    return ($._select = (function(b) {
+    return ($._select = (function (b) {
       try {
         b = require('bonzo')
         return function (s, r) {
@@ -45,4 +45,4 @@
         return false
       }
   }, true)
-}(document, ender);
+}(document, ender));

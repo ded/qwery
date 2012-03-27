@@ -5,11 +5,11 @@
   * MIT License
   */
 
-!function (name, definition) {
+(function (name, definition) {
   if (typeof module != 'undefined') module.exports = definition()
   else if (typeof define == 'function' && typeof define.amd == 'object') define(definition)
   else this[name] = definition()
-}('qwery', function () {
+})('qwery', function () {
   var doc = document
     , html = doc.documentElement
     , byClass = 'getElementsByClassName'
@@ -365,4 +365,4 @@
   qwery.pseudos = {}
 
   return qwery
-})
+});

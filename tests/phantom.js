@@ -1,5 +1,5 @@
 var page = new WebPage()
-  , url = "http://localhost:3000/tests/"
+  , url = "http://localhost:3000/tests/index.html"
 
 function waitFor(testFx, onReady, timeOutMillis) {
   var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 5000
