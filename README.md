@@ -5,32 +5,32 @@ Qwery is a small *blazing fast* query selector engine allowing you to select ele
 ##Acceptable selectors
 
 ``` css
-basic
-#foo {} id
-.bar {} class
-a#foo.bar {} element attribute combinations
+/* basic */
+#foo {} /* id */
+.bar {} /* class */
+a#foo.bar {} /* element attribute combinations */
 
-attributes
-#foo a[href] {} simple
-#foo a[href=bar] {} attribute values
-#foo a[lang|=en] {} subcodes
-#foo a[title~=hello] {} attribute contains
-#foo a[href^="http://"] {} attribute starts with
-#foo a[href$=com] {} attribute ends with
-#foo a[href*=twitter] {} attribute wildcards
+/* attributes */
+#foo a[href] {} /* simple */
+#foo a[href=bar] {} /* attribute values */
+#foo a[lang|=en] {} /* subcodes */
+#foo a[title~=hello] {} /* attribute contains */
+#foo a[href^="http://"] {} /* attribute starts with */
+#foo a[href$=com] {} /* attribute ends with */
+#foo a[href*=twitter] /* {} attribute wildcards */
 
-descendants
-#foo a {} all descendants
-ul#list > li {} direct children
+/* descendants */
+#foo a {} /* all descendants */
+ul#list > li {} /* direct children */
 
-siblings
-span ~ strong {} all adjacent
-p + p {} immediate adjacent
+/* siblings */
+span ~ strong {} /* all adjacent */
+p + p {} /* immediate adjacent */
 
-combos
+/* combos */
 div,p {}
 
-variations
+/* variations */
 #foo.bar.baz {}
 div#baz.thunk a[-data-info*="hello world"] span + strong {}
 #thunk[title$='huzza'] {}
