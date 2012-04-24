@@ -1,4 +1,4 @@
-(function (doc, $) {
+(function ($) {
   var q = require('qwery')
 
   $.pseudos = q.pseudos
@@ -45,4 +45,4 @@
         return false
       }
   }, true)
-}(document, ender));
+}(ender));
