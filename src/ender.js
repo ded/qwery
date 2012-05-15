@@ -1,5 +1,13 @@
 (function ($) {
-  var q = require('qwery')
+  var q = function (r) {
+    try {
+      r = require('qwery')
+    } catch (ex) {
+      r = require('qwery-mobile')
+    } finally {
+      return r
+    }
+  }()
 
   $.pseudos = q.pseudos
 
