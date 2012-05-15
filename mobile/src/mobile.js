@@ -47,8 +47,9 @@
     if (doc.getElementsByClassName && selector == 'string' && (m = selector.match(classOnly))) {
       return toArray((root).getElementsByClassName(m[1]))
     }
-    if (selector == win || selector == doc) {
-      return !_root ? [selector] : [null]
+    // using duck typing for 'a' window or 'a' document (not 'the' window || document)
+    if (selector && (selector.document || (selector.nodeType && selector.nodeType == 9))) {
+      return !_root ? [selector] : []
     }
     if (isNode(selector)) {
       return !root || (isAncestor(selector, root)) ? [selector] : []
