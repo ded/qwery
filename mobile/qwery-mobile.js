@@ -59,7 +59,7 @@
       return !_root ? [selector] : []
     }
     if (isNode(selector)) {
-      return !root || (isAncestor(selector, root)) ? [selector] : []
+      return !_root || (isAncestor(selector, root)) ? [selector] : []
     }
     return toArray((root).querySelectorAll(selector))
   }
