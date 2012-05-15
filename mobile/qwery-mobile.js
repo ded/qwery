@@ -29,7 +29,7 @@
   }
 
   function isNode(el, t) {
-    return el && typeof el === 'object' && (t = el[nodeType]) && (t == 1 || t == 9)
+    return el && typeof el === 'object' && (t = el.nodeType) && (t == 1 || t == 9)
   }
 
   function uniq(ar) {
