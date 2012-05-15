@@ -47,6 +47,7 @@
 
   function qwery(selector, _root, m) {
     var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc)
+    root = isFinite(root.length) && root[0] && !root.nodeName ? root[0] : root
     if (!root || !selector) {
       return []
     }
