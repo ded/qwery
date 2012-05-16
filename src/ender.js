@@ -41,6 +41,7 @@
         for (var i = this.length, j = 0, l = this.length + plus.length; i < l; i++, j++) {
           this[i] = plus[j]
         }
+        this.length += plus.length
         return this
       }
     , is: function(s, r) {
