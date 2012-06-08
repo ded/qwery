@@ -7,15 +7,15 @@
 
 (function (name, definition, context) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof context['define'] != 'undefined' && context['define'] == 'function' && context['define']['amd']) define(name, definition)
+  else if (typeof context['define'] == 'function' && context['define']['amd']) define(name, definition)
   else context[name] = definition()
 })('qwery', function () {
 
   var classOnly = /^\.([\w\-]+)$/
     , doc = document
     , win = window
-      html = doc.documentElement
-      isAncestor = 'compareDocumentPosition' in html ?
+    , html = doc.documentElement
+    , isAncestor = 'compareDocumentPosition' in html ?
         function (element, container) {
           return (container.compareDocumentPosition(element) & 16) == 16
         } :

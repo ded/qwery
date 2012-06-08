@@ -7,7 +7,7 @@
 
 (function (name, definition, context) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof context['define'] != 'undefined' && context['define'] == 'function' && context['define']['amd']) define(name, definition)
+  else if (typeof context['define'] == 'function' && context['define']['amd']) define(name, definition)
   else context[name] = definition()
 })('qwery', function () {
   var doc = document
@@ -20,7 +20,6 @@
     , nodeType = 'nodeType'
     , select // main select() method, assign later
 
-    // OOOOOOOOOOOOH HERE COME THE ESSSXXSSPRESSSIONSSSSSSSS!!!!!
     , id = /#([\w\-]+)/
     , clas = /\.[\w\-]+/g
     , idOnly = /^#([\w\-]+)$/
