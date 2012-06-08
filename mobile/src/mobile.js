@@ -21,7 +21,8 @@
     return [].slice.call(ar, 0)
   }
 
-  function isNode(el, t) {
+  function isNode(el) {
+    var t
     return el && typeof el === 'object' && (t = el.nodeType) && (t == 1 || t == 9)
   }
 
@@ -38,8 +39,14 @@
     return a
   }
 
-  function qwery(selector, _root, m) {
-    var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc)
+
+  /**
+   * @param {string|Array.<Element>|Element|Node} selector
+   * @param {string|Array.<Element>|Element|Node=} opt_root
+   * @return {Array.<Element>}
+   */
+  function qwery(selector, opt_root) {
+    var m, root = (typeof opt_root == 'string') ? qwery(opt_root)[0] : (opt_root || doc)
     root = isFinite(root.length) && root[0] && !root.nodeName ? root[0] : root
     if (!root || !selector) {
       return []
@@ -49,10 +56,10 @@
     }
     // using duck typing for 'a' window or 'a' document (not 'the' window || document)
     if (selector && (selector.document || (selector.nodeType && selector.nodeType == 9))) {
-      return !_root ? [selector] : []
+      return !opt_root ? [selector] : []
     }
     if (isNode(selector)) {
-      return !_root || (isAncestor(selector, root)) ? [selector] : []
+      return !opt_root || (isAncestor(selector, root)) ? [selector] : []
     }
     return toArray((root).querySelectorAll(selector))
   }

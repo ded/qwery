@@ -1,5 +1,6 @@
 (function ($) {
-  var q = function (r) {
+  var q = function () {
+    var r
     try {
       r = require('qwery')
     } catch (ex) {
@@ -16,7 +17,8 @@
     // rather than load-time since technically it's not a dependency and
     // can be loaded in any order
     // hence the lazy function re-definition
-    return ($._select = (function (b) {
+    return ($._select = (function () {
+      var b
       try {
         b = require('bonzo')
         return function (s, r) {
