@@ -19,6 +19,9 @@
     // hence the lazy function re-definition
     return ($._select = (function () {
       var b
+      if (typeof $.create == 'function') return function (s, r) {
+        return /^\s*</.test(s) ? $.create(s, r) : q(s, r)
+      }
       try {
         b = require('bonzo')
         return function (s, r) {
