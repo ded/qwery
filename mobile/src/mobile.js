@@ -28,7 +28,8 @@
 
   function uniq(ar) {
     var a = [], i, j
-    label: for (i = 0; i < ar.length; i++) {
+    label:
+    for (i = 0; i < ar.length; i++) {
       for (j = 0; j < a.length; j++) {
         if (a[j] == ar[i]) {
           continue label
