@@ -37,7 +37,6 @@ page.open(url, function (status) {
     return !!result
   }
 , function() {
-    fs.write("hey there")
     console.log("qwery tests have passed")
     phantom.exit(0)
   })
