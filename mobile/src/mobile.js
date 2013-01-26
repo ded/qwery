@@ -1,8 +1,8 @@
-(function (name, definition, context) {
+(function (name, context, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof context['define'] == 'function' && context['define']['amd']) define(name, definition)
+  else if (typeof define == 'function' && define.amd) define(definition)
   else context[name] = definition()
-})('qwery', function () {
+})('qwery', this, function () {
 
   var classOnly = /^\.([\w\-]+)$/
     , doc = document
