@@ -7,6 +7,7 @@
   "dependencies": {},
   "development": {},
   "license": "MIT",
+  "main": "qwery.js",
   "scripts": [
     "qwery.js"
   ]
