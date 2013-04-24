@@ -127,10 +127,8 @@ $('div').and('p')
 
 // test nodes against selectors
 $('#foo').is('div.bar'); // => true if any nodes match
-
-// element creation
-$('<p>hello world</p>'); // => [HTMLParagraphElement "hello world"]
 ```
+
 Recommended sibling modules
 ----------
 In most cases, if you're hunting for a selector engine, you probably want to pair Qwery with a DOM module. In that case qwery pairs quite nicely with [Bonzo](https://github.com/ded/bonzo) (a DOM util) and [Bean](https://github.com/fat/bean) (an event util). Add them to your Ender installation as such:
@@ -140,7 +138,7 @@ In most cases, if you're hunting for a selector engine, you probably want to pai
 Then write code like a boss:
 
 ``` js
-$('a.boosh')
+$('<p>hello world</p>')
   .css({
     color: 'red',
     background: 'white'
@@ -151,6 +149,7 @@ $('a.boosh')
       $(this).hide().unbind('click.button')
     }
   })
+  .appendTo('body')
 ```
 
 Qwery Mobile!
