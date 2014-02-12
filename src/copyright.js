@@ -1,6 +1,5 @@
 /*!
-  * @preserve Qwery - A Blazing Fast query selector engine
+  * @preserve Qwery - A selector engine
   * https://github.com/ded/qwery
-  * copyright Dustin Diaz 2012
-  * MIT License
+  * (c) Dustin Diaz 2014 | License MIT
   */

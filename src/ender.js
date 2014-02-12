@@ -1,16 +1,5 @@
 (function ($) {
-  var q = function () {
-    var r
-    try {
-      r = require('qwery')
-    } catch (ex) {
-      r = require('qwery-mobile')
-    } finally {
-      return r
-    }
-  }()
-
-  $.pseudos = q.pseudos
+  var q = require('qwery')
 
   $._select = function (s, r) {
     // detect if sibling module 'bonzo' is available at run-time
@@ -48,15 +37,6 @@
         }
         this.length += plus.length
         return this
-      }
-    , is: function(s, r) {
-        var i, l
-        for (i = 0, l = this.length; i < l; i++) {
-          if (q.is(this[i], s, r)) {
-            return true
-          }
-        }
-        return false
       }
   }, true)
 }(ender));

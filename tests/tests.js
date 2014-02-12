@@ -1,18 +1,4 @@
-// silly custom pseudo just for tests
-Q.pseudos.humanoid = function(e, v) { return Q.is(e, 'li:contains(human)') || Q.is(e, 'ol:contains(human)') }
-var hasQSA = !!document.querySelectorAll
-  , sinkSuite = function (label, suite) {
-      sink(label + (hasQSA ? ' [qSA]' : ''), function () {
-        hasQSA && Q.configure({ useNativeQSA: true })
-        suite.apply(null, arguments)
-      })
-      hasQSA && sink(label + ' [non-QSA]', function () {
-        Q.configure({ useNativeQSA: false })
-        suite.apply(null, arguments)
-      })
-    }
-
-sinkSuite('Contexts', function (test, ok) {
+sink('Contexts', function (test, ok) {
 
   test('should be able to pass optional context', 2, function () {
     ok(Q('.a').length === 3, 'no context found 3 elements (.a)');
@@ -40,17 +26,17 @@ sinkSuite('Contexts', function (test, ok) {
     ok(Q('#boosh,.apples,#boosh').length == 1, 'two booshes and an apple dont make a thing go right');
   });
 
-  test('byId sub-queries within context', 6, function() {
+  test('byId sub-queries within context', function (complete) {
     ok(Q('#booshTest', Q('#boosh')).length == 1, 'found "#id #id"')
     ok(Q('.a.b #booshTest', Q('#boosh')).length == 1, 'found ".class.class #id"')
     ok(Q('.a>#booshTest', Q('#boosh')).length == 1, 'found ".class>#id"')
-    ok(Q('>.a>#booshTest', Q('#boosh')).length == 1, 'found ">.class>#id"')
     ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
     ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
+    complete()
   })
 })
 
-sinkSuite('CSS 1', function (test, ok) {
+sink('CSS 1', function (test, ok) {
   test('get element by id', 2, function () {
     var result = Q('#boosh');
     ok(!!result[0], 'found element with id=boosh');
@@ -100,7 +86,7 @@ sinkSuite('CSS 1', function (test, ok) {
   });
 });
 
-sinkSuite('CSS 2', function (test, ok) {
+sink('CSS 2', function (test, ok) {
 
   test('get elements by attribute', 4, function () {
     var wanted = Q('#boosh div[test]')[0];
@@ -122,7 +108,7 @@ sinkSuite('CSS 2', function (test, ok) {
 
 });
 
-sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
+sink('attribute selectors', function (test, ok, b, a, assert) {
 
   /* CSS 2 SPEC */
 
@@ -200,7 +186,7 @@ sinkSuite('attribute selectors', function (test, ok, b, a, assert) {
 
 });
 
-sinkSuite('Uniq', function (test, ok) {
+sink('Uniq', function (test, ok) {
   test('duplicates arent found in arrays', 2, function () {
     ok(Q.uniq(['a', 'b', 'c', 'd', 'e', 'a', 'b', 'c', 'd', 'e']).length == 5, 'result should be a, b, c, d, e')
     ok(Q.uniq(['a', 'b', 'c', 'c', 'c']).length == 3, 'result should be a, b, c')
@@ -208,41 +194,20 @@ sinkSuite('Uniq', function (test, ok) {
 })
 
 
-sinkSuite('element-context queries', function(test, ok) {
-  test('relationship-first queries', 5, function() {
-    var pass = false
-    try { pass = Q('> .direct-descend', Q('#direct-descend')).length == 2 } catch (e) { }
-    ok(pass, 'found two direct descendents using > first');
-
-    pass = false
-    try { pass = Q('~ .sibling-selector', Q('#sibling-selector')).length == 2 } catch (e) { }
-    ok(pass, 'found two siblings with ~ first')
-
-    pass = false
-    try { pass = Q('+ .sibling-selector', Q('#sibling-selector')).length == 1 } catch (e) { }
-    ok(pass, 'found one sibling with + first')
-
-    pass = false
-    var ctx = Q('.idless')[0]
-    try { pass = Q('> .tokens a', ctx).length == 1 } catch (e) { }
-    ok(pass, 'found one sibling from a root with no id')
-    ok(!ctx.getAttribute('id'), 'root element used for selection still has no id')
-  })
+sink('element-context queries', function (test, ok) {
 
   // should be able to query on an element that hasn't been inserted into the dom
   var frag = document.createElement('div')
   frag.innerHTML = '<div class="d i v"><p id="oooo"><em></em><em id="emem"></em></p></div><p id="sep"><div class="a"><span></span></div></p>'
 
-  test('detached fragments', 2, function() {
+  test('detached fragments', 1, function() {
     ok(Q('.a span', frag).length == 1, 'should find child elements of fragment')
-    ok(Q('> div p em', frag).length == 2, 'should find child elements of fragment, relationship first')
   })
 
-  test('byId sub-queries within detached fragment', 6, function () {
+  test('byId sub-queries within detached fragment', 5, function () {
     ok(Q('#emem', frag).length == 1, 'found "#id" in fragment')
     ok(Q('.d.i #emem', frag).length == 1, 'found ".class.class #id" in fragment')
     ok(Q('.d #oooo #emem', frag).length == 1, 'found ".class #id #id" in fragment')
-    ok(Q('> div #oooo', frag).length == 1, 'found "> .class #id" in fragment')
     ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendent)')
     ok(!Q('#sep', Q('#emem', frag)).length, 'shouldn\'t find #sep within #emem (unrelated)')
   })
@@ -257,7 +222,7 @@ sinkSuite('element-context queries', function(test, ok) {
   })
 })
 
-sinkSuite('tokenizer', function (test, ok) {
+sink('tokenizer', function (test, ok) {
 
   test('should not get weird tokens', 5, function () {
     ok(Q('div .tokens[title="one"]')[0] == document.getElementById('token-one'), 'found div .tokens[title="one"]');
@@ -269,13 +234,13 @@ sinkSuite('tokenizer', function (test, ok) {
 
 });
 
-sinkSuite('interesting syntaxes', function (test, ok) {
+sink('interesting syntaxes', function (test, ok) {
   test('should parse bad selectors', 1, function () {
     ok(Q('#spaced-tokens    p    em    a').length, 'found element with funny tokens')
   });
 });
 
-sinkSuite('order matters', function (test, ok) {
+sink('order matters', function (test, ok) {
 
   function tag(el) {
     return el.tagName.toLowerCase();
@@ -298,14 +263,7 @@ sinkSuite('order matters', function (test, ok) {
 
 });
 
-sinkSuite('pseudo-selectors', function (test, ok) {
-  test(':contains', 4, function() {
-    ok(Q('li:contains(humans)').length == 1, 'found by "element:contains(text)"')
-    ok(Q(':contains(humans)').length == 5, 'found by ":contains(text)", including all ancestors')
-    // * is an important case, can cause weird errors
-    ok(Q('*:contains(humans)').length == 5, 'found by "*:contains(text)", including all ancestors')
-    ok(Q('ol:contains(humans)').length == 1, 'found by "ancestor:contains(text)"')
-  })
+sink('pseudo-selectors', function (test, ok) {
 
   test(':not', 1, function() {
     ok(Q('.odd:not(div)').length == 1, 'found one .odd :not an &lt;a&gt;')
@@ -407,16 +365,11 @@ sinkSuite('pseudo-selectors', function (test, ok) {
     location.hash = '#pseudos';
     ok(Q('#pseudos:target').length == 1, 'now #pseudos is the target');
     location.hash = '';
-  });
+  })
 
-  test('custom pseudos', 1, function() {
-    // :humanoid implemented just for testing purposes
-    ok(Q(':humanoid').length == 2, 'selected using custom pseudo')
-  });
+})
 
-});
-
-sinkSuite('argument types', function (test, ok) {
+sink('argument types', function (test, ok) {
 
   test('should be able to pass in nodes as arguments', 5, function () {
     var el = document.getElementById('boosh');
@@ -425,7 +378,7 @@ sinkSuite('argument types', function (test, ok) {
     ok(Q(el, document)[0] == el, "Q(el, document)[0] == el");
     ok(Q(window)[0] == window, 'Q(window)[0] == window');
     ok(Q(document)[0] == document, 'Q(document)[0] == document');
-  });
+  })
 
   test('should be able to pass in an array of results as arguments', 5, function () {
     var el = document.getElementById('boosh');
@@ -435,50 +388,12 @@ sinkSuite('argument types', function (test, ok) {
     ok(result[1] == document, "result[0] == document");
     ok(result[2] == window, 'result[0] == window');
     ok(Q([Q('#pseudos div.odd'), Q('#pseudos div.even')]).length == 6, 'found all the odd and even divs');
-  });
-
-});
-
-sinkSuite('is()', function (test, ok) {
-  var el = document.getElementById('attr-child-boosh');
-  test('simple selectors', 9, function () {
-    ok(Q.is(el, 'li'), 'tag');
-    ok(Q.is(el, '*'), 'wildcard');
-    ok(Q.is(el, '#attr-child-boosh'), '#id');
-    ok(Q.is(el, '[attr]'), '[attr]');
-    ok(Q.is(el, '[attr=boosh]'), '[attr=val]');
-    ok(!Q.is(el, 'div'), 'wrong tag');
-    ok(!Q.is(el, '#foo'), 'wrong #id');
-    ok(!Q.is(el, '[foo]'), 'wrong [attr]');
-    ok(!Q.is(el, '[attr=foo]'), 'wrong [attr=val]');
-  });
-  test('selector sequences', 2, function () {
-    ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]'), 'tag#id[attr=val]');
-    ok(!Q.is(el, 'div#attr-child-boosh[attr=boosh]'), 'wrong tag#id[attr=val]');
-  });
-  test('selector sequences combinators', 7, function () {
-    ok(Q.is(el, 'ol li'), 'tag tag');
-    ok(Q.is(el, 'ol>li'), 'tag>tag');
-    ok(Q.is(el, 'ol>li+li'), 'tab>tag+tag');
-    ok(Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]'), 'tag#id tag#id[attr=val]');
-    ok(!Q.is(el, 'ol#list>li#attr-child-boosh[attr=boosh]'), 'wrong tag#id>tag#id[attr=val]');
-    ok(Q.is(el, 'ol ol li#attr-child-boosh[attr=boosh]'), 'tag tag tag#id[attr=val]');
-    ok(Q.is(Q('#token-four')[0], 'div#fixtures>div a'), 'tag#id>tag tag where ambiguous middle tag requires backtracking');
-  });
-  test('pseudos', 4, function() {
-    //TODO: more tests!
-    ok(Q.is(el, 'li:contains(hello)'), 'matching :contains(text)')
-    ok(!Q.is(el, 'li:contains(human)'), 'non-matching :contains(text)')
-    ok(Q.is(Q('#list>li')[2], ':humanoid'), 'matching custom pseudo')
-    ok(!Q.is(Q('#list>li')[1], ':humanoid'), 'non-matching custom pseudo')
   })
-  test('context', 2, function () {
-    ok(Q.is(el, 'li#attr-child-boosh[attr=boosh]', Q('#list')[0]), 'context');
-    ok(!Q.is(el, 'ol#list li#attr-child-boosh[attr=boosh]', Q('#boosh')[0]), 'wrong context');
-  });
-});
 
-sinkSuite('selecting elements in other documents', function (test, ok) {
+})
+
+
+sink('selecting elements in other documents', function (test, ok) {
   var doc = document.getElementById('frame').contentWindow.document
   doc.body.innerHTML =
     '<div id="hsoob">' +
