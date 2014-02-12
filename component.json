@@ -1,8 +1,8 @@
 {
   "name": "qwery",
   "repo": "ded/qwery",
-  "description": "blazing fast CSS3 query selector engine",
-  "version": "3.4.1",
+  "description": "A query selector engine",
+  "version": "4.0.0",
   "keywords": ["ender", "query", "css", "selector engine"],
   "dependencies": {},
   "development": {},
