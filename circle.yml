@@ -8,5 +8,4 @@ dependencies:
 
 test:
   override:
-    - ./node_modules/serve/bin/serve .
-    - phantomjs phantom.js
+    - node ./test.js
