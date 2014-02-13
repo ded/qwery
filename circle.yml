@@ -8,4 +8,4 @@ dependencies:
 
 test:
   override:
-    - make test
+    - node ./test.js
