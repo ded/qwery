@@ -1,9 +1,6 @@
 machine:
   node:
     version: 0.10.22
-  post:
-    - ./node_modules/serve/bin/serve .:
-      background: true
 
 dependencies:
   override:
@@ -11,4 +8,5 @@ dependencies:
 
 test:
   override:
+    - ./node_modules/serve/bin/serve .
     - phantomjs phantom.js
