@@ -7,4 +7,5 @@ phantom.on('exit', function (code, signal) {
   var outcome = code == 0 ? 'passed' : 'failed'
   console.log('Qwery tests have %s', outcome)
   server.kill('SIGHUP')
+  process.exit(code)
 })
