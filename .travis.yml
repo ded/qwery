@@ -5,6 +5,6 @@ notifications:
   email:
     - dustin@dustindiaz.com
 before_script:
-  - ./node_modules/serve/bin/serve .
+  - ./node_modules/serve/bin/serve . &
 
 script: phantomjs ./phantom.js
