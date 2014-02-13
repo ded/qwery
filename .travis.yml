@@ -1,10 +1,10 @@
 language: node_js
 node_js:
-  - 0.6
-branches:
-  only:
-    - master
+  - 0.10
 notifications:
   email:
     - dustin@dustindiaz.com
-    - rod@vagg.org
+before_script:
+  - ./node_modules/serve/bin/serve .
+
+script: phantomjs ./phantom.js

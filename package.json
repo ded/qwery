@@ -23,6 +23,7 @@
   "devDependencies": {
     "sink-test": ">= 1.0.1",
     "serve": "*",
-    "smoosh": "0.4.0"
+    "smoosh": "0.4.0",
+    "phantom": "0.5.4"
   }
 }
