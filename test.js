@@ -1,6 +1,6 @@
 var cp = require('child_process')
   , spawn = cp.spawn
-  , server  = spawn('serve', ['.'])
+  , server  = spawn('./node_modules/serve/bin/serve', ['.'])
   , phantom = spawn('./vendor/phantomjs', ['phantom.js'])
 
 phantom.on('exit', function (code, signal) {
@@ -8,5 +8,3 @@ phantom.on('exit', function (code, signal) {
   console.log('Qwery tests have %s', outcome)
   server.kill('SIGHUP')
 })
-
-
