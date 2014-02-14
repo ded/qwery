@@ -6,24 +6,24 @@ sink('Contexts', function (test, ok) {
   });
 
   test('should be able to pass string as context', 5, function() {
-    ok(Q('.a', '#boosh').length == 3, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', '#boosh').length == 4, 'context found 2 elements(.a, #boosh)');
     ok(Q('.a', '.a').length == 0, 'context found 0 elements(.a, .a)');
     ok(Q('.a', '.b').length == 1, 'context found 1 elements(.a, .b)');
-    ok(Q('.a', '#boosh .b').length == 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.a', '#boosh .b').length == 5, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', '#boosh .b').length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
 
   test('should be able to pass qwery result as context', 5, function() {
-    ok(Q('.a', Q('#boosh')).length == 5, 'context found 2 elements(.a, #boosh)');
+    ok(Q('.a', Q('#boosh')).length == 2, 'context found 2 elements(.a, #boosh)');
     ok(Q('.a', Q('.a')).length == 0, 'context found 0 elements(.a, .a)');
     ok(Q('.a', Q('.b')).length == 1, 'context found 1 elements(.a, .b)');
-    ok(Q('.a', Q('#boosh .b')).length == 1, 'context found 1 elements(.a, #boosh .b)');
+    ok(Q('.a', Q('#boosh .b')).length == 6, 'context found 1 elements(.a, #boosh .b)');
     ok(Q('.b', Q('#boosh .b')).length == 0, 'context found 0 elements(.b, #boosh .b)');
   });
 
   test('should not return duplicates from combinators', 2, function () {
-    ok(Q('#boosh,#boosh').length == 6, 'two booshes dont make a thing go right');
-    ok(Q('#boosh,.apples,#boosh').length == 1, 'two booshes and an apple dont make a thing go right');
+    ok(Q('#boosh,#boosh').length == 1, 'two booshes dont make a thing go right');
+    ok(Q('#boosh,.apples,#boosh').length == 6, 'two booshes and an apple dont make a thing go right');
   });
 
   test('byId sub-queries within context', function (complete) {

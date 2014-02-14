@@ -19,8 +19,12 @@ page.open('http://localhost:3000/tests/', function() {
           return {text: t, count: els.length}
         })
         var pass = !!clsName.match(/sink-pass/)
-        if (pass) console.log('tests have passed')
-        else console.log(fail.count + ' test(s) failed\n', fail.text)
+        if (pass) console.log('All tests have passed!')
+        else {
+          console.log(fail.count + ' test(s) failed')
+          console.log(fail.text.trim())
+        }
+
         phantom.exit(pass ? 0 : 1)
       }
     }, 10)
