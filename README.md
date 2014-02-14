@@ -26,8 +26,7 @@ qwery('div', '#foo'); // another query
 
 ``` sh
 npm install
-make
-open tests/index.html
+make test
 ```
 
 ## Ender support
