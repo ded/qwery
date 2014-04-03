@@ -9,6 +9,7 @@
   "license": "MIT",
   "main": "qwery.js",
   "scripts": [
-    "qwery.js"
+    "qwery.js",
+    "pseudos/qwery-pseudos.js"
   ]
 }
