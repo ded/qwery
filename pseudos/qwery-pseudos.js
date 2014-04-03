@@ -6,13 +6,15 @@
   */
 
 !function () {
-  var q, pseudos, i, l, p, r, nodes, m, nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/
-  if (typeof module != 'undefined' && typeof 'require' != 'undefined')
-    q = require('qwery')
-  else if (typeof qwery != 'undefined')
-    q = qwery
-  else
-    return
+  var q = require('..');
+  var pseudos;
+  var i;
+  var l;
+  var p;
+  var r;
+  var nodes;
+  var m;
+  var nthPattern = /\s*((?:\+|\-)?(\d*))n\s*((?:\+|\-)\s*\d+)?\s*/;
 
   pseudos = q.pseudos
 
