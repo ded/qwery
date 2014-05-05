@@ -31,6 +31,7 @@
     , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
     , tokenizr = new RegExp(splitters.source + splittersMore.source)
     , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
+    , chunkerProps = ['whole', 'tag', 'idsAndClasses', 'wholeAttribute', 'attribute', 'qualifier', 'value', 'wholePseudo', 'pseudo', 'wholePseudoVal', 'pseudoVal']
 
   var walker = {
       ' ': function (node) {
@@ -73,7 +74,7 @@
   // not quite as fast as inline loops in older browsers so don't use liberally
   function each(a, fn) {
     var i = 0, l = a.length
-    for (; i < l; i++) fn(a[i])
+    for (; i < l; i++) fn(a[i], i)
   }
 
   function flatten(ar) {
@@ -93,21 +94,39 @@
   }
 
   function q(query) {
-    return query.match(chunker)
+    var matches = query.match(chunker)
+      , meta = {};
+
+    each(chunkerProps, function (prop, i) {
+      meta[prop] = matches[i];
+    });
+
+    return meta;
   }
 
   // called using `this` as element and arguments from regex group results.
   // given => div.hello[title="world"]:foo('bar')
   // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
-  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
-    var i, m, k, o, classes
+  function interpret(meta) {
+    var tag = meta.tag
+      , idsAndClasses = meta.idsAndClasses
+      , pseudo = meta.pseudo
+      , wholeAttribute = meta.wholeAttribute
+      , value = meta.value
+      , attribute = meta.attribute
+      , qualifier = meta.qualifier
+      , i, m, k, o, classes
     if (this[nodeType] !== 1) return false
     if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag) return false
     if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
     if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
       for (i = classes.length; i--;) if (!classRegex(classes[i].slice(1)).test(this.className)) return false
     }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) return false
+
+    if (pseudo && (!qwery.pseudos[pseudo] || !qwery.pseudos[pseudo](this, pseudoVal))) {
+      return false;
+    }
+
     if (wholeAttribute && !value) { // select is just for existance of attrib
       o = this.attributes
       for (k in o) {
@@ -169,7 +188,7 @@
       root[byTag](intr[1] || '*')
     // filter elements according to the right-most part of the selector
     for (i = 0, l = els.length; i < l; i++) {
-      if (item = interpret.apply(els[i], intr)) r[r.length] = item
+      if (item = interpret.call(els[i], intr)) r[r.length] = item
     }
     if (!tokens.length) return r
 
@@ -188,7 +207,7 @@
       tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
       dividedTokens = selector.match(dividers)
       tokens = tokens.slice(0) // copy array
-      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
+      if (interpret.call(el, q(tokens.pop())) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
         return true
       }
     }
@@ -201,7 +220,7 @@
     // recursively work backwards through the tokens and up the dom, covering all options
     function crawl(e, i, p) {
       while (p = walker[dividedTokens[i]](p, e)) {
-        if (isNode(p) && (interpret.apply(p, q(tokens[i])))) {
+        if (isNode(p) && (interpret.call(p, q(tokens[i])))) {
           if (i) {
             if (cand = crawl(p, i - 1, p)) return cand
           } else return p

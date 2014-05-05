@@ -414,6 +414,9 @@ sinkSuite('pseudo-selectors', function (test, ok) {
     ok(Q(':humanoid').length == 2, 'selected using custom pseudo')
   });
 
+  test('non-existing pseudos', 1, function () {
+    ok(Q(':non-existing').length === 0, 'found 0 element')
+  })
 });
 
 sinkSuite('argument types', function (test, ok) {

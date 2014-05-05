@@ -1,6 +1,10 @@
 ## Qwery - The Tiny Selector Engine
 
-Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3 queries
+Qwery is a small *blazing fast* query selector engine allowing you to select elements with CSS1|2|3 queries.
+
+This fork aims to continue support for **evil** browsers, e.g. IE6.
+
+If IE8- aren't required for your project, you should use qwery [v4.0](https://github.com/ded/qwery) or higher instead, for better performance.
 
 ### Acceptable selectors
 
@@ -65,6 +69,14 @@ qwery.pseudos.foo = function (el, val) {
   // val == 'bar'
   return el.getAttribute(val)
 }
+```
+
+### Non-existing pseudo
+
+Qwery will return empty array for non-existing pseudo instead of throwing an `not a valid selector` exception (`querySelectorAll`).
+
+```js
+qwery('div:non-existing') // []
 ```
 
 Configuring Qwery
@@ -157,12 +169,15 @@ If you're building a Webkit (iPhone / Android / Chrome OS) application, you may 
 
     $ ender add qwery-mobile
 
-Contributors
+Contributors of this fork:
 -------
-  * [Dustin Diaz](https://github.com/ded/qwery/commits/master?author=ded)
-  * [Rod Vagg](https://github.com/ded/qwery/commits/master?author=rvagg)
-  * [Jacob Thornton](https://github.com/ded/qwery/commits/master?author=fat)
-  * [Andrew McCollum](https://github.com/ded/qwery/commits/master?author=amccollum)
 
-### Giving back
-Are you using this library in production? Consider [leaving a tip](https://www.gittip.com/ded) to show your appreciation.
+* [Chris Yip](https://github.com/chrisyip/qwery/commits/master?author=chrisyip)
+
+Contributors of [orginal project](https://github.com/ded/qwery):
+-------
+
+* [Dustin Diaz](https://github.com/chrisyip/qwery/commits/master?author=ded) ([leave a tip](https://www.gittip.com/ded) to show appreciation)
+* [Rod Vagg](https://github.com/chrisyip/qwery/commits/master?author=rvagg)
+* [Jacob Thornton](https://github.com/chrisyip/qwery/commits/master?author=fat)
+* [Andrew McCollum](https://github.com/chrisyip/qwery/commits/master?author=amccollum)
