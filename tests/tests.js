@@ -30,7 +30,7 @@ sink('Contexts', function (test, ok) {
     ok(Q('#booshTest', Q('#boosh')).length == 1, 'found "#id #id"')
     ok(Q('.a.b #booshTest', Q('#boosh')).length == 1, 'found ".class.class #id"')
     ok(Q('.a>#booshTest', Q('#boosh')).length == 1, 'found ".class>#id"')
-    ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendent)')
+    ok(!Q('#boosh', Q('#booshTest')).length, 'shouldn\'t find #boosh (ancestor) within #booshTest (descendant)')
     ok(!Q('#boosh', Q('#lonelyBoosh')).length, 'shouldn\'t find #boosh within #lonelyBoosh (unrelated)')
     complete()
   })
@@ -158,8 +158,8 @@ sink('attribute selectors', function (test, ok, b, a, assert) {
   });
 
   test('direct descendants', 2, function () {
-    ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendents');
-    ok(Q('#direct-descend > .direct-descend > .lvl2').length == 3, 'found three second-level direct descendents');
+    ok(Q('#direct-descend > .direct-descend').length == 2, 'found two direct descendants');
+    ok(Q('#direct-descend > .direct-descend > .lvl2').length == 3, 'found three second-level direct descendants');
   });
 
   test('sibling elements', 17, function () {
@@ -208,7 +208,7 @@ sink('element-context queries', function (test, ok) {
     ok(Q('#emem', frag).length == 1, 'found "#id" in fragment')
     ok(Q('.d.i #emem', frag).length == 1, 'found ".class.class #id" in fragment')
     ok(Q('.d #oooo #emem', frag).length == 1, 'found ".class #id #id" in fragment')
-    ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendent)')
+    ok(!Q('#oooo', Q('#emem', frag)).length, 'shouldn\'t find #oooo (ancestor) within #emem (descendant)')
     ok(!Q('#sep', Q('#emem', frag)).length, 'shouldn\'t find #sep within #emem (unrelated)')
   })
 
@@ -439,7 +439,7 @@ sink('selecting elements in other documents', function (test, ok) {
     ok(Q('.a #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id" in frame')
     ok(Q('.a #booshTest #spanny', Q('#hsoob', doc)).length == 1, 'found ".class #id #id" in frame')
     ok(Q('.a > #booshTest', Q('#hsoob', doc)).length == 1, 'found "> .class #id" in frame')
-    ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendent)')
+    ok(!Q('#booshTest', Q('#spanny', doc)).length, 'shouldn\'t find #booshTest (ancestor) within #spanny (descendant)')
     ok(!Q('#booshTest', Q('#lonelyHsoob', doc)).length, 'shouldn\'t find #booshTest within #lonelyHsoob (unrelated)')
   })
 
