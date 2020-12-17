@@ -78,7 +78,7 @@
     if (selector && arrayLike(selector)) return flatten(selector)
 
 
-    if (doc.getElementsByClassName && selector == 'string' && (m = selector.match(classOnly))) {
+    if (doc.getElementsByClassName && typeof selector == 'string' && (m = selector.match(classOnly))) {
       return toArray((root).getElementsByClassName(m[1]))
     }
     // using duck typing for 'a' window or 'a' document (not 'the' window || document)
@@ -91,4 +91,4 @@
   qwery.uniq = uniq
 
   return qwery
-}, this);
+});
